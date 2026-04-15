@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/AlbanBALA/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/445b0b75-75d6-4569-8dc1-bd374b92ed8a/fcbeb2fa-186d-4210-9af5-e6ccee7337f8/skills/docx/**)",
+      "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\AlbanBALA\\\\OneDrive\\\\Desktop\\\\Projet Campaign Studio.docx\" -o /tmp/campaign_studio.md)",
+      "Read(//tmp/**)",
+      "Bash(python \"C:\\\\Users\\\\AlbanBALA\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\445b0b75-75d6-4569-8dc1-bd374b92ed8a\\\\fcbeb2fa-186d-4210-9af5-e6ccee7337f8\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\AlbanBALA\\\\OneDrive\\\\Desktop\\\\Projet Campaign Studio.docx\" /tmp/campaign_unpacked/)",
+      "Bash(pip install:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(npx tsc:*)",
+      "Bash(cmd /c \"cd /d C:\\\\Users\\\\AlbanBALA\\\\Documents\\\\campaign-studio && npx tsc --noEmit 2>&1\")",
+      "Bash(npx --prefix \"C:/Users/AlbanBALA/Documents/campaign-studio\" tsc --noEmit --project \"C:/Users/AlbanBALA/Documents/campaign-studio/tsconfig.json\")",
+      "Bash(powershell.exe -Command \"cd 'C:\\\\Users\\\\AlbanBALA\\\\Documents\\\\campaign-studio'; npx tsc --noEmit 2>&1 | Select-Object -First 30\")",
+      "Bash(powershell -Command \"Set-Location 'C:\\\\Users\\\\AlbanBALA\\\\Documents\\\\campaign-studio'; npx tsc --noEmit 2>&1\")",
+      "Bash(/cygdrive/c/Python314/python.exe -c ':*)",
+      "Bash(pandoc --track-changes=all \"C:\\\\Users\\\\AlbanBALA\\\\OneDrive\\\\Desktop\\\\Améliorations-2.docx\" -o output.md)",
+      "Bash(python \"C:\\\\Users\\\\AlbanBALA\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\445b0b75-75d6-4569-8dc1-bd374b92ed8a\\\\fcbeb2fa-186d-4210-9af5-e6ccee7337f8\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\AlbanBALA\\\\OneDrive\\\\Desktop\\\\Améliorations-2.docx\" \"C:\\\\Users\\\\AlbanBALA\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\445b0b75-75d6-4569-8dc1-bd374b92ed8a\\\\fcbeb2fa-186d-4210-9af5-e6ccee7337f8\\\\skills\\\\docx\\\\unpacked\")",
+      "Bash(python \"C:\\\\Users\\\\AlbanBALA\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\445b0b75-75d6-4569-8dc1-bd374b92ed8a\\\\fcbeb2fa-186d-4210-9af5-e6ccee7337f8\\\\skills\\\\docx\\\\scripts\\\\office\\\\unpack.py\" \"C:\\\\Users\\\\AlbanBALA\\\\OneDrive\\\\Desktop\\\\Améliorations-2.docx\" \"C:\\\\Users\\\\AlbanBALA\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\\\\skills-plugin\\\\445b0b75-75d6-4569-8dc1-bd374b92ed8a\\\\fcbeb2fa-186d-4210-9af5-e6ccee7337f8\\\\skills\\\\docx\\\\unpacked_doc\")",
+      "Bash(python -c ':*)",
+      "Bash(pandoc \"C:/Users/AlbanBALA/OneDrive/Desktop/AmeliorationUX.docx\" -t plain)",
+      "Bash(where python3.exe)",
+      "Bash(where python.exe)",
+      "Bash(where py.exe)",
+      "Bash(ls /c/Python*/python.exe)",
+      "Read(//c/Users/AlbanBALA/AppData/Local/Programs/**)",
+      "Bash(pandoc \"C:\\\\Users\\\\AlbanBALA\\\\OneDrive\\\\Desktop\\\\AmeliorationUX.docx\" -o output.md)",
+      "Bash(wc -l \"C:\\\\\\\\Users\\\\\\\\AlbanBALA\\\\\\\\Documents\\\\\\\\campaign-studio\\\\\\\\app\\\\\\\\globals.css\")"
+    ]
+  }
+}
