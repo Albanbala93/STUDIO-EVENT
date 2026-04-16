@@ -150,8 +150,8 @@ export default function ProjectPage() {
                     border: "1px solid var(--border)",
                     borderRadius: "var(--radius-lg)",
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "18px 48px",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "16px 40px",
                 }}>
                     {[
                         ["Contexte", project.brief.companyContext],

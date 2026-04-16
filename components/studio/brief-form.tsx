@@ -143,51 +143,7 @@ export function BriefForm() {
     }
 
     return (
-        <div style={{ maxWidth: 820, margin: "0 auto" }}>
-
-            {/* Upload brief — subtle, above form */}
-            <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 14,
-                marginBottom: 28,
-                padding: "12px 16px",
-                background: "var(--white)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-lg)",
-            }}>
-                <div style={{ flex: 1 }}>
-                    <p style={{ margin: "0 0 2px", fontSize: 12, fontWeight: 600, color: "var(--navy)" }}>
-                        Importer un brief existant
-                    </p>
-                    <p style={{ margin: 0, fontSize: 11, color: "var(--slate-light)" }}>
-                        PDF, Word ou TXT — les champs seront pré-remplis automatiquement
-                    </p>
-                </div>
-                <label style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "7px 14px",
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius-sm)",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--slate)",
-                    cursor: "pointer",
-                    transition: "background 0.15s, color 0.15s",
-                    flexShrink: 0,
-                }}>
-                    Choisir un fichier
-                    <input
-                        type="file"
-                        accept=".pdf,.doc,.docx,.txt"
-                        onChange={handleFileUpload}
-                        style={{ display: "none" }}
-                    />
-                </label>
-            </div>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
 
             {/* Form */}
             <form onSubmit={handleSubmit} style={{
@@ -197,20 +153,32 @@ export function BriefForm() {
                 overflow: "hidden",
             }}>
 
-                {/* Form header with progress */}
+                {/* Form header */}
                 <div style={{
                     background: "var(--navy)",
-                    padding: "20px 28px",
+                    padding: "18px 32px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: 24,
                 }}>
                     <div>
-                        <p style={{ margin: "0 0 2px", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>
+                        <p style={{
+                            margin: "0 0 1px",
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            letterSpacing: "0.12em",
+                            textTransform: "uppercase",
+                            color: "rgba(255,255,255,0.38)",
+                        }}>
                             Brief stratégique
                         </p>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--white)" }}>
+                        <p style={{
+                            margin: 0,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: filledCount === 6 ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.65)",
+                        }}>
                             {filledCount === 0
                                 ? "Commencez par décrire votre contexte"
                                 : filledCount < 6
@@ -226,77 +194,64 @@ export function BriefForm() {
                                 <div
                                     key={i}
                                     style={{
-                                        width: 20,
-                                        height: 3,
+                                        width: 22,
+                                        height: 2,
                                         borderRadius: 2,
-                                        background: i < filledCount ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.15)",
+                                        background: i < filledCount ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.12)",
                                         transition: "background 0.25s",
                                     }}
                                 />
                             ))}
                         </div>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)", minWidth: 28 }}>
+                        <span style={{
+                            fontSize: 10,
+                            fontWeight: 600,
+                            color: "rgba(255,255,255,0.35)",
+                            minWidth: 28,
+                            fontVariantNumeric: "tabular-nums",
+                        }}>
                             {progress}%
                         </span>
                     </div>
                 </div>
 
                 {/* Fields */}
-                <div style={{ padding: "0 28px 28px" }}>
+                <div style={{ padding: "0 32px" }}>
                     {fieldConfig.map(({ key, label, hint, example }, index) => {
                         const filled = brief[key].trim().length > 0;
                         return (
                             <div
                                 key={key}
+                                className="brief-field-row"
                                 style={{
-                                    paddingTop: 24,
-                                    paddingBottom: 24,
-                                    borderBottom: index < fieldConfig.length - 1 ? "1px solid var(--border-light)" : "none",
+                                    borderBottom: index < fieldConfig.length - 1
+                                        ? "1px solid var(--border-light)"
+                                        : "none",
                                 }}
                             >
-                                {/* Label row */}
-                                <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
-                                    <span style={{
-                                        fontSize: 10,
-                                        fontWeight: 700,
-                                        color: filled ? "var(--navy)" : "var(--slate-light)",
-                                        background: filled ? "var(--surface-mid)" : "transparent",
-                                        border: `1px solid ${filled ? "var(--border)" : "var(--border-light)"}`,
-                                        width: 20,
-                                        height: 20,
-                                        borderRadius: "var(--radius-sm)",
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        flexShrink: 0,
-                                        transition: "all 0.2s",
-                                        lineHeight: 1,
-                                    }}>
-                                        {filled ? "✓" : index + 1}
-                                    </span>
-                                    <label style={{
-                                        fontWeight: 700,
-                                        fontSize: 13,
-                                        color: "var(--navy)",
-                                        cursor: "pointer",
-                                        letterSpacing: "-0.005em",
-                                    }}>
-                                        {label}
-                                    </label>
-                                    <span style={{ fontSize: 12, color: "var(--slate-light)", fontWeight: 400 }}>
-                                        {hint}
-                                    </span>
+                                {/* Left: label + hint */}
+                                <div className="brief-field-meta">
+                                    <div className="brief-field-label-row">
+                                        <span className={`brief-field-step ${filled ? "brief-field-step-done" : "brief-field-step-empty"}`}>
+                                            {filled ? "✓" : index + 1}
+                                        </span>
+                                        <label className="brief-field-label" htmlFor={`field-${key}`}>
+                                            {label}
+                                        </label>
+                                    </div>
+                                    <p className="brief-field-hint">{hint}</p>
                                 </div>
 
-                                {/* Textarea */}
+                                {/* Right: textarea */}
                                 <textarea
+                                    id={`field-${key}`}
                                     required
                                     placeholder={example}
                                     value={brief[key]}
                                     onChange={(e) => setBrief((cur) => ({ ...cur, [key]: e.target.value }))}
                                     style={{
                                         width: "100%",
-                                        minHeight: 84,
+                                        minHeight: 82,
                                         padding: "11px 14px",
                                         fontSize: 13.5,
                                         lineHeight: 1.65,
@@ -313,7 +268,7 @@ export function BriefForm() {
                                     }}
                                     onFocus={(e) => {
                                         e.currentTarget.style.borderColor = "var(--navy)";
-                                        e.currentTarget.style.boxShadow = "0 0 0 3px rgba(12,21,32,0.06)";
+                                        e.currentTarget.style.boxShadow = "0 0 0 3px rgba(11,20,34,0.06)";
                                         e.currentTarget.style.background = "var(--white)";
                                     }}
                                     onBlur={(e) => {
@@ -331,38 +286,63 @@ export function BriefForm() {
                 {/* Footer */}
                 <div style={{
                     borderTop: "1px solid var(--border)",
-                    padding: "18px 28px",
+                    padding: "16px 32px",
                     display: "flex",
                     alignItems: "center",
                     gap: 16,
                     justifyContent: "space-between",
                     background: "var(--surface)",
                 }}>
-                    <div>
+                    {/* Left: status / import */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
                         {error && (
-                            <p style={{
-                                margin: 0,
-                                fontSize: 12,
-                                color: "var(--risk-high)",
-                                lineHeight: 1.5,
-                            }}>
+                            <p style={{ margin: 0, fontSize: 12, color: "var(--risk-high)", lineHeight: 1.5 }}>
                                 {error}
                             </p>
                         )}
                         {loading && (
-                            <p style={{
-                                margin: 0,
-                                fontSize: 12,
-                                color: "var(--blue-conseil)",
-                                fontWeight: 500,
-                            }}>
-                                Analyse du brief en cours… construction de l&apos;angle stratégique
-                            </p>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span className="loading-dots">
+                                    <span className="loading-dot" />
+                                    <span className="loading-dot" />
+                                    <span className="loading-dot" />
+                                </span>
+                                <p style={{ margin: 0, fontSize: 12, color: "var(--blue-conseil)", fontWeight: 500 }}>
+                                    Analyse du brief · construction de l&apos;angle stratégique
+                                </p>
+                            </div>
                         )}
                         {!error && !loading && (
-                            <p style={{ margin: 0, fontSize: 12, color: "var(--slate-light)" }}>
-                                Génération en ~25 secondes · Résultat exportable PDF &amp; DOCX
+                            <p style={{ margin: 0, fontSize: 11.5, color: "var(--slate-light)" }}>
+                                Génération en ~25s · Résultat exportable
                             </p>
+                        )}
+
+                        {/* File upload — discreet */}
+                        {!loading && (
+                            <label style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 5,
+                                fontSize: 11,
+                                fontWeight: 500,
+                                color: "var(--slate-light)",
+                                cursor: "pointer",
+                                transition: "color 0.15s",
+                                flexShrink: 0,
+                                textDecoration: "none",
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--slate)"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--slate-light)"; }}
+                            >
+                                <span>↑</span> Importer un brief
+                                <input
+                                    type="file"
+                                    accept=".pdf,.doc,.docx,.txt"
+                                    onChange={handleFileUpload}
+                                    style={{ display: "none" }}
+                                />
+                            </label>
                         )}
                     </div>
 
@@ -370,21 +350,22 @@ export function BriefForm() {
                         type="submit"
                         disabled={loading || filledCount < 6}
                         style={{
-                            padding: "11px 28px",
+                            padding: "10px 24px",
                             background: filledCount === 6 && !loading ? "var(--navy)" : "var(--border)",
                             color: filledCount === 6 && !loading ? "var(--white)" : "var(--slate-light)",
                             border: "none",
                             borderRadius: "var(--radius-sm)",
-                            fontWeight: 700,
-                            fontSize: 13,
+                            fontWeight: 600,
+                            fontSize: 12.5,
                             cursor: filledCount === 6 && !loading ? "pointer" : "not-allowed",
                             transition: "all 0.2s",
                             flexShrink: 0,
                             fontFamily: "inherit",
                             letterSpacing: "0.01em",
+                            opacity: loading ? 0.7 : 1,
                         }}
                     >
-                        {loading ? "Génération en cours…" : "Générer le dispositif →"}
+                        {loading ? "Génération…" : "Générer le dispositif →"}
                     </button>
                 </div>
             </form>

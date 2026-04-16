@@ -27,12 +27,13 @@ export default function RootLayout({
             {/* Logo */}
             <Link href="/studio" className="topnav-logo">
               <span className="topnav-logo-mark">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect width="14" height="14" rx="3" fill="currentColor" opacity="0.12"/>
-                  <path d="M3 4h5M3 7h8M3 10h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <path d="M2.5 3.5h5M2.5 6.5h8M2.5 9.5h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </span>
-              <span className="topnav-wordmark">Campaign<span className="topnav-wordmark-studio"> Studio</span></span>
+              <span className="topnav-wordmark">
+                Campaign<span className="topnav-wordmark-studio"> Studio</span>
+              </span>
             </Link>
 
             {/* Visual separator */}
@@ -46,7 +47,7 @@ export default function RootLayout({
             </div>
 
             {/* Right-side actions */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
               <span className="topnav-beta">Bêta</span>
               <Link href="/studio/new" className="topnav-cta">
                 + Nouveau brief

@@ -14,11 +14,11 @@ export default function NewProjectPage() {
                 <div style={{
                     position: "absolute",
                     inset: 0,
-                    backgroundImage: "radial-gradient(ellipse at 80% 50%, rgba(42, 82, 152, 0.18) 0%, transparent 65%)",
+                    backgroundImage: "radial-gradient(ellipse at 75% 50%, rgba(42, 82, 152, 0.16) 0%, transparent 60%)",
                     pointerEvents: "none",
                 }} />
 
-                <div className="container" style={{ paddingTop: 44, paddingBottom: 48, position: "relative" }}>
+                <div className="container" style={{ paddingTop: 40, paddingBottom: 44, position: "relative" }}>
                     {/* Back link */}
                     <Link href="/studio" className="hero-back-link">
                         ← Projets
@@ -26,37 +26,37 @@ export default function NewProjectPage() {
 
                     <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 48, flexWrap: "wrap" }}>
                         {/* Title block */}
-                        <div style={{ maxWidth: 640 }}>
+                        <div style={{ maxWidth: 600 }}>
                             <p style={{
-                                margin: "0 0 18px 0",
-                                fontSize: 10,
+                                margin: "0 0 16px 0",
+                                fontSize: 9.5,
                                 fontWeight: 700,
                                 letterSpacing: "0.16em",
                                 textTransform: "uppercase",
-                                color: "rgba(255,255,255,0.32)",
+                                color: "rgba(255,255,255,0.28)",
                             }}>
                                 Nouveau dispositif de communication
                             </p>
                             <h1 style={{
-                                margin: "0 0 18px 0",
+                                margin: "0 0 16px 0",
                                 fontFamily: "var(--font-display)",
-                                fontSize: "clamp(28px, 3.5vw, 40px)",
+                                fontSize: "clamp(26px, 3vw, 38px)",
                                 fontWeight: 400,
                                 color: "var(--white)",
                                 letterSpacing: "-0.01em",
-                                lineHeight: 1.18,
+                                lineHeight: 1.2,
                             }}>
                                 Décrivez votre contexte.{" "}
-                                <em style={{ color: "rgba(255,255,255,0.48)", fontStyle: "italic" }}>
+                                <em style={{ color: "rgba(255,255,255,0.42)", fontStyle: "italic" }}>
                                     Nous construisons le dispositif.
                                 </em>
                             </h1>
                             <p style={{
                                 margin: 0,
-                                fontSize: 14,
-                                color: "rgba(255,255,255,0.45)",
-                                lineHeight: 1.72,
-                                maxWidth: 520,
+                                fontSize: 13.5,
+                                color: "rgba(255,255,255,0.4)",
+                                lineHeight: 1.7,
+                                maxWidth: 500,
                             }}>
                                 Six champs suffisent pour produire une recommandation stratégique complète —
                                 angle éditorial, messages clés, contenus rédigés et dispositif événementiel.
@@ -68,6 +68,7 @@ export default function NewProjectPage() {
                             display: "flex",
                             gap: 0,
                             flexShrink: 0,
+                            paddingBottom: 4,
                         }}>
                             {[
                                 { value: "~25s", label: "Génération" },
@@ -75,14 +76,14 @@ export default function NewProjectPage() {
                                 { value: "14+", label: "Sections" },
                             ].map(({ value, label }, i) => (
                                 <div key={label} style={{
-                                    padding: "0 32px 0 0",
-                                    marginRight: 32,
-                                    borderRight: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none",
+                                    padding: "0 28px 0 0",
+                                    marginRight: 28,
+                                    borderRight: i < 2 ? "1px solid rgba(255,255,255,0.07)" : "none",
                                     textAlign: "left",
                                 }}>
                                     <p style={{
                                         margin: "0 0 4px",
-                                        fontSize: 26,
+                                        fontSize: 24,
                                         fontWeight: 800,
                                         color: "var(--white)",
                                         letterSpacing: "-0.04em",
@@ -92,10 +93,10 @@ export default function NewProjectPage() {
                                     </p>
                                     <p style={{
                                         margin: 0,
-                                        fontSize: 10,
-                                        color: "rgba(255,255,255,0.32)",
+                                        fontSize: 9.5,
+                                        color: "rgba(255,255,255,0.28)",
                                         fontWeight: 600,
-                                        letterSpacing: "0.08em",
+                                        letterSpacing: "0.09em",
                                         textTransform: "uppercase",
                                     }}>
                                         {label}
@@ -119,33 +120,11 @@ export default function NewProjectPage() {
                             { step: "02", label: "Analyse stratégique", active: false },
                             { step: "03", label: "Recommandation", active: false },
                         ].map(({ step, label, active }) => (
-                            <div key={step} style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                padding: "13px 20px 13px 0",
-                                marginRight: 20,
-                                borderBottom: active ? "2px solid var(--navy)" : "2px solid transparent",
-                                marginBottom: -1,
-                            }}>
-                                <span style={{
-                                    fontSize: 9.5,
-                                    fontWeight: 700,
-                                    color: active ? "var(--navy)" : "var(--slate-light)",
-                                    letterSpacing: "0.06em",
-                                    background: active ? "var(--surface-mid)" : "transparent",
-                                    border: `1px solid ${active ? "var(--border)" : "transparent"}`,
-                                    padding: "1px 5px",
-                                    borderRadius: "var(--radius-xs)",
-                                }}>
+                            <div key={step} className={`process-step${active ? " process-step-active" : ""}`}>
+                                <span className={`process-step-num ${active ? "process-step-num-active" : "process-step-num-inactive"}`}>
                                     {step}
                                 </span>
-                                <span style={{
-                                    fontSize: 12,
-                                    fontWeight: active ? 600 : 400,
-                                    color: active ? "var(--navy)" : "var(--slate-light)",
-                                    letterSpacing: active ? "-0.005em" : "0",
-                                }}>
+                                <span className={`process-step-label ${active ? "process-step-label-active" : "process-step-label-inactive"}`}>
                                     {label}
                                 </span>
                             </div>
