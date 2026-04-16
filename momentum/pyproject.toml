@@ -1,0 +1,13 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [
+  "packages/scoring/src",
+  "packages/kpi_catalog/src",
+  "packages/carbon/src",
+  "apps/api/src",
+  "apps/worker/src"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

@@ -1,0 +1,12 @@
+{
+  "name": "momentum",
+  "private": true,
+  "scripts": {
+    "lint:web": "npm --workspace apps/web run lint",
+    "test:web": "npm --workspace apps/web run test",
+    "dev:web": "npm --workspace apps/web run dev"
+  },
+  "workspaces": [
+    "apps/web"
+  ]
+}

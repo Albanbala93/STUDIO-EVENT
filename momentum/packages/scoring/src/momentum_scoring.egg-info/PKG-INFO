@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: momentum-scoring
+Version: 0.1.0
+Summary: Scoring engine for Momentum KPI measurements.
+Requires-Python: >=3.11
+Requires-Dist: pydantic>=2.8

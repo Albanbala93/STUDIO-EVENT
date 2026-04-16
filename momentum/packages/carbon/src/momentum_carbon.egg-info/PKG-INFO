@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: momentum-carbon
+Version: 0.1.0
+Summary: Carbon estimation helpers for Momentum.
+Requires-Python: >=3.11
+Requires-Dist: pydantic>=2.8
