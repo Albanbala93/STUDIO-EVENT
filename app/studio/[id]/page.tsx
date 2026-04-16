@@ -73,73 +73,85 @@ export default function ProjectPage() {
 
             {/* Header */}
             <div className="result-header">
-                <p className="project-label">Dossier de communication interne</p>
-                <h1>{project.title}</h1>
-                <div className="header-meta">
-                    <span className="badge badge-status">{statusLabel(project.status)}</span>
-                    <span>{formatDate(project.createdAt)}</span>
-
-                    {/* Edit / View toggle */}
-                    <div className="project-mode-toggle">
-                        <button
-                            type="button"
-                            className={`mode-toggle-btn${editable ? " mode-toggle-active" : ""}`}
-                            onClick={() => setEditable(true)}
-                        >
-                            Édition
-                        </button>
-                        <button
-                            type="button"
-                            className={`mode-toggle-btn${!editable ? " mode-toggle-active" : ""}`}
-                            onClick={() => setEditable(false)}
-                        >
-                            Lecture
-                        </button>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <p className="project-label">Dossier de communication interne</p>
+                        <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.01em" }}>
+                            {project.title}
+                        </h1>
+                        <div className="header-meta">
+                            <span className="badge badge-status">{statusLabel(project.status)}</span>
+                            <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+                            <span>{formatDate(project.createdAt)}</span>
+                        </div>
                     </div>
 
-                    {/* Share button */}
-                    <button
-                        type="button"
-                        className={`btn btn-ghost${isShared ? " share-btn-active" : ""}`}
-                        style={{ fontSize: 11, padding: "4px 12px", marginLeft: 4 }}
-                        onClick={() => setShowShare(true)}
-                    >
-                        {isShared ? "↗ Partagé" : "Partager"}
-                    </button>
+                    {/* Right-side controls */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, paddingTop: 4 }}>
+                        {/* Edit / View toggle */}
+                        <div className="project-mode-toggle">
+                            <button
+                                type="button"
+                                className={`mode-toggle-btn${editable ? " mode-toggle-active" : ""}`}
+                                onClick={() => setEditable(true)}
+                            >
+                                Édition
+                            </button>
+                            <button
+                                type="button"
+                                className={`mode-toggle-btn${!editable ? " mode-toggle-active" : ""}`}
+                                onClick={() => setEditable(false)}
+                            >
+                                Lecture
+                            </button>
+                        </div>
 
-                    <span style={{ marginLeft: "auto" }}>
-                        <Link href="/studio" style={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}>
+                        {/* Share button */}
+                        <button
+                            type="button"
+                            className={`btn btn-ghost${isShared ? " share-btn-active" : ""}`}
+                            style={{ fontSize: 11.5, padding: "5px 13px" }}
+                            onClick={() => setShowShare(true)}
+                        >
+                            {isShared ? "↗ Partagé" : "Partager"}
+                        </button>
+
+                        <Link href="/studio" style={{ color: "rgba(255,255,255,0.3)", fontSize: 11.5, fontWeight: 500 }}>
                             ← Projets
                         </Link>
-                    </span>
+                    </div>
                 </div>
             </div>
 
             {/* Brief summary (collapsible) */}
-            <details style={{ marginBottom: 0 }}>
+            <details style={{ marginBottom: 0 }} className="brief-collapsible">
                 <summary style={{
-                    fontSize: 11,
-                    fontWeight: 600,
+                    fontSize: 10,
+                    fontWeight: 700,
                     color: "var(--slate-light)",
                     cursor: "pointer",
                     userSelect: "none",
-                    padding: "10px 0",
-                    letterSpacing: "0.08em",
+                    padding: "11px 0",
+                    letterSpacing: "0.11em",
                     textTransform: "uppercase",
                     listStyle: "none",
                     display: "flex",
                     alignItems: "center",
-                    gap: 6,
+                    gap: 7,
+                    transition: "color 0.15s",
                 }}>
-                    <span style={{ fontSize: 10 }}>▸</span> Brief source
+                    <span style={{ fontSize: 8, opacity: 0.6 }}>▸</span> Brief source
                 </summary>
-                <div className="card" style={{
-                    marginTop: 8,
-                    marginBottom: 4,
+                <div style={{
+                    marginTop: 10,
+                    marginBottom: 6,
+                    padding: "24px 28px",
+                    background: "var(--white)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius-lg)",
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: "14px 32px",
-                    background: "var(--white)",
+                    gap: "18px 48px",
                 }}>
                     {[
                         ["Contexte", project.brief.companyContext],
@@ -150,10 +162,10 @@ export default function ProjectPage() {
                         ["Contraintes", project.brief.constraints],
                     ].map(([label, value]) => (
                         <div key={label}>
-                            <p style={{ margin: "0 0 3px", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--slate-light)" }}>
+                            <p style={{ margin: "0 0 5px", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--slate-light)" }}>
                                 {label}
                             </p>
-                            <p style={{ margin: 0, fontSize: 13, color: "var(--text)", lineHeight: 1.55 }}>{value}</p>
+                            <p style={{ margin: 0, fontSize: 13.5, color: "var(--text)", lineHeight: 1.6 }}>{value}</p>
                         </div>
                     ))}
                 </div>
@@ -166,7 +178,7 @@ export default function ProjectPage() {
                     className={`project-tab${activeTab === "dossier" ? " project-tab-active" : ""}`}
                     onClick={() => setActiveTab("dossier")}
                 >
-                    Dossier
+                    Dossier stratégique
                 </button>
 
                 <button
@@ -183,6 +195,7 @@ export default function ProjectPage() {
                     onClick={() => setActiveTab("event")}
                 >
                     Copilote événement
+                    <span className="project-tab-badge">Nouveau</span>
                 </button>
             </div>
 

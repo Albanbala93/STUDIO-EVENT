@@ -24,7 +24,20 @@
       "Bash(ls /c/Python*/python.exe)",
       "Read(//c/Users/AlbanBALA/AppData/Local/Programs/**)",
       "Bash(pandoc \"C:\\\\Users\\\\AlbanBALA\\\\OneDrive\\\\Desktop\\\\AmeliorationUX.docx\" -o output.md)",
-      "Bash(wc -l \"C:\\\\\\\\Users\\\\\\\\AlbanBALA\\\\\\\\Documents\\\\\\\\campaign-studio\\\\\\\\app\\\\\\\\globals.css\")"
+      "Bash(wc -l \"C:\\\\\\\\Users\\\\\\\\AlbanBALA\\\\\\\\Documents\\\\\\\\campaign-studio\\\\\\\\app\\\\\\\\globals.css\")",
+      "Bash(npx next:*)",
+      "Read(//c/Users/AlbanBALA/OneDrive/Desktop/**)",
+      "Bash(node -e \"require\\('pdf-lib'\\); console.log\\('pdf-lib OK'\\)\")",
+      "Bash(node -e \"require\\('docx'\\); console.log\\('docx OK'\\)\")",
+      "Bash(cat next.config.ts)",
+      "Bash(cat next.config.js)",
+      "Bash(cat next.config.mjs)",
+      "Bash(curl -s -X POST http://localhost:3333/api/studio/export -H 'Content-Type: application/json' -d '{\"format\":\"pdf\",\"project\":{\"id\":\"test\",\"title\":\"Test Projet\",\"status\":\"generated\",\"createdAt\":\"2025-01-01T00:00:00Z\",\"updatedAt\":\"2025-01-01T00:00:00Z\",\"brief\":{\"companyContext\":\"Contexte\",\"challenge\":\"Enjeu\",\"audience\":\"Cible\",\"objective\":\"Objectif\",\"tone\":\"Ton\",\"constraints\":\"Contraintes\"},\"output\":{\"executiveSummary\":\"Synthèse\",\"communicationDiagnostic\":\"Diagnostic\",\"centralProblem\":\"Problème\",\"strategicAngle\":\"Angle\",\"deviceArchitecture\":\"Architecture\",\"keyMessages\":[\"Message 1\",\"Message 2\"],\"recommendedFormats\":[\"Email\",\"Intranet\"],\"quickWins\":[\"Action 1\"],\"timeline\":[{\"when\":\"J+1\",\"action\":\"Action\",\"impact\":\"élevé\",\"complexity\":\"faible\"}],\"generatedContent\":{\"executiveEmail\":\"Email\",\"intranetPost\":\"Post\",\"managerKit\":\"Kit\",\"faq\":\"FAQ\"}}}}' -o /tmp/test.pdf -w '%{http_code}')",
+      "Bash(curl -s -X POST http://localhost:3333/api/studio/export -H 'Content-Type: application/json' -d '{\"format\":\"docx\",\"project\":{\"id\":\"test\",\"title\":\"Test Projet\",\"status\":\"generated\",\"createdAt\":\"2025-01-01T00:00:00Z\",\"updatedAt\":\"2025-01-01T00:00:00Z\",\"brief\":{\"companyContext\":\"Contexte\",\"challenge\":\"Enjeu\",\"audience\":\"Cible\",\"objective\":\"Objectif\",\"tone\":\"Ton\",\"constraints\":\"Contraintes\"},\"output\":{\"executiveSummary\":\"Synthèse\",\"communicationDiagnostic\":\"Diagnostic\",\"centralProblem\":\"Problème\",\"strategicAngle\":\"Angle\",\"deviceArchitecture\":\"Architecture\",\"keyMessages\":[\"Message 1\",\"Message 2\"],\"recommendedFormats\":[\"Email\",\"Intranet\"],\"quickWins\":[\"Action 1\"],\"timeline\":[{\"when\":\"J+1\",\"action\":\"Action\",\"impact\":\"élevé\",\"complexity\":\"faible\"}],\"generatedContent\":{\"executiveEmail\":\"Email\",\"intranetPost\":\"Post\",\"managerKit\":\"Kit\",\"faq\":\"FAQ\"}}}}' -o /tmp/test.docx -w '%{http_code}')",
+      "Bash(kill %1)",
+      "Bash(curl -s -X POST http://localhost:3334/api/studio/export -H 'Content-Type: application/json' -d '{\"format\":\"docx\",\"project\":{\"id\":\"test-real\",\"title\":\"Accompagnement transformation RH — Groupe ACME\",\"status\":\"generated\",\"createdAt\":\"2025-01-15T10:00:00Z\",\"updatedAt\":\"2025-01-15T10:00:00Z\",\"brief\":{\"companyContext\":\"Groupe industriel, 8 000 salariés, 12 sites en France.\",\"challenge\":\"Déploiement ERP.\",\"audience\":\"Managers.\",\"objective\":\"80% formés.\",\"tone\":\"Rassurant.\",\"constraints\":\"10 jours.\"},\"output\":{\"executiveSummary\":\"Synthèse exécutive du dispositif.\",\"communicationDiagnostic\":\"Diagnostic de communication.\",\"centralProblem\":\"Problématique centrale.\",\"strategicAngle\":\"Angle stratégique.\",\"keyMessages\":[\"Message 1\",\"Message 2\"],\"recommendedFormats\":[\"Email\",\"Intranet\"],\"quickWins\":[\"Action 1\",\"Action 2\"],\"timeline\":[{\"when\":\"J-5\",\"action\":\"Email DG\",\"impact\":\"élevé\",\"complexity\":\"faible\"}],\"generatedContent\":{\"executiveEmail\":\"Email contenu\",\"intranetPost\":\"Post intranet\",\"managerKit\":\"Kit manager\",\"faq\":\"FAQ réponses\"}}}}' -o /tmp/test-real.docx -w 'HTTP_STATUS:%{http_code} SIZE:%{size_download}')",
+      "Bash(kill %2)",
+      "Bash(Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue)"
     ]
   }
 }

@@ -11,9 +11,40 @@ import { ActivityLog, CollabSectionHeader, SectionComments } from "./section-col
 ======================== */
 
 function SectionHeader({ label, title }: { label: string; title: string }) {
+    // Split "01 — Title" pattern: step number prefix and description
+    const parts = label.split(" — ");
+    const stepNum = parts.length > 1 ? parts[0] : null;
+    const stepDesc = parts.length > 1 ? parts[1] : label;
+
     return (
-        <div style={{ marginBottom: 16 }}>
-            <p className="section-label">{label}</p>
+        <div style={{ marginBottom: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                {stepNum && (
+                    <span style={{
+                        fontSize: 9,
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
+                        color: "var(--slate-light)",
+                        background: "var(--surface-mid)",
+                        border: "1px solid var(--border)",
+                        padding: "1px 6px",
+                        borderRadius: "var(--radius-xs)",
+                        fontVariantNumeric: "tabular-nums",
+                    }}>
+                        {stepNum}
+                    </span>
+                )}
+                <p style={{
+                    margin: 0,
+                    fontSize: 9.5,
+                    fontWeight: 700,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "var(--slate-light)",
+                }}>
+                    {stepDesc}
+                </p>
+            </div>
             <h2 className="section-title">{title}</h2>
         </div>
     );
@@ -273,23 +304,31 @@ function EditableBlock({
     sublabel,
     value,
     onChange,
+    editable = true,
 }: {
     label: string;
     sublabel?: string;
     value: string;
     onChange: (value: string) => void;
+    editable?: boolean;
 }) {
     return (
-        <div className="editable-block">
-            <div style={{ marginBottom: 10 }}>
-                <p className="section-label" style={{ marginBottom: 2 }}>{label}</p>
-                {sublabel && <p style={{ margin: 0, fontSize: 12, color: "var(--slate)" }}>{sublabel}</p>}
+        <div className="content-document">
+            <div className="content-document-header">
+                <span className="content-document-type">{label}</span>
+                {sublabel && <span className="content-document-sublabel">— {sublabel}</span>}
             </div>
-            <textarea
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                style={{ minHeight: 160 }}
-            />
+            <div className="content-document-body">
+                {editable ? (
+                    <textarea
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        style={{ width: "100%", minHeight: 160, display: "block", boxSizing: "border-box" }}
+                    />
+                ) : (
+                    <div className="content-document-read">{value}</div>
+                )}
+            </div>
         </div>
     );
 }
@@ -377,29 +416,60 @@ export function ResultSections({
         const setLoading = format === "pdf" ? setExportingPdf : setExportingDocx;
         setLoading(true);
         try {
+            // Strip heavy debug data not needed for export
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { pipelineDebug: _pd, ...outputForExport } = current.output;
+            const projectForExport = { ...current, output: outputForExport };
+
             const response = await fetch("/api/studio/export", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ format, project: current }),
+                body: JSON.stringify({ format, project: projectForExport }),
             });
 
             if (!response.ok) {
-                const text = await response.text();
-                alert(`Erreur export ${format.toUpperCase()} : ${text}`);
+                let errMsg = `Erreur ${response.status}`;
+                try {
+                    const json = await response.json();
+                    errMsg = json?.error ?? errMsg;
+                } catch {
+                    errMsg = (await response.text()) || errMsg;
+                }
+                console.error(`[Export ${format.toUpperCase()}]`, errMsg);
+                alert(`Erreur export ${format.toUpperCase()} :\n${errMsg}`);
                 return;
             }
 
             const blob = await response.blob();
+            if (!blob || blob.size === 0) {
+                alert("Le fichier généré est vide. Veuillez réessayer.");
+                return;
+            }
+
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement("a");
+            link.style.display = "none";
             link.href = url;
-            link.download = `${current.title.replace(/[^\w\-]+/g, "-").toLowerCase()}.${format}`;
+            const safeName = (current.title || "campaign-studio")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^\w\-]+/g, "-")
+                .replace(/-+/g, "-")
+                .replace(/^-|-$/g, "")
+                .toLowerCase()
+                .slice(0, 80);
+            link.download = `${safeName}.${format}`;
             document.body.appendChild(link);
             link.click();
-            link.remove();
-            setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-        } catch {
-            alert("Une erreur est survenue pendant l'export.");
+            // Small delay before cleanup to ensure download starts
+            setTimeout(() => {
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            }, 2000);
+        } catch (err) {
+            console.error(`[Export ${format.toUpperCase()}] Exception:`, err);
+            const msg = err instanceof Error ? err.message : "Erreur inconnue";
+            alert(`Une erreur est survenue pendant l'export ${format.toUpperCase()} :\n${msg}`);
         } finally {
             setLoading(false);
         }
@@ -514,7 +584,7 @@ export function ResultSections({
                 </div>
 
                 {/* Strategic Angle */}
-                <div className="result-section" style={{ borderLeft: "4px solid var(--indigo)" }}>
+                <div className="result-section" style={{ borderLeft: "3px solid var(--navy)" }}>
                     <CollabSectionHeader
                         label="04 — Parti pris stratégique" title="Angle retenu"
                         sectionId="strategy" meta={collab.sectionMeta["strategy"]}
@@ -606,19 +676,22 @@ export function ResultSections({
                             </div>
                         ))}
                     </div>
-                    <details style={{ marginTop: 8 }}>
-                        <summary style={{ fontSize: 12, color: "var(--slate)", cursor: "pointer", userSelect: "none" }}>
-                            Modifier les messages clés
-                        </summary>
-                        <div style={{ marginTop: 10 }}>
-                            <EditableBlock
-                                label="Messages clés"
-                                sublabel="Un message par ligne"
-                                value={(out.keyMessages ?? []).join("\n")}
-                                onChange={updateKeyMessages}
-                            />
-                        </div>
-                    </details>
+                    {editable && (
+                        <details style={{ marginTop: 8 }}>
+                            <summary style={{ fontSize: 11, color: "var(--slate-light)", cursor: "pointer", userSelect: "none", letterSpacing: "0.04em" }}>
+                                Modifier les messages clés
+                            </summary>
+                            <div style={{ marginTop: 10 }}>
+                                <EditableBlock
+                                    label="Messages clés"
+                                    sublabel="Un message par ligne"
+                                    value={(out.keyMessages ?? []).join("\n")}
+                                    onChange={updateKeyMessages}
+                                    editable={true}
+                                />
+                            </div>
+                        </details>
+                    )}
                 </div>
 
                 {/* Channel Mix */}
@@ -699,12 +772,15 @@ export function ResultSections({
                             {(out.relays ?? []).map((relay, i) => (
                                 <div key={i} className="card-tight" style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                                     <span style={{
-                                        fontSize: 11,
+                                        fontSize: 10,
                                         fontWeight: 700,
-                                        color: "var(--blue-conseil)",
-                                        background: "var(--blue-light)",
-                                        padding: "3px 10px",
-                                        borderRadius: 20,
+                                        letterSpacing: "0.06em",
+                                        textTransform: "uppercase",
+                                        color: "var(--navy)",
+                                        background: "var(--surface-mid)",
+                                        border: "1px solid var(--border)",
+                                        padding: "3px 9px",
+                                        borderRadius: "var(--radius-sm)",
                                         whiteSpace: "nowrap",
                                         flexShrink: 0,
                                     }}>
@@ -764,33 +840,34 @@ export function ResultSections({
                         onToggleComments={() => toggleComments("content")}
                         showComments={!!openComments["content"]}
                     />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
                         <EditableBlock
                             label="Email direction"
                             sublabel="Prêt à envoyer — objet inclus"
                             value={out.generatedContent?.executiveEmail ?? ""}
                             onChange={(v) => updateContent("executiveEmail", v)}
+                            editable={editable}
                         />
-                        <hr className="section-divider" />
                         <EditableBlock
                             label="Post intranet"
                             sublabel="Structure éditoriale complète"
                             value={out.generatedContent?.intranetPost ?? ""}
                             onChange={(v) => updateContent("intranetPost", v)}
+                            editable={editable}
                         />
-                        <hr className="section-divider" />
                         <EditableBlock
                             label="Kit manager"
                             sublabel="Talking points + checklist + objections"
                             value={out.generatedContent?.managerKit ?? ""}
                             onChange={(v) => updateContent("managerKit", v)}
+                            editable={editable}
                         />
-                        <hr className="section-divider" />
                         <EditableBlock
                             label="FAQ collaborateurs"
                             sublabel="Questions réalistes + réponses directes"
                             value={out.generatedContent?.faq ?? ""}
                             onChange={(v) => updateContent("faq", v)}
+                            editable={editable}
                         />
                     </div>
                     {openComments["content"] && (
@@ -852,46 +929,55 @@ export function ResultSections({
 
                 {/* Actions */}
                 <div className="card" style={{ padding: "18px 20px" }}>
-                    <p className="section-label" style={{ marginBottom: 12 }}>Actions</p>
+                    <p style={{
+                        margin: "0 0 12px",
+                        fontSize: 9.5,
+                        fontWeight: 700,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        color: "var(--slate-light)",
+                    }}>
+                        Exports &amp; actions
+                    </p>
 
                     <button
                         className="btn btn-dark"
-                        style={{ width: "100%", marginBottom: 8, justifyContent: "center" }}
+                        style={{ width: "100%", marginBottom: 6, justifyContent: "center", fontSize: 12 }}
                         onClick={() => exportArtifact("pdf")}
                         disabled={exportingPdf}
                         type="button"
                     >
-                        {exportingPdf ? "Génération…" : "↓ Export PDF"}
-                    </button>
-
-                    <button
-                        className="btn btn-light"
-                        style={{ width: "100%", marginBottom: 8, justifyContent: "center" }}
-                        onClick={() => exportArtifact("docx")}
-                        disabled={exportingDocx}
-                        type="button"
-                    >
-                        {exportingDocx ? "Génération…" : "↓ Export DOCX"}
+                        {exportingPdf ? "Génération…" : "↓ Télécharger PDF"}
                     </button>
 
                     <button
                         className="btn btn-ghost"
-                        style={{ width: "100%", justifyContent: "center" }}
+                        style={{ width: "100%", marginBottom: 6, justifyContent: "center", fontSize: 12 }}
+                        onClick={() => exportArtifact("docx")}
+                        disabled={exportingDocx}
+                        type="button"
+                    >
+                        {exportingDocx ? "Génération…" : "↓ Télécharger DOCX"}
+                    </button>
+
+                    <button
+                        className="btn btn-ghost"
+                        style={{ width: "100%", justifyContent: "center", fontSize: 12 }}
                         onClick={copyAll}
                         type="button"
                     >
-                        {copied ? "✓ Copié" : "Copier tout"}
+                        {copied ? "✓ Copié" : "Copier le texte"}
                     </button>
 
-                    <div style={{ borderTop: "1px solid var(--border)", margin: "12px 0 8px" }} />
+                    <div style={{ borderTop: "1px solid var(--border-light)", margin: "10px 0 8px" }} />
 
                     <button
-                        className={`btn${isClientMode ? " btn-client-active" : " btn-ghost"}`}
-                        style={{ width: "100%", justifyContent: "center", fontSize: 12 }}
+                        className={`btn${isClientMode ? " btn-dark" : " btn-ghost"}`}
+                        style={{ width: "100%", justifyContent: "center", fontSize: 11 }}
                         onClick={() => setIsClientMode((v) => !v)}
                         type="button"
                     >
-                        {isClientMode ? "✓ Mode client activé" : "Version client"}
+                        {isClientMode ? "✓ Mode client" : "Activer mode client"}
                     </button>
                 </div>
 
@@ -970,13 +1056,15 @@ export function ResultSections({
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                             {(out.relays ?? []).map((relay, i) => (
                                 <span key={i} style={{
-                                    fontSize: 11,
-                                    fontWeight: 600,
-                                    color: "var(--blue-conseil)",
-                                    background: "var(--blue-light)",
-                                    padding: "3px 10px",
-                                    borderRadius: 20,
-                                    border: "1px solid var(--blue-medium)",
+                                    fontSize: 10,
+                                    fontWeight: 700,
+                                    letterSpacing: "0.05em",
+                                    textTransform: "uppercase",
+                                    color: "var(--slate)",
+                                    background: "var(--surface-mid)",
+                                    padding: "3px 9px",
+                                    borderRadius: "var(--radius-sm)",
+                                    border: "1px solid var(--border)",
                                 }}>
                                     {relay.role}
                                 </span>

@@ -45,183 +45,189 @@ export default function StudioDashboardPage() {
     const recent = projects.slice(0, 6);
 
     return (
-        <main className="container" style={{ paddingTop: 40, paddingBottom: 60 }}>
+        <main>
+            {/* Hero header */}
+            <div className="studio-page-hero">
+                <div className="studio-page-hero-inner">
+                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+                        <div>
+                            <p className="studio-page-hero-label">Espace de travail</p>
+                            <h1 className="studio-page-hero-title">Campaign Studio</h1>
+                            <p className="studio-page-hero-sub">
+                                Vos dispositifs de communication interne, générés et centralisés.
+                            </p>
+                        </div>
 
-            {/* Page header */}
-            <div style={{ marginBottom: 36 }}>
-                <p className="section-label" style={{ marginBottom: 6 }}>Espace de travail</p>
-                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-                    <div>
-                        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: "var(--navy)", letterSpacing: "-0.02em" }}>
-                            Dashboard
-                        </h1>
-                        <p style={{ margin: "6px 0 0", fontSize: 14, color: "var(--slate)" }}>
-                            Vos dispositifs de communication interne
-                        </p>
+                        {/* Stats */}
+                        {hydrated && projects.length > 0 && (
+                            <div style={{ display: "flex", gap: 0, borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
+                                {[
+                                    { value: String(projects.length), label: "Dispositifs" },
+                                    { value: String(projects.filter(p => p.status === "generated" || p.status === "approved").length), label: "Générés" },
+                                    { value: timeAgo(projects[0]?.updatedAt ?? new Date().toISOString()), label: "Dernière activité" },
+                                ].map(({ value, label }) => (
+                                    <div key={label} style={{ padding: "0 24px", borderRight: "1px solid rgba(255,255,255,0.08)", textAlign: "center" }}>
+                                        <p style={{ margin: "0 0 3px", fontSize: 20, fontWeight: 800, color: "var(--white)", letterSpacing: "-0.03em" }}>
+                                            {value}
+                                        </p>
+                                        <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                                            {label}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                    <Link href="/studio/new" className="btn btn-primary" style={{ flexShrink: 0 }}>
+                </div>
+            </div>
+
+            <div className="container" style={{ paddingTop: 36, paddingBottom: 60 }}>
+
+                {/* Projects section header */}
+                <div style={{ marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                        <p style={{ margin: "0 0 4px", fontSize: 10, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--slate-light)" }}>
+                            Récents
+                        </p>
+                        <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 400, color: "var(--navy)", letterSpacing: "-0.01em" }}>
+                            Dispositifs de communication
+                        </h2>
+                    </div>
+                    <Link href="/studio/new" className="btn btn-dark" style={{ fontSize: 12 }}>
                         + Nouveau dispositif
                     </Link>
                 </div>
-            </div>
 
-            {/* Stats row */}
-            {hydrated && projects.length > 0 && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 36 }}>
-                    {[
-                        { label: "Dispositifs créés", value: projects.length },
-                        { label: "Générés", value: projects.filter(p => p.status === "generated" || p.status === "approved").length },
-                        { label: "Dernière activité", value: timeAgo(projects[0]?.updatedAt ?? new Date().toISOString()) },
-                    ].map((stat) => (
-                        <div key={stat.label} className="card" style={{ padding: "18px 22px" }}>
-                            <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--slate)" }}>
-                                {stat.label}
-                            </p>
-                            <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "var(--navy)" }}>
-                                {stat.value}
-                            </p>
+                {!hydrated ? null : projects.length === 0 ? (
+                    /* Empty state */
+                    <div style={{
+                        background: "var(--white)",
+                        border: "1px dashed var(--border)",
+                        borderRadius: "var(--radius-xl)",
+                        padding: "60px 40px",
+                        textAlign: "center",
+                    }}>
+                        <div style={{
+                            width: 48,
+                            height: 48,
+                            background: "var(--surface-mid)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 10,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            margin: "0 auto 20px",
+                        }}>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ color: "var(--slate-light)" }}>
+                                <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+                                <path d="M6 7h8M6 10h6M6 13h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
                         </div>
-                    ))}
-                </div>
-            )}
+                        <h3 style={{ margin: "0 0 8px", fontSize: 16, fontWeight: 700, color: "var(--navy)", letterSpacing: "-0.01em" }}>
+                            Aucun dispositif créé
+                        </h3>
+                        <p style={{ margin: "0 0 24px", fontSize: 13.5, color: "var(--text-muted)", maxWidth: 340, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }}>
+                            Décrivez votre contexte en 6 champs. Campaign Studio produit un plan stratégique complet en quelques secondes.
+                        </p>
+                        <Link href="/studio/new" className="btn btn-dark">
+                            Créer mon premier dispositif
+                        </Link>
+                    </div>
+                ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 14 }}>
+                        {recent.map((project) => {
+                            const sc = statusColor(project.status);
+                            return (
+                                <Link
+                                    key={project.id}
+                                    href={`/studio/${project.id}`}
+                                    className="project-card"
+                                    style={{ textDecoration: "none" }}
+                                >
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                                        <span style={{
+                                            fontSize: 10,
+                                            fontWeight: 700,
+                                            padding: "2px 8px",
+                                            borderRadius: "var(--radius-sm)",
+                                            background: sc.bg,
+                                            color: sc.color,
+                                            border: `1px solid ${sc.border}`,
+                                            letterSpacing: "0.05em",
+                                            textTransform: "uppercase",
+                                        }}>
+                                            {statusLabel(project.status)}
+                                        </span>
+                                        <span style={{ fontSize: 11, color: "var(--slate-light)", fontWeight: 400 }}>
+                                            {timeAgo(project.updatedAt)}
+                                        </span>
+                                    </div>
 
-            {/* Projects section */}
-            <div style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "var(--navy)" }}>
-                    Dispositifs récents
-                </h2>
-                {projects.length > 6 && (
-                    <Link href="/studio/history" style={{ fontSize: 13, color: "var(--blue-conseil)", fontWeight: 500 }}>
-                        Voir tout →
-                    </Link>
+                                    <h3 style={{
+                                        margin: "0 0 6px",
+                                        fontSize: 14,
+                                        fontWeight: 700,
+                                        color: "var(--navy)",
+                                        lineHeight: 1.4,
+                                        letterSpacing: "-0.01em",
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: "vertical",
+                                        overflow: "hidden",
+                                    }}>
+                                        {project.title}
+                                    </h3>
+
+                                    <p style={{
+                                        margin: "0 0 16px",
+                                        fontSize: 12,
+                                        color: "var(--text-muted)",
+                                        lineHeight: 1.55,
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: "vertical",
+                                        overflow: "hidden",
+                                    }}>
+                                        {project.brief.challenge}
+                                    </p>
+
+                                    <div style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        paddingTop: 12,
+                                        borderTop: "1px solid var(--border-light)",
+                                    }}>
+                                        <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                                            {(project.output?.quickWins ?? []).length > 0 && (
+                                                <span className="channel-tag" style={{ fontSize: 10.5 }}>
+                                                    {(project.output?.quickWins ?? []).length} quick wins
+                                                </span>
+                                            )}
+                                            {(project.output?.risks ?? []).length > 0 && (
+                                                <span className="channel-tag" style={{ fontSize: 10.5 }}>
+                                                    {(project.output?.risks ?? []).length} risques
+                                                </span>
+                                            )}
+                                        </div>
+                                        <span style={{ fontSize: 11.5, color: "var(--navy)", fontWeight: 600, opacity: 0.6 }}>
+                                            Ouvrir →
+                                        </span>
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {projects.length > 0 && (
+                    <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border-light)", textAlign: "center" }}>
+                        <Link href="/studio/history" style={{ fontSize: 12, color: "var(--slate-light)", textDecoration: "none", letterSpacing: "0.01em" }}>
+                            Voir l&apos;historique complet — {projects.length} dispositif{projects.length > 1 ? "s" : ""}
+                        </Link>
+                    </div>
                 )}
             </div>
-
-            {!hydrated ? null : projects.length === 0 ? (
-                /* Empty state */
-                <div style={{
-                    background: "var(--white)",
-                    border: "1px dashed var(--border)",
-                    borderRadius: 14,
-                    padding: "56px 32px",
-                    textAlign: "center",
-                }}>
-                    <div style={{
-                        width: 52,
-                        height: 52,
-                        background: "var(--blue-light)",
-                        borderRadius: 12,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        margin: "0 auto 20px",
-                        fontSize: 22,
-                        color: "var(--blue-conseil)",
-                    }}>
-                        ◈
-                    </div>
-                    <h3 style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 700, color: "var(--navy)" }}>
-                        Aucun dispositif créé
-                    </h3>
-                    <p style={{ margin: "0 0 24px", fontSize: 14, color: "var(--slate)", maxWidth: 360, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
-                        Décrivez votre contexte en 6 champs. Campaign Studio génère un plan stratégique complet en quelques secondes.
-                    </p>
-                    <Link href="/studio/new" className="btn btn-primary">
-                        Créer mon premier dispositif
-                    </Link>
-                </div>
-            ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
-                    {recent.map((project) => {
-                        const sc = statusColor(project.status);
-                        return (
-                            <Link
-                                key={project.id}
-                                href={`/studio/${project.id}`}
-                                className="project-card"
-                                style={{ textDecoration: "none" }}
-                            >
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                                    <span style={{
-                                        fontSize: 11,
-                                        fontWeight: 700,
-                                        padding: "3px 10px",
-                                        borderRadius: 20,
-                                        background: sc.bg,
-                                        color: sc.color,
-                                        border: `1px solid ${sc.border}`,
-                                        letterSpacing: "0.03em",
-                                    }}>
-                                        {statusLabel(project.status)}
-                                    </span>
-                                    <span style={{ fontSize: 11, color: "var(--slate-light)" }}>
-                                        {timeAgo(project.updatedAt)}
-                                    </span>
-                                </div>
-
-                                <h3 style={{
-                                    margin: "0 0 8px",
-                                    fontSize: 14,
-                                    fontWeight: 700,
-                                    color: "var(--navy)",
-                                    lineHeight: 1.4,
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                    overflow: "hidden",
-                                }}>
-                                    {project.title}
-                                </h3>
-
-                                <p style={{
-                                    margin: "0 0 16px",
-                                    fontSize: 12,
-                                    color: "var(--slate)",
-                                    lineHeight: 1.5,
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                    overflow: "hidden",
-                                }}>
-                                    {project.brief.challenge}
-                                </p>
-
-                                <div style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    paddingTop: 12,
-                                    borderTop: "1px solid var(--border-light)",
-                                }}>
-                                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                                        {(project.output?.quickWins ?? []).length > 0 && (
-                                            <span className="channel-tag">
-                                                {(project.output?.quickWins ?? []).length} quick wins
-                                            </span>
-                                        )}
-                                        {(project.output?.risks ?? []).length > 0 && (
-                                            <span className="channel-tag">
-                                                {(project.output?.risks ?? []).length} risques
-                                            </span>
-                                        )}
-                                    </div>
-                                    <span style={{ fontSize: 12, color: "var(--blue-conseil)", fontWeight: 600 }}>
-                                        Ouvrir →
-                                    </span>
-                                </div>
-                            </Link>
-                        );
-                    })}
-                </div>
-            )}
-
-            {projects.length > 0 && (
-                <div style={{ marginTop: 24, textAlign: "center" }}>
-                    <Link href="/studio/history" style={{ fontSize: 13, color: "var(--slate)", textDecoration: "none" }}>
-                        Voir l&apos;historique complet ({projects.length} dispositifs) →
-                    </Link>
-                </div>
-            )}
         </main>
     );
 }
