@@ -43,11 +43,56 @@ export type KPIQuestion = {
 };
 
 export type InsightItem = { title: string; description: string };
+
+/** Typologie métier d'une recommandation. */
+export type RecommendationType =
+  | "improvement" // le score est trop bas → agir
+  | "measurement" // la donnée manque → mesurer avant de décider
+  | "methodology"; // la donnée est peu fiable → professionnaliser la mesure
+
+/** Priorité en anglais (spec) — mappée en français côté UI. */
+export type RecommendationPriority = "high" | "medium" | "low";
+
+/** Type d'outil actionnable livré avec la recommandation. */
+export type RecommendationToolType =
+  | "questionnaire"
+  | "checklist"
+  | "observation"
+  | "template";
+
+/** Outil prêt à l'emploi — format "cabinet de conseil". */
+export type RecommendationTool = {
+  type: RecommendationToolType;
+  name: string;
+  usage: string;
+  timing: string[];
+  questions: string[];
+  tips: string[];
+};
+
+/**
+ * Recommandation enrichie — structure "cabinet de conseil" :
+ *   - pourquoi (diagnostic),
+ *   - quoi faire (action),
+ *   - quand (timing),
+ *   - quel impact attendu,
+ *   - outil livré clés en main.
+ *
+ * Champs `title`, `action`, `priority` conservés pour compat avec les
+ * projets déjà sauvegardés en localStorage.
+ */
 export type RecommendationItem = {
   title: string;
   action: string;
-  priority: string;
+  priority: RecommendationPriority | string;
+  dimension?: Dimension;
+  reco_type?: RecommendationType;
+  why?: string;
+  when?: string;
+  impact?: string;
+  tool?: RecommendationTool;
 };
+
 export type DataGapItem = { field: string; issue: string; impact: string };
 
 export type InterpretationPayload = {

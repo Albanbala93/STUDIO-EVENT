@@ -19,6 +19,7 @@ import type {
   InitiativeType,
   KPIAnswer,
   KPIQuestion,
+  RecommendationItem,
 } from "../../../lib/momentum/types";
 import {
   DIMENSION_LABELS,
@@ -142,7 +143,15 @@ export function ResultDashboard(props: {
   }
 
   return (
-    <section className="dashboard-print-root" style={{ animation: "fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both" }}>
+    <div style={{
+      minHeight: "100vh",
+      background: "linear-gradient(180deg, #0b1422 0%, #111f36 55%, #0b1422 100%)",
+      padding: "32px 20px 60px",
+    }}>
+    <section className="dashboard-print-root" style={{
+      animation: "fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both",
+      maxWidth: 1100, margin: "0 auto",
+    }}>
       <style jsx>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(14px); }
@@ -263,7 +272,7 @@ export function ResultDashboard(props: {
                       borderRadius: 999, transition: "width 0.6s cubic-bezier(0.16,1,0.3,1)",
                     }} />
                   </div>
-                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 4, lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 11, color: "#a3b4c9", marginTop: 4, lineHeight: 1.5 }}>
                     {present ? DIMENSION_HELP[d] : "Aucune mesure collectée sur cette dimension."}
                   </div>
                 </div>
@@ -302,31 +311,14 @@ export function ResultDashboard(props: {
         <DashCard accent="#4d5fff">
           <CardTitle><span style={{ color: "#818cf8", marginRight: 8 }}>→</span> Recommandations actionnables</CardTitle>
           {interpretation.detailed_analysis.recommendations.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {interpretation.detailed_analysis.recommendations.slice(0, 3).map(r => {
-                const prioColor =
-                  r.priority === "haute" ? "#f87171" :
-                  r.priority === "moyenne" ? "#fbbf24" : "#60a5fa";
-                return (
-                  <div key={r.title} style={{
-                    padding: 10, borderRadius: 10,
-                    background: "rgba(255,255,255,0.03)",
-                    borderLeft: `3px solid ${prioColor}`,
-                  }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: "#f1f5f9" }}>{r.title}</div>
-                      <span style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: prioColor, fontWeight: 700 }}>
-                        Priorité {r.priority}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 4, lineHeight: 1.55 }}>{r.action}</div>
-                  </div>
-                );
-              })}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {interpretation.detailed_analysis.recommendations.slice(0, 3).map((r) => (
+                <RecommendationCard key={r.title} reco={r} />
+              ))}
             </div>
           ) : (
             <EmptyHint>
-              Données insuffisantes pour formuler des recommandations — compléter les angles morts.
+              Les données actuelles ne permettent pas de formuler des recommandations précises — commencez par instrumenter les angles morts identifiés.
             </EmptyHint>
           )}
         </DashCard>
@@ -338,7 +330,7 @@ export function ResultDashboard(props: {
               {interpretation.detailed_analysis.data_gaps.slice(0, 5).map(g => (
                 <div key={`${g.field}-${g.issue}`} style={{ fontSize: 13, color: "#cbd5e1", lineHeight: 1.55 }}>
                   <b style={{ color: "#f1f5f9" }}>{g.field}</b> — {g.issue}
-                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>Impact : {g.impact}</div>
+                  <div style={{ fontSize: 11, color: "#a3b4c9", marginTop: 2 }}>Impact : {g.impact}</div>
                 </div>
               ))}
             </div>
@@ -397,6 +389,7 @@ export function ResultDashboard(props: {
         </div>
       )}
     </section>
+    </div>
   );
 }
 
@@ -437,13 +430,292 @@ function DashCard({ children, accent }: { children: React.ReactNode; accent?: st
 function EmptyHint({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontSize: 12, color: "#64748b", fontStyle: "italic",
+      fontSize: 12, color: "#a3b4c9", fontStyle: "italic",
       padding: "8px 0", lineHeight: 1.55,
     }}>
       {children}
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   RECOMMANDATION ENRICHIE (why / action / when / impact + outil)
+   ═══════════════════════════════════════════════════════════════════ */
+
+function RecommendationCard({ reco }: { reco: RecommendationItem }) {
+  const [toolOpen, setToolOpen] = useState(false);
+
+  const prioColor =
+    reco.priority === "haute" || reco.priority === "high"
+      ? "#f87171"
+      : reco.priority === "moyenne" || reco.priority === "medium"
+      ? "#fbbf24"
+      : "#60a5fa";
+
+  const typeLabel: Record<string, string> = {
+    improvement: "Amélioration",
+    measurement: "Mesure",
+    methodology: "Méthodologie",
+  };
+  const typeBadge = reco.reco_type ? typeLabel[reco.reco_type] : null;
+
+  return (
+    <div
+      style={{
+        padding: 16,
+        borderRadius: 12,
+        background: "rgba(255,255,255,0.045)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderLeft: `3px solid ${prioColor}`,
+      }}
+    >
+      {/* Header : titre + badges */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: 10,
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+          marginBottom: 10,
+        }}
+      >
+        <div style={{ fontWeight: 700, fontSize: 14, color: "#f8fafc", flex: 1, minWidth: 200, lineHeight: 1.35 }}>
+          {reco.title}
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {typeBadge && (
+            <span
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                fontWeight: 700,
+                color: "#cbd5e1",
+                padding: "2px 8px",
+                borderRadius: 4,
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              {typeBadge}
+            </span>
+          )}
+          <span
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              fontWeight: 800,
+              color: prioColor,
+              padding: "2px 8px",
+              borderRadius: 4,
+              background: prioColor + "20",
+              border: `1px solid ${prioColor}55`,
+            }}
+          >
+            Priorité {reco.priority}
+          </span>
+        </div>
+      </div>
+
+      {/* Corps : why / action / when / impact */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {reco.why && (
+          <RecoLine label="Pourquoi" value={reco.why} accent="#fbbf24" />
+        )}
+        <RecoLine label="Action" value={reco.action} accent="#818cf8" strong />
+        {reco.when && (
+          <RecoLine label="Quand" value={reco.when} accent="#60a5fa" />
+        )}
+        {reco.impact && (
+          <RecoLine label="Impact attendu" value={reco.impact} accent="#22c55e" />
+        )}
+      </div>
+
+      {/* Outil livrable */}
+      {reco.tool && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: 12,
+            borderRadius: 10,
+            background: "rgba(99,102,241,0.08)",
+            border: "1px solid rgba(129,140,248,0.25)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "#a5b4fc",
+                  marginBottom: 2,
+                }}
+              >
+                Outil livré · {reco.tool.type}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>
+                {reco.tool.name}
+              </div>
+            </div>
+            <button
+              onClick={() => setToolOpen((o) => !o)}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 8,
+                background: "#4f46e5",
+                color: "#fff",
+                fontSize: 12,
+                fontWeight: 700,
+                border: "none",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {toolOpen ? "Masquer" : "Utiliser ce template"}
+            </button>
+          </div>
+
+          {toolOpen && (
+            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ fontSize: 12.5, color: "#e2e8f0", lineHeight: 1.6 }}>
+                {reco.tool.usage}
+              </div>
+
+              {reco.tool.timing.length > 0 && (
+                <div>
+                  <div style={reCaptionStyle}>Timing</div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {reco.tool.timing.map((t) => (
+                      <span key={t} style={pillStyle}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {reco.tool.questions.length > 0 && (
+                <div>
+                  <div style={reCaptionStyle}>Questions clés</div>
+                  <ol
+                    style={{
+                      margin: 0,
+                      padding: "0 0 0 20px",
+                      color: "#cbd5e1",
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                    }}
+                  >
+                    {reco.tool.questions.slice(0, 5).map((q) => (
+                      <li key={q}>{q}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {reco.tool.tips.length > 0 && (
+                <div>
+                  <div style={reCaptionStyle}>Bonnes pratiques</div>
+                  <ul
+                    style={{
+                      margin: 0,
+                      padding: "0 0 0 20px",
+                      color: "#cbd5e1",
+                      fontSize: 12.5,
+                      lineHeight: 1.55,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 3,
+                    }}
+                  >
+                    {reco.tool.tips.map((t) => (
+                      <li key={t}>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RecoLine({
+  label,
+  value,
+  accent,
+  strong,
+}: {
+  label: string;
+  value: string;
+  accent: string;
+  strong?: boolean;
+}) {
+  return (
+    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+      <div
+        style={{
+          fontSize: 10,
+          fontWeight: 800,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: accent,
+          minWidth: 92,
+          paddingTop: 2,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: strong ? 13.5 : 13,
+          color: strong ? "#f1f5f9" : "#d8dfea",
+          lineHeight: 1.55,
+          flex: 1,
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+const reCaptionStyle: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 800,
+  letterSpacing: "0.12em",
+  textTransform: "uppercase",
+  color: "#a5b4fc",
+  marginBottom: 6,
+};
+
+const pillStyle: React.CSSProperties = {
+  fontSize: 11,
+  padding: "3px 10px",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "#e2e8f0",
+};
 
 function primaryBtn(color: string): React.CSSProperties {
   return {
@@ -503,7 +775,7 @@ function ScoreGauge({ value }: { value: number }) {
         {Math.round(clamped)}
       </text>
       <text x={cx} y={cy + 20} textAnchor="middle"
-        style={{ fontSize: 12, fontWeight: 600, fill: "#64748b", letterSpacing: "0.1em" }}>
+        style={{ fontSize: 12, fontWeight: 600, fill: "#a3b4c9", letterSpacing: "0.1em" }}>
         /100
       </text>
     </svg>
@@ -620,7 +892,7 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
 
       {presentCount < 3 && (
         <text x={cx} y={cy + 4} textAnchor="middle"
-          style={{ fontSize: 10, fill: "#64748b", fontStyle: "italic" }}>
+          style={{ fontSize: 10, fill: "#a3b4c9", fontStyle: "italic" }}>
           Couverture partielle
         </text>
       )}
