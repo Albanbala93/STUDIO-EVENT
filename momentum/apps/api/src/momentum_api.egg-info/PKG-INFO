@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: momentum-api
-Version: 0.1.0
-Summary: FastAPI backend for Momentum.
-Requires-Python: >=3.11
-Requires-Dist: fastapi>=0.115
-Requires-Dist: pydantic>=2.8
-Requires-Dist: uvicorn[standard]>=0.30

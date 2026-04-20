@@ -123,6 +123,21 @@ export default function HomePage() {
               }}>
                 Voir les projets
               </Link>
+              <Link href="/momentum" style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "13px 22px",
+                background: "transparent",
+                color: "rgba(255,255,255,0.65)",
+                border: "1px solid rgba(255,255,255,0.14)",
+                borderRadius: "var(--radius-sm)",
+                fontWeight: 500,
+                fontSize: 14,
+                textDecoration: "none",
+                letterSpacing: "0.005em",
+              }}>
+                📊 Momentum
+              </Link>
             </div>
           </div>
 

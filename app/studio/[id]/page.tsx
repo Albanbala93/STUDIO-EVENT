@@ -9,6 +9,7 @@ import { ResultSections } from "../../../components/studio/result-sections";
 import { EventCopilotView } from "../../../components/studio/event-copilot";
 import { ShareModal } from "../../../components/studio/section-collab";
 import type { StudioProject } from "../../../lib/studio/types";
+import { buildMomentumDiagnosticUrl } from "../../../lib/momentum-bridge";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -105,6 +106,23 @@ export default function ProjectPage() {
                                 Lecture
                             </button>
                         </div>
+
+                        {/* Measure with Momentum */}
+                        <a
+                            href={buildMomentumDiagnosticUrl(project)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-ghost"
+                            style={{
+                                fontSize: 11.5,
+                                padding: "5px 13px",
+                                textDecoration: "none",
+                                whiteSpace: "nowrap",
+                            }}
+                            title="Ouvrir le wizard Momentum avec les métadonnées de ce projet pré-remplies"
+                        >
+                            📊 Mesurer avec Momentum
+                        </a>
 
                         {/* Share button */}
                         <button

@@ -8,5 +8,8 @@
   },
   "workspaces": [
     "apps/web"
-  ]
+  ],
+  "dependencies": {
+    "lucide-react": "^1.8.0"
+  }
 }

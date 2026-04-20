@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 
 import { listProjects } from "../../lib/studio/storage";
 import type { StudioProject } from "../../lib/studio/types";
+import {
+    fetchMomentumMemory,
+    type MomentumMemory,
+} from "../../lib/momentum-bridge";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -36,10 +40,13 @@ function timeAgo(iso: string) {
 export default function StudioDashboardPage() {
     const [projects, setProjects] = useState<StudioProject[]>([]);
     const [hydrated, setHydrated] = useState(false);
+    const [memory, setMemory] = useState<MomentumMemory | null>(null);
 
     useEffect(() => {
         setProjects(listProjects());
         setHydrated(true);
+        // Memory Momentum calculée depuis localStorage (synchrone).
+        setMemory(fetchMomentumMemory());
     }, []);
 
     const recent = projects.slice(0, 6);
@@ -82,6 +89,9 @@ export default function StudioDashboardPage() {
             </div>
 
             <div className="container" style={{ paddingTop: 36, paddingBottom: 60 }}>
+
+                {/* Momentum memory — displayed only when API reachable */}
+                {memory && <MomentumMemoryBanner memory={memory} />}
 
                 {/* Projects section header */}
                 <div style={{ marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -229,5 +239,105 @@ export default function StudioDashboardPage() {
                 )}
             </div>
         </main>
+    );
+}
+
+/**
+ * Memory banner — aperçu condensé du profil Momentum agrégé sur les projets mesurés.
+ * Affiche soit un état "verrouillé" (pas assez de data), soit les 4 métriques clés.
+ */
+function MomentumMemoryBanner({ memory }: { memory: MomentumMemory }) {
+    const trendLabel: Record<string, { icon: string; label: string; color: string }> = {
+        hausse: { icon: "↗", label: "En amélioration", color: "var(--risk-low, #0b8f4a)" },
+        baisse: { icon: "↘", label: "En baisse", color: "var(--risk-high, #c62828)" },
+        stable: { icon: "→", label: "Stable", color: "var(--slate-light)" },
+    };
+    const trend = memory.tendance ? trendLabel[memory.tendance] : null;
+
+    return (
+        <div
+            style={{
+                marginBottom: 24,
+                padding: "18px 24px",
+                background: "var(--white)",
+                border: "1px solid var(--border)",
+                borderLeft: "3px solid var(--navy)",
+                borderRadius: "var(--radius-lg)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 24,
+                flexWrap: "wrap",
+            }}
+        >
+            <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+                <div>
+                    <p style={{ margin: "0 0 2px", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--slate-light)" }}>
+                        Mémoire Momentum
+                    </p>
+                    <p style={{ margin: 0, fontSize: 13, color: "var(--text)", fontWeight: 600 }}>
+                        {memory.unlocked
+                            ? `${memory.sample_size} projets mesurés`
+                            : `${memory.sample_size}/${memory.minimum_required} projets — insights bientôt disponibles`}
+                    </p>
+                </div>
+
+                {memory.unlocked && (
+                    <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+                        {memory.score_moyen !== null && (
+                            <Metric label="Score moyen" value={`${memory.score_moyen.toFixed(1)} / 100`} />
+                        )}
+                        {memory.point_fort && <Metric label="Point fort" value={memory.point_fort} />}
+                        {memory.point_faible && (
+                            <Metric label="À renforcer" value={memory.point_faible} highlight />
+                        )}
+                        {trend && <Metric label="Tendance" value={`${trend.icon} ${trend.label}`} color={trend.color} />}
+                    </div>
+                )}
+            </div>
+
+            <Link
+                href="/momentum"
+                className="btn btn-ghost"
+                style={{ fontSize: 11.5, padding: "5px 13px", textDecoration: "none", whiteSpace: "nowrap" }}
+            >
+                Ouvrir Momentum →
+            </Link>
+        </div>
+    );
+}
+
+function Metric({
+    label,
+    value,
+    highlight,
+    color,
+}: {
+    label: string;
+    value: string;
+    highlight?: boolean;
+    color?: string;
+}) {
+    return (
+        <div>
+            <p style={{ margin: "0 0 2px", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--slate-light)" }}>
+                {label}
+            </p>
+            <p
+                style={{
+                    margin: 0,
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    color: color ?? (highlight ? "var(--risk-med, #c97a1a)" : "var(--navy)"),
+                    maxWidth: 160,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                }}
+                title={value}
+            >
+                {value}
+            </p>
+        </div>
     );
 }
