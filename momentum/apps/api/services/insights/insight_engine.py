@@ -21,6 +21,90 @@ BUSINESS_LABELS: Dict[str, str] = {
 }
 
 
+def _fr_article(word: str) -> str:
+    """Retourne "l'" si `word` commence par une voyelle (ou h muet), "la " sinon.
+    Utilisé pour construire des titres corrects : "l'implication", "la mobilisation"."""
+    if not word:
+        return "la "
+    first = word.strip()[0].lower()
+    # 'h' français est traité comme muet ici (impact concret / implication / appropriation).
+    return "l'" if first in "aeiouyhàâäéèêëîïôöùûü" else "la "
+
+
+def _fr_prefix(verb_la_form: str, word: str) -> str:
+    """Fabrique un titre comme "Accélérer la X" / "Accélérer l'X" correctement contracté.
+    `verb_la_form` = verbe à l'infinitif suivi d'un espace, ex. "Accélérer " ou "Mesurer "."""
+    return f"{verb_la_form}{_fr_article(word)}{word}"
+
+
+def _iter_dimension_details(result: Any) -> List[Dict[str, Any]]:
+    """
+    Renvoie la liste des dimensions présentes avec leur fiabilité détaillée
+    (score, confidence_score, *_count). Compatible AdvancedScoreResult (liste
+    d'objets DimensionScore) ou dict équivalent.
+    """
+    raw = getattr(result, "dimension_scores", None)
+    if raw is None and isinstance(result, dict):
+        raw = result.get("dimension_scores")
+
+    details: List[Dict[str, Any]] = []
+    if not isinstance(raw, list):
+        return details
+
+    for ds in raw:
+        if isinstance(ds, dict):
+            get = ds.get
+        else:
+            def get(k: str, default: Any = 0, _ds=ds) -> Any:  # type: ignore
+                return getattr(_ds, k, default)
+
+        details.append({
+            "dimension": str(get("dimension", "")).lower(),
+            "score": float(get("score", 0) or 0),
+            "confidence_score": float(get("confidence_score", 0) or 0),
+            "measured_count": int(get("measured_count", 0) or 0),
+            "estimated_count": int(get("estimated_count", 0) or 0),
+            "declared_count": int(get("declared_count", 0) or 0),
+            "proxy_count": int(get("proxy_count", 0) or 0),
+        })
+
+    return details
+
+
+def _extract_missing_dimensions(result: Any) -> List[str]:
+    raw = getattr(result, "missing_dimensions", None)
+    if raw is None and isinstance(result, dict):
+        raw = result.get("missing_dimensions")
+    if not isinstance(raw, (list, tuple)):
+        return []
+    return [str(d).lower() for d in raw]
+
+
+def _measurement_gap_action(dim: str, label: str) -> str:
+    """Recommandation concrète associée à une dimension non mesurée."""
+    if dim == "reach":
+        return (
+            "Commencer à mesurer la couverture effective des publics cibles "
+            "(taux de diffusion, taux d'ouverture, audience touchée)."
+        )
+    if dim == "engagement":
+        return (
+            "Mettre en place un pulse d'implication à chaud (< 24h) "
+            "pour mesurer la participation active."
+        )
+    if dim == "appropriation":
+        return (
+            "Diffuser un test de clarté à J+2 afin de vérifier que les messages "
+            "clés sont compris et mémorisés."
+        )
+    if dim == "impact":
+        return (
+            "Déployer une mesure de changement comportemental à J+30 pour "
+            "capter les effets concrets sur les pratiques."
+        )
+    return f"Mettre en place une première mesure sur la dimension {label}."
+
+
 def _to_float(value: Any, default: float = 0.0) -> float:
     try:
         if value is None:
@@ -202,8 +286,20 @@ def interpret_score(result: AdvancedScoreResult) -> InterpretationResponse:
     recommendations: List[RecommendationItem] = []
     data_gaps: List[DataGapItem] = []
 
+    # Détails par dimension (fiabilité, provenance) pour les angles morts ciblés
+    details_by_dim: Dict[str, Dict[str, Any]] = {
+        d["dimension"]: d for d in _iter_dimension_details(result)
+    }
+    missing_dims = _extract_missing_dimensions(result)
+
     # Forces / faiblesses (UX simplifiée max 3)
+    # On exclut explicitement les dimensions non mesurées : elles sont
+    # traitées plus bas comme angles morts, pas comme faiblesses.
+    # Seuils : >= 70 solide / < 70 à surveiller — on garantit ainsi qu'une
+    # dimension moyenne (ex. 58/100) apparaît bien en point de vigilance.
     for dim, score in ordered:
+        if dim in missing_dims:
+            continue
         label = BUSINESS_LABELS.get(dim, dim)
 
         if score >= 70:
@@ -213,7 +309,7 @@ def interpret_score(result: AdvancedScoreResult) -> InterpretationResponse:
                     description=f"Le niveau de {label} est élevé ({int(round(score))}/100).",
                 )
             )
-        elif score < 55:
+        else:
             weaknesses.append(
                 InsightItem(
                     title=f"{label.capitalize()} à renforcer",
@@ -224,19 +320,108 @@ def interpret_score(result: AdvancedScoreResult) -> InterpretationResponse:
                 )
             )
 
-        # Gap de données simple (si score nul ou absent)
-        if score <= 0:
+    # ─────────────────────────────────────────────────────────────────
+    # Angles morts de mesure — logique exhaustive
+    #   1. Dimensions totalement absentes → angle mort + recommandation haute
+    #   2. Dimensions présentes mais fiabilité < 50 % → angle mort
+    #   3. Dimensions présentes mais uniquement proxy/estimé → angle mort
+    # ─────────────────────────────────────────────────────────────────
+
+    # 1) Dimensions non mesurées
+    for dim in BUSINESS_LABELS.keys():
+        if dim not in missing_dims:
+            continue
+        label = BUSINESS_LABELS[dim]
+        data_gaps.append(
+            DataGapItem(
+                field=label,
+                issue="Aucune mesure collectée sur cette dimension",
+                impact=(
+                    f"Impossible d'évaluer {_fr_article(label)}{label} — angle mort complet dans le "
+                    "diagnostic. Toute décision sur ce levier est à prendre à l'aveugle."
+                ),
+            )
+        )
+        # Recommandation associée, priorité haute
+        recommendations.append(
+            RecommendationItem(
+                title=_fr_prefix("Mesurer ", label),
+                action=_measurement_gap_action(dim, label),
+                priority="haute",
+            )
+        )
+
+    # 2) & 3) Dimensions présentes mais peu fiables
+    for dim, d in details_by_dim.items():
+        if dim in missing_dims:
+            continue
+        label = BUSINESS_LABELS.get(dim, dim)
+        conf = d["confidence_score"]
+        hard = d["measured_count"] + d["declared_count"]
+        soft = d["estimated_count"] + d["proxy_count"]
+        total = hard + soft
+        score = d["score"]
+
+        # Score à 0 malgré des signaux présents — anomalie de saisie
+        if total > 0 and score <= 0:
             data_gaps.append(
                 DataGapItem(
                     field=label,
-                    issue="Mesure absente ou non exploitable",
-                    impact="La décision est moins fiable sur cette dimension.",
+                    issue="Valeurs collectées nulles ou non exploitables",
+                    impact=(
+                        f"Les signaux de {label} existent mais ne produisent aucun score — "
+                        "vérifier les valeurs saisies et leur format."
+                    ),
+                )
+            )
+        # Fiabilité globale moyenne à faible sur la dimension (seuil élargi à 70 %
+        # pour faire émerger les zones de vigilance sur la qualité des données).
+        elif total > 0 and conf < 70:
+            niveau = "faible" if conf < 50 else "partielle"
+            data_gaps.append(
+                DataGapItem(
+                    field=label,
+                    issue=f"Fiabilité de la mesure {niveau} ({int(round(conf))}%)",
+                    impact=(
+                        f"Le score de {label} ({int(round(score))}/100) repose sur des "
+                        "données peu fiables — renforcer les sources de mesure avant de décider."
+                    ),
+                )
+            )
+        # Aucune mesure "dure" : uniquement estimé ou proxy
+        elif hard == 0 and soft > 0:
+            la = _fr_article(label).capitalize().rstrip()
+            data_gaps.append(
+                DataGapItem(
+                    field=label,
+                    issue="Données uniquement estimées ou indirectes",
+                    impact=(
+                        f"{la}{'' if la.endswith(chr(39)) else ' '}{label} est approximée par des proxies — "
+                        "à confirmer par une mesure directe pour fiabiliser le diagnostic."
+                    ),
+                )
+            )
+        # Signal unique sur la dimension : la décision repose sur un seul indicateur,
+        # donc sensibilité élevée à une erreur de saisie.
+        elif total == 1:
+            data_gaps.append(
+                DataGapItem(
+                    field=label,
+                    issue="Mesure reposant sur un seul indicateur",
+                    impact=(
+                        f"Le diagnostic de {label} s'appuie sur un unique KPI — "
+                        "diversifier les sources pour sécuriser la lecture."
+                    ),
                 )
             )
 
-    # Recommandations priorisées sur les 3 plus faibles dimensions
-    weakest_first = sorted(filtered_scores.items(), key=lambda kv: kv[1])
-    for dim, score in weakest_first[:3]:
+    # Recommandations sur toutes les dimensions mesurées (triées par urgence croissante).
+    # Les dimensions non mesurées sont déjà couvertes par les recommandations "Mesurer la X".
+    weakest_first = sorted(
+        [(d, s) for d, s in filtered_scores.items() if d not in missing_dims],
+        key=lambda kv: kv[1],
+    )
+    for dim, score in weakest_first:
         label = BUSINESS_LABELS.get(dim, dim)
 
         if dim == "mobilisation":
@@ -260,18 +445,41 @@ def interpret_score(result: AdvancedScoreResult) -> InterpretationResponse:
             else:
                 action = "Définir une action corrective ciblée sur cette dimension."
 
+        # Priorité graduée : haute si fragile, moyenne si correct, basse si déjà solide.
+        if score < 45:
+            priority = "haute"
+        elif score < 70:
+            priority = "moyenne"
+        else:
+            priority = "basse"
+
+        # Le verbe s'adapte au niveau : on "accélère" quand c'est à renforcer,
+        # on "pérennise" quand c'est déjà solide. L'article est contracté
+        # automatiquement ("l'implication" et non "la implication").
+        verb = "Pérenniser " if score >= 70 else "Accélérer "
+
         recommendations.append(
             RecommendationItem(
-                title=f"Accélérer la {label}",
+                title=_fr_prefix(verb, label),
                 action=action,
-                priority="haute" if score < 45 else "moyenne",
+                priority=priority,
             )
         )
 
     strengths = _top_n(strengths, 3)
     weaknesses = _top_n(weaknesses, 3)
-    recommendations = _top_n(recommendations, 3)
-    data_gaps = _top_n(data_gaps, 3)
+    # On priorise les recommandations "haute" avant de capper, afin que les
+    # dimensions non mesurées remontent en premier dans le dashboard.
+    priority_rank = {"haute": 0, "moyenne": 1, "basse": 2}
+    recommendations = sorted(
+        recommendations,
+        key=lambda r: priority_rank.get(r.priority, 9),
+    )
+    # On garde au moins une recommandation par dimension mesurée + les "Mesurer la X"
+    # pour les angles morts. Cap à 6 pour rester lisible.
+    recommendations = _top_n(recommendations, 6)
+    # Le dashboard affiche jusqu'à 5 angles morts — on conserve assez de matière.
+    data_gaps = _top_n(data_gaps, 6)
 
     summary = _executive_summary_text(
         global_score=global_score,
@@ -291,7 +499,10 @@ def interpret_score(result: AdvancedScoreResult) -> InterpretationResponse:
     executive = ExecutiveSummary(
         headline=_headline_from_score(global_score),
         key_insight=_key_insight(
-            ordered_dimensions=sorted(filtered_scores.items(), key=lambda kv: kv[1]),
+            ordered_dimensions=sorted(
+                [(d, s) for d, s in filtered_scores.items() if d not in missing_dims],
+                key=lambda kv: kv[1],
+            ),
             has_data_gaps=len(data_gaps) > 0,
         ),
         top_strengths=[item.title for item in strengths][:3],
