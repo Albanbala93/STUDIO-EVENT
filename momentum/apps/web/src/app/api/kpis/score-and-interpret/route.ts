@@ -543,6 +543,60 @@ function isValidInterpretation(x: unknown): x is InterpretationResponse {
   return true;
 }
 
+/** Corrige les fautes d'élision française que le LLM peut produire malgré
+ *  le cadrage du prompt : "la impact" → "l'impact", "la implication" → "l'implication",
+ *  "de la implication" → "de l'implication", etc. Déterministe, post-LLM.
+ *  On applique aussi au démarrage de phrase (majuscule) : "La impact" → "L'impact". */
+function fixFrenchElision(text: string): string {
+  if (!text) return text;
+  // "la " / "La " suivi d'un mot commençant par voyelle ou h (muet majoritairement)
+  // → contraction apostrophée. On ne touche pas "les", "leur", "la plupart", etc.
+  return text
+    .replace(/\bla ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "l'$1")
+    .replace(/\bLa ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "L'$1")
+    // "de la " → "de l'" devant voyelle/h
+    .replace(/\bde la ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "de l'$1")
+    // "à la " → "à l'" devant voyelle/h
+    .replace(/\bà la ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "à l'$1")
+    // "ma/ta/sa + voyelle" → "mon/ton/son" (rarement déclenché mais propre)
+    .replace(/\bma ([aeiouyàâäéèêëîïôöùûü])/g, "mon $1")
+    .replace(/\bta ([aeiouyàâäéèêëîïôöùûü])/g, "ton $1")
+    .replace(/\bsa ([aeiouyàâäéèêëîïôöùûü])/g, "son $1");
+}
+
+/** Applique fixFrenchElision à tous les champs textuels d'une InterpretationResponse. */
+function fixElisionInInterpretation(it: InterpretationResponse): InterpretationResponse {
+  return {
+    executive_summary: {
+      headline: fixFrenchElision(it.executive_summary.headline),
+      key_insight: fixFrenchElision(it.executive_summary.key_insight),
+      top_strengths: it.executive_summary.top_strengths.map(fixFrenchElision),
+      top_priorities: it.executive_summary.top_priorities.map(fixFrenchElision),
+    },
+    detailed_analysis: {
+      summary: fixFrenchElision(it.detailed_analysis.summary),
+      strengths: it.detailed_analysis.strengths.map(s => ({
+        title: fixFrenchElision(s.title),
+        description: fixFrenchElision(s.description),
+      })),
+      weaknesses: it.detailed_analysis.weaknesses.map(w => ({
+        title: fixFrenchElision(w.title),
+        description: fixFrenchElision(w.description),
+      })),
+      recommendations: it.detailed_analysis.recommendations.map(r => ({
+        title: fixFrenchElision(r.title),
+        action: fixFrenchElision(r.action),
+        priority: r.priority,
+      })),
+      data_gaps: it.detailed_analysis.data_gaps.map(g => ({
+        field: fixFrenchElision(g.field),
+        issue: fixFrenchElision(g.issue),
+        impact: fixFrenchElision(g.impact),
+      })),
+    },
+  };
+}
+
 /** Normalise/casse les priorités retournées par le LLM sur les 3 valeurs autorisées. */
 function normalizeRecommendations(raw: unknown[]): RecommendationItem[] {
   const out: RecommendationItem[] = [];
@@ -723,8 +777,27 @@ Règles strictes :
     if (enriched.executive_summary.top_priorities.length === 0) {
       enriched.executive_summary.top_priorities = baseline.executive_summary.top_priorities;
     }
+    // Idem pour les angles morts : le LLM les supprime parfois alors que le
+    // baseline en a identifié — on réinjecte les gaps déterministes.
+    if (
+      enriched.detailed_analysis.data_gaps.length === 0 &&
+      baseline.detailed_analysis.data_gaps.length > 0
+    ) {
+      enriched.detailed_analysis.data_gaps = baseline.detailed_analysis.data_gaps;
+    }
+    if (enriched.detailed_analysis.strengths.length === 0) {
+      enriched.detailed_analysis.strengths = baseline.detailed_analysis.strengths;
+    }
+    if (enriched.detailed_analysis.weaknesses.length === 0) {
+      enriched.detailed_analysis.weaknesses = baseline.detailed_analysis.weaknesses;
+    }
+    if (enriched.executive_summary.top_strengths.length === 0) {
+      enriched.executive_summary.top_strengths = baseline.executive_summary.top_strengths;
+    }
 
-    return enriched;
+    // Post-processing déterministe : correction des fautes d'élision françaises
+    // (le LLM a tendance à écrire "la impact" malgré la règle dans le prompt).
+    return fixElisionInInterpretation(enriched);
   } catch {
     clearTimeout(timer);
     return baseline;

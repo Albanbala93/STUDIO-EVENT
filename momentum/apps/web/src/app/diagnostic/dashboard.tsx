@@ -687,10 +687,12 @@ function ScoreGauge({ value }: { value: number }) {
 
 function RadarChart({ dimensions }: { dimensions: { label: string; value: number; present: boolean }[] }) {
   // Padding généreux pour que les labels longs ("Compréhension des messages",
-  // "Implication 75") ne soient jamais rognés par la viewBox SVG. 130px donne
-  // ~100px de clearance à gauche/droite une fois le rayon du radar (100px) déduit.
+  // "Implication 75") ne soient jamais rognés par la viewBox SVG. 160px donne
+  // ~130px de clearance à gauche/droite une fois le rayon du radar (100px) déduit.
+  // Le SVG est rendu en width:100% (viewBox) : il scale avec le conteneur tout en
+  // conservant toutes les étiquettes internes.
   const maxR = 100;
-  const padding = 130;
+  const padding = 160;
   const size = (maxR + padding) * 2;
   const cx = size / 2;
   const cy = size / 2;
@@ -713,7 +715,11 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
   }).join(" ");
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg
+      viewBox={`0 0 ${size} ${size}`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ width: "100%", maxWidth: size, height: "auto", display: "block" }}
+    >
       {rings.map((rf, idx) => {
         const pts = dimensions.map((_, i) => {
           const p = point(i, maxR * rf);
