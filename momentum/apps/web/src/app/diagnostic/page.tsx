@@ -405,6 +405,7 @@ const DIMENSION_META: Record<Dimension, { label: string; color: string; helper: 
 
 const LS_KEY = "momentum_wizard_v1";
 const saveLocal = (s: WizardState) => { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch {} };
+const clearLocal = () => { try { localStorage.removeItem(LS_KEY); } catch {} };
 const loadLocal = (): WizardState | null => {
   try { const s = localStorage.getItem(LS_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
 };
@@ -439,7 +440,7 @@ function reducer(state: WizardState, action: WizardAction): WizardState {
     case "SUBMIT_START":   return { ...state, submitting: true, apiError: null };
     case "SUBMIT_SUCCESS": return { ...state, submitting: false, diagnostic: action.diagnostic, step: -2 };
     case "SUBMIT_ERROR":   return { ...state, submitting: false, apiError: action.error, diagnostic: action.fallback, step: -2 };
-    case "RESET":          return INITIAL_STATE;
+    case "RESET":          clearLocal(); return INITIAL_STATE;
   }
 }
 
@@ -513,7 +514,10 @@ function DiagnosticWizardPage() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
   const searchParams = useSearchParams();
 
-  /* Hydratation : URL params (depuis Campaign Studio) > localStorage > état vierge.
+  /* Hydratation : URL params (depuis Campaign Studio) uniquement.
+     On ne restaure PAS automatiquement l'état précédent depuis localStorage —
+     chaque visite /diagnostic repart d'une feuille blanche (intro), ce qui
+     correspond à l'attente utilisateur ("nouveau diagnostic" = vraiment nouveau).
      Les params URL acceptés : from_campaign, name, type, audience, audience_size, intent. */
   useEffect(() => {
     const fromCampaign = searchParams.get("from_campaign");
@@ -545,8 +549,9 @@ function DiagnosticWizardPage() {
       });
       return;
     }
-    const saved = loadLocal();
-    if (saved && saved.step !== -2) dispatch({ type: "HYDRATE", state: saved });
+    // Pas d'URL param : on part toujours d'un état vierge, et on purge tout
+    // reliquat éventuel d'une session précédente (évite les réponses fantômes).
+    clearLocal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

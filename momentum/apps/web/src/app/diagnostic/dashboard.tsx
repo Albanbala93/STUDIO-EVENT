@@ -686,10 +686,11 @@ function ScoreGauge({ value }: { value: number }) {
 /* ── Radar chart SVG ──────────────────────────────────────────────── */
 
 function RadarChart({ dimensions }: { dimensions: { label: string; value: number; present: boolean }[] }) {
-  // Padding large (70px) pour que les labels gauche ("Impact") et droit ("Implication")
-  // ne soient jamais rognés par la viewBox SVG.
+  // Padding généreux pour que les labels longs ("Compréhension des messages",
+  // "Implication 75") ne soient jamais rognés par la viewBox SVG. 130px donne
+  // ~100px de clearance à gauche/droite une fois le rayon du radar (100px) déduit.
   const maxR = 100;
-  const padding = 80;
+  const padding = 130;
   const size = (maxR + padding) * 2;
   const cx = size / 2;
   const cy = size / 2;
