@@ -517,10 +517,16 @@ export function ResultDashboard(props: {
         display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center",
       }}>
         <button
-          onClick={() => { if (typeof window !== "undefined") window.print(); }}
+          onClick={() => {
+            if (typeof window === "undefined") return;
+            showToast("Dans la boîte d'impression, choisir « Enregistrer au format PDF »");
+            // Petit délai pour que l'utilisateur voie le toast avant l'ouverture
+            // de la boîte native (qui bloque le thread UI sur certains navigateurs).
+            setTimeout(() => window.print(), 300);
+          }}
           style={primaryBtn("#4d5fff")}
         >
-          ⬇ Export rapide
+          ⬇ Export PDF
         </button>
         {(props.projectId || savedId) && (
           <a

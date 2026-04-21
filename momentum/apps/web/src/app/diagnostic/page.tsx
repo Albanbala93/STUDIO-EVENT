@@ -634,39 +634,51 @@ function DiagnosticWizardPage() {
         html, body, #__next { background: #0a0d1a; color: #e2e8f0; }
 
         /* ─────────────────────────────────────────────────────────
-           Styles d'impression — l'utilisateur obtient un PDF propre
-           en choisissant "Enregistrer au format PDF" dans la boîte
-           de dialogue du navigateur. On masque la chrome du wizard
-           et on force un thème clair imprimable.
+           Styles d'impression — pattern "visibility" (plus robuste
+           que display:none sur l'arborescence complète).
+           L'utilisateur obtient un PDF en choisissant "Enregistrer
+           au format PDF" dans la boîte de dialogue du navigateur.
            ───────────────────────────────────────────────────────── */
         @media print {
-          @page { size: A4; margin: 14mm; }
+          @page { size: A4; margin: 12mm; }
           html, body, #__next {
             background: #ffffff !important;
             color: #0f172a !important;
           }
-          /* On masque tout sauf le dashboard */
-          .root > * { display: none !important; }
-          .root .shell { display: block !important; max-width: 100% !important; }
-          .shell > :not(.dashboard-print-root) { display: none !important; }
-          .dashboard-print-root { display: block !important; animation: none !important; }
-
-          /* Blocs : fond blanc, bordures légères, pas d'ombres */
-          .dashboard-print-root > div,
-          .dashboard-print-root section {
-            background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
-            box-shadow: none !important;
-            page-break-inside: avoid;
+          /* Tout est caché… */
+          body * { visibility: hidden !important; }
+          /* …sauf le dashboard et ses enfants */
+          .dashboard-print-root, .dashboard-print-root * { visibility: visible !important; }
+          /* Le dashboard prend toute la page */
+          .dashboard-print-root {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            animation: none !important;
           }
+          /* Forcer un thème clair imprimable */
+          .dashboard-print-root,
           .dashboard-print-root * {
             color: #0f172a !important;
           }
-          /* Masquer la barre d'actions et le toast */
-          .no-print { display: none !important; }
-
-          /* Les jauges/radars SVG gardent leurs couleurs de remplissage */
-          .dashboard-print-root svg * { color: initial; }
+          .dashboard-print-root > div,
+          .dashboard-print-root section {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: none !important;
+            page-break-inside: avoid;
+          }
+          /* Les SVG (jauge, radar) conservent leurs couleurs de fill */
+          .dashboard-print-root svg,
+          .dashboard-print-root svg * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          /* Boutons, toast, CTA : non imprimables */
+          .no-print, .no-print * { visibility: hidden !important; display: none !important; }
         }
       `}</style>
       <style jsx>{`
