@@ -581,7 +581,7 @@ function DiagnosticWizardPage() {
   async function submit() {
     dispatch({ type: "SUBMIT_START" });
 
-    const payload = Object.values(state.answers).map(a => ({
+    const signals = Object.values(state.answers).map(a => ({
       kpi_id: a.kpiId,
       dimension: kpiQuestions.find(k => k.kpiId === a.kpiId)?.dimension ?? "impact",
       value: Math.max(0, Math.min(100, a.value)),
@@ -590,16 +590,29 @@ function DiagnosticWizardPage() {
       method: a.note ?? undefined,
     }));
 
+    // Contexte envoyé au backend pour que le LLM (Anthropic) puisse
+    // personnaliser les recommandations (nom, type, audience, intention).
+    const context = {
+      name: state.id.name || undefined,
+      initiative_type: state.id.initiativeType || undefined,
+      audience: state.id.audienceType || undefined,
+      audience_size: state.id.audienceSize || undefined,
+      intent: state.id.intent || undefined,
+    };
+
     try {
       // Par défaut, on appelle la route Next.js embarquée (/api/kpis/...).
       // Si NEXT_PUBLIC_API_BASE_URL est défini, on tape le backend FastAPI (/kpis/...).
       const endpoint = API_BASE_URL
         ? `${API_BASE_URL}/kpis/score-and-interpret`
         : `/api/kpis/score-and-interpret`;
+      // Vers la route Next.js : envoi enrichi { signals, context }.
+      // Vers le backend Python : on reste sur le contrat historique (array seul).
+      const body = API_BASE_URL ? signals : { signals, context };
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error(`API ${res.status}`);
       const raw = await res.json();

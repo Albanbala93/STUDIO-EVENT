@@ -13,6 +13,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+// Config Vercel : l'enrichissement Anthropic peut prendre 5-10s, on laisse
+// 30s de marge. Sur plan Hobby, la limite dure est à 10s — si besoin, passer
+// sur Pro ou désactiver l'enrichissement en retirant ANTHROPIC_API_KEY.
+export const maxDuration = 30;
+export const runtime = "nodejs";
+
 /* ═══════════════════════════════════════════════════════════════════
    TYPES (miroirs des modèles Pydantic)
    ═══════════════════════════════════════════════════════════════════ */
@@ -501,6 +507,231 @@ function validateSignal(raw: unknown, idx: number): DimensionSignal | { error: s
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   ENRICHISSEMENT LLM (Anthropic Claude) — option "enrichissement"
+   ═══════════════════════════════════════════════════════════════════
+
+   Principe : on conserve le score et la structure produits par le moteur
+   déterministe, et on demande à Claude de REFORMULER les insights/recos
+   pour les rendre spécifiques au contexte (nom, type, audience, intention).
+
+   Safe by design :
+     • Clé ANTHROPIC_API_KEY absente → on retourne le baseline tel quel.
+     • Timeout, HTTP error, JSON invalide → baseline tel quel.
+     • Jamais d'exception propagée à l'appelant.                      */
+
+type EnrichContext = {
+  name?: string;
+  initiative_type?: string;
+  audience?: string;
+  audience_size?: number;
+  intent?: string;
+};
+
+/** Validateur structurel : s'assure qu'un objet renvoyé par le LLM respecte
+ *  le contrat `InterpretationResponse`. Sinon on rejette et on garde le baseline. */
+function isValidInterpretation(x: unknown): x is InterpretationResponse {
+  if (!x || typeof x !== "object") return false;
+  const obj = x as Record<string, unknown>;
+  const es = obj.executive_summary as Record<string, unknown> | undefined;
+  const da = obj.detailed_analysis as Record<string, unknown> | undefined;
+  if (!es || !da) return false;
+  if (typeof es.headline !== "string" || typeof es.key_insight !== "string") return false;
+  if (!Array.isArray(es.top_strengths) || !Array.isArray(es.top_priorities)) return false;
+  if (typeof da.summary !== "string") return false;
+  if (!Array.isArray(da.strengths) || !Array.isArray(da.weaknesses)) return false;
+  if (!Array.isArray(da.recommendations) || !Array.isArray(da.data_gaps)) return false;
+  return true;
+}
+
+/** Normalise/casse les priorités retournées par le LLM sur les 3 valeurs autorisées. */
+function normalizeRecommendations(raw: unknown[]): RecommendationItem[] {
+  const out: RecommendationItem[] = [];
+  for (const r of raw) {
+    if (!r || typeof r !== "object") continue;
+    const item = r as Record<string, unknown>;
+    const title = typeof item.title === "string" ? item.title : "";
+    const action = typeof item.action === "string" ? item.action : "";
+    let priority: "haute" | "moyenne" | "basse" = "moyenne";
+    const p = typeof item.priority === "string" ? item.priority.toLowerCase() : "";
+    if (p === "haute" || p === "high") priority = "haute";
+    else if (p === "basse" || p === "low") priority = "basse";
+    if (title && action) out.push({ title, action, priority });
+  }
+  return out;
+}
+
+async function enrichWithAnthropic(
+  score: AdvancedScoreResult,
+  baseline: InterpretationResponse,
+  signals: DimensionSignal[],
+  context: EnrichContext,
+): Promise<InterpretationResponse> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return baseline;
+
+  // Prompt système — on cadre strictement le format JSON de sortie pour
+  // préserver le contrat attendu par le dashboard.
+  const system = `Tu es un consultant senior en communication interne et performance d'initiatives.
+Tu reçois un diagnostic déterministe (score + interprétation de base) produit par un moteur de règles, et tu dois le RÉÉCRIRE pour qu'il soit spécifique au contexte de l'initiative analysée (nom, type, audience, intention).
+
+Règles strictes :
+- Tu DOIS préserver exactement la structure JSON demandée.
+- Tu NE DOIS PAS changer les scores chiffrés ni inventer de KPIs.
+- Tu DOIS utiliser le français professionnel, concis, orienté décision COMEX.
+- Tu DOIS respecter les contractions françaises : "l'implication" (pas "la implication"), "l'impact" (pas "la impact").
+- Priorités autorisées : "haute" | "moyenne" | "basse" (en minuscules).
+- Chaque description/action doit être concrète et contextuelle (pas de généralité).
+- Maximum 3 strengths, 3 weaknesses, 6 recommendations, 6 data_gaps.
+- Ne réponds qu'avec le JSON, sans texte avant ni après, sans balises markdown.`;
+
+  const userPayload = {
+    contexte_initiative: context,
+    score_global: Math.round(score.overall_score),
+    confiance_globale: Math.round(score.confidence_score),
+    scores_par_dimension: score.dimension_scores.map(d => ({
+      dimension: d.dimension,
+      label_fr: BUSINESS_LABELS[d.dimension],
+      score: Math.round(d.score),
+      confiance: Math.round(d.confidence_score),
+      nb_kpis: d.kpi_breakdown.length,
+      sources: {
+        mesurees: d.measured_count,
+        declarees: d.declared_count,
+        estimees: d.estimated_count,
+        proxies: d.proxy_count,
+      },
+    })),
+    dimensions_non_mesurees: score.missing_dimensions.map(d => BUSINESS_LABELS[d]),
+    signaux_bruts: signals.map(s => ({
+      dimension: s.dimension,
+      valeur: s.value,
+      provenance: s.provenance,
+      confiance: s.confidence,
+      kpi_id: s.kpi_id,
+    })),
+    interpretation_baseline: baseline,
+  };
+
+  const user = `Voici le diagnostic à enrichir :\n\n${JSON.stringify(userPayload, null, 2)}\n\nRéécris l'interpretation_baseline en la rendant spécifique au contexte. Garde exactement cette structure JSON en sortie :
+
+{
+  "executive_summary": {
+    "headline": "string",
+    "key_insight": "string — 1 à 2 phrases qui capturent l'essentiel au regard du contexte",
+    "top_strengths": ["string", ...],
+    "top_priorities": ["string", ...]
+  },
+  "detailed_analysis": {
+    "summary": "string — 2-3 phrases",
+    "strengths": [{"title": "string", "description": "string"}],
+    "weaknesses": [{"title": "string", "description": "string"}],
+    "recommendations": [{"title": "string", "action": "string", "priority": "haute|moyenne|basse"}],
+    "data_gaps": [{"field": "string", "issue": "string", "impact": "string"}]
+  }
+}`;
+
+  const controller = new AbortController();
+  const timeoutMs = 12_000;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-5",
+        max_tokens: 2048,
+        system,
+        messages: [{ role: "user", content: user }],
+      }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+
+    if (!res.ok) return baseline;
+    const data = (await res.json()) as {
+      content?: Array<{ type: string; text?: string }>;
+    };
+    const text = data.content?.find(c => c.type === "text")?.text ?? "";
+    if (!text) return baseline;
+
+    // Extraction JSON robuste (le modèle peut parfois encadrer).
+    const jsonMatch = text.match(/\{[\s\S]*\}$/m) ?? text.match(/\{[\s\S]*\}/);
+    const jsonStr = jsonMatch ? jsonMatch[0] : text;
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch {
+      return baseline;
+    }
+
+    if (!isValidInterpretation(parsed)) return baseline;
+
+    // Normalisation des recos (priorité contrainte sur les 3 valeurs).
+    const enriched: InterpretationResponse = {
+      executive_summary: {
+        headline: String(parsed.executive_summary.headline),
+        key_insight: String(parsed.executive_summary.key_insight),
+        top_strengths: (parsed.executive_summary.top_strengths as unknown[])
+          .filter(x => typeof x === "string").map(String).slice(0, 3),
+        top_priorities: (parsed.executive_summary.top_priorities as unknown[])
+          .filter(x => typeof x === "string").map(String).slice(0, 3),
+      },
+      detailed_analysis: {
+        summary: String(parsed.detailed_analysis.summary),
+        strengths: (parsed.detailed_analysis.strengths as unknown[])
+          .filter(s => s && typeof s === "object")
+          .map(s => {
+            const o = s as Record<string, unknown>;
+            return { title: String(o.title ?? ""), description: String(o.description ?? "") };
+          })
+          .filter(s => s.title && s.description)
+          .slice(0, 3),
+        weaknesses: (parsed.detailed_analysis.weaknesses as unknown[])
+          .filter(s => s && typeof s === "object")
+          .map(s => {
+            const o = s as Record<string, unknown>;
+            return { title: String(o.title ?? ""), description: String(o.description ?? "") };
+          })
+          .filter(s => s.title && s.description)
+          .slice(0, 3),
+        recommendations: normalizeRecommendations(parsed.detailed_analysis.recommendations as unknown[]).slice(0, 6),
+        data_gaps: (parsed.detailed_analysis.data_gaps as unknown[])
+          .filter(g => g && typeof g === "object")
+          .map(g => {
+            const o = g as Record<string, unknown>;
+            return {
+              field: String(o.field ?? ""),
+              issue: String(o.issue ?? ""),
+              impact: String(o.impact ?? ""),
+            };
+          })
+          .filter(g => g.field && g.issue)
+          .slice(0, 6),
+      },
+    };
+
+    // Garde-fou : si le LLM a vidé une section, on retombe sur le baseline pour celle-là.
+    if (enriched.detailed_analysis.recommendations.length === 0) {
+      enriched.detailed_analysis.recommendations = baseline.detailed_analysis.recommendations;
+    }
+    if (enriched.executive_summary.top_priorities.length === 0) {
+      enriched.executive_summary.top_priorities = baseline.executive_summary.top_priorities;
+    }
+
+    return enriched;
+  } catch {
+    clearTimeout(timer);
+    return baseline;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    HANDLER
    ═══════════════════════════════════════════════════════════════════ */
 
@@ -512,19 +743,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ detail: "Body JSON invalide." }, { status: 400 });
   }
 
-  if (!Array.isArray(body)) {
-    return NextResponse.json({ detail: "Le body doit être un tableau de DimensionSignal." }, { status: 400 });
+  // Accepte 2 formats : tableau brut (legacy) OU { signals: [...], context: {...} }.
+  let rawSignals: unknown[];
+  let context: EnrichContext = {};
+  if (Array.isArray(body)) {
+    rawSignals = body;
+  } else if (body && typeof body === "object" && Array.isArray((body as Record<string, unknown>).signals)) {
+    rawSignals = (body as Record<string, unknown>).signals as unknown[];
+    const ctx = (body as Record<string, unknown>).context;
+    if (ctx && typeof ctx === "object") context = ctx as EnrichContext;
+  } else {
+    return NextResponse.json(
+      { detail: "Le body doit être un tableau de DimensionSignal ou { signals, context }." },
+      { status: 400 },
+    );
   }
 
   const signals: DimensionSignal[] = [];
-  for (let i = 0; i < body.length; i++) {
-    const v = validateSignal(body[i], i);
+  for (let i = 0; i < rawSignals.length; i++) {
+    const v = validateSignal(rawSignals[i], i);
     if ("error" in v) return NextResponse.json({ detail: v.error }, { status: 422 });
     signals.push(v);
   }
 
   const score = scoreMomentum(signals);
-  const interpretation = interpretScore(score);
+  const baseline = interpretScore(score);
+  const interpretation = await enrichWithAnthropic(score, baseline, signals, context);
 
   return NextResponse.json({ score, interpretation });
 }
