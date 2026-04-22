@@ -416,6 +416,62 @@ function buildMethodologyReco(dim: RawDim): RecommendationItem {
   };
 }
 
+function buildConsolidationReco(dim: RawDim): RecommendationItem {
+  const label = BUSINESS_LABELS[dim.dimension];
+  // On réutilise l'outil "improvement" (questionnaire/checklist existant) car
+  // il est déjà orienté exploration de la dimension.
+  const tool = buildTool(dim.dimension, "improvement");
+
+  const ACTIONS: Record<Dimension, string> = {
+    reach:
+      "Capitaliser sur la couverture atteinte : documenter les canaux qui ont performé et en faire un standard réutilisable pour les prochaines initiatives.",
+    engagement:
+      "Approfondir l'implication obtenue : identifier les 2-3 moments qui ont déclenché l'interaction et les systématiser dans les prochains formats.",
+    appropriation:
+      "Consolider la compréhension : transformer le message qui a porté en narratif durable (FAQ, one-pager, talking points managériaux) pour éviter la dilution dans le temps.",
+    impact:
+      "Prolonger l'impact constaté : formaliser les pratiques adoptées par les premiers utilisateurs et les diffuser comme preuve sociale auprès du reste de l'audience.",
+  };
+
+  const WHY: Record<Dimension, string> = {
+    reach: `La couverture est solide (${Math.round(
+      dim.score
+    )}/100) : il s'agit maintenant de préserver cet acquis dans la durée, pas de le tenir pour acquis.`,
+    engagement: `Le niveau d'implication est satisfaisant (${Math.round(
+      dim.score
+    )}/100) : c'est le bon moment pour en faire un standard avant qu'il ne s'érode.`,
+    appropriation: `La compréhension est au rendez-vous (${Math.round(
+      dim.score
+    )}/100) : sans ancrage narratif, ce niveau se délite en 2-3 mois.`,
+    impact: `Les effets concrets sont réels (${Math.round(
+      dim.score
+    )}/100) : la phase suivante consiste à les industrialiser, pas à relancer un nouveau dispositif.`,
+  };
+
+  const IMPACT_STATEMENT: Record<Dimension, string> = {
+    reach:
+      "Faire de la couverture un acquis pérenne : maintenir le niveau atteint sur les 3 prochaines actions sans effort supplémentaire de diffusion.",
+    engagement:
+      "Transformer une implication ponctuelle en pratique récurrente, mesurable d'une édition à l'autre.",
+    appropriation:
+      "Inscrire le message-clé dans le langage courant de l'organisation à 6 mois, sans piqûre de rappel systématique.",
+    impact:
+      "Passer d'un impact observé à un impact répliqué : les comportements adoptés deviennent la norme, pas l'exception.",
+  };
+
+  return {
+    title: `Consolider ${frArticle(label)}${label}`,
+    action: ACTIONS[dim.dimension],
+    priority: "low",
+    dimension: dim.dimension,
+    reco_type: "consolidation",
+    why: WHY[dim.dimension],
+    when: "Dans les 30 à 60 jours, en prolongement de l'action actuelle.",
+    impact: IMPACT_STATEMENT[dim.dimension],
+    tool,
+  };
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    ORCHESTRATION
    ═══════════════════════════════════════════════════════════════════ */
@@ -518,15 +574,48 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
     }
   }
 
-  /* ─── Data gaps ───────────────────────────────────────────────── */
+  /* ─── Data gaps ─ élargi : missing, score=0, confiance faible, ou
+                     uniquement des signaux déclaratifs/proxy ──────── */
 
   const dataGaps: DataGapItem[] = [];
+  // Récupère les dimension_scores bruts pour inspecter la composition des
+  // signaux (mesurés vs déclaratifs/proxy).
+  const dimScoresByDim = new Map(
+    result.dimension_scores.map((ds) => [ds.dimension, ds])
+  );
+
   for (const d of present) {
+    const label = BUSINESS_LABELS[d.dimension];
+    const ds = dimScoresByDim.get(d.dimension);
+    const objectiveCount = (ds?.measured_count ?? 0) + (ds?.estimated_count ?? 0);
+    const totalCount =
+      (ds?.measured_count ?? 0) +
+      (ds?.estimated_count ?? 0) +
+      (ds?.declared_count ?? 0) +
+      (ds?.proxy_count ?? 0);
+
     if (d.score <= 0) {
       dataGaps.push({
-        field: BUSINESS_LABELS[d.dimension],
+        field: label,
         issue: "Mesure absente ou non exploitable",
         impact: "La décision est moins fiable sur cette dimension.",
+      });
+    } else if (d.confidence < 55) {
+      dataGaps.push({
+        field: label,
+        issue: `Fiabilité des données insuffisante (${Math.round(
+          d.confidence
+        )}/100)`,
+        impact:
+          "Le score est indicatif mais ne permet pas de trancher une décision d'arbitrage.",
+      });
+    } else if (totalCount > 0 && objectiveCount === 0) {
+      dataGaps.push({
+        field: label,
+        issue:
+          "Signaux uniquement déclaratifs ou indirects, aucune mesure objective",
+        impact:
+          "Le score reflète un ressenti plutôt qu'un fait — à croiser avec une mesure observationnelle.",
       });
     }
   }
@@ -541,7 +630,13 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
     }
   }
 
-  /* ─── Candidates ──────────────────────────────────────────────── */
+  /* ─── Candidates — une reco par dimension, toujours ─────────────
+     Règles :
+       • dimension manquante → measurement
+       • score < 65 → improvement
+       • score >= 65 ET confiance < 70 → methodology
+       • sinon (score solide + confiance correcte) → consolidation
+     → on garantit 4 recos (une par dimension) dans le diagnostic.       */
 
   const candidates: RecommendationItem[] = [];
 
@@ -549,14 +644,14 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
   for (const dim of missingDims) {
     candidates.push(buildMeasurementReco(dim));
   }
-  // B. Scores faibles → improvement
+  // B/C/D. Pour chaque dimension présente, on sélectionne le bon type
   for (const d of present) {
-    if (d.score < 55) candidates.push(buildImprovementReco(d));
-  }
-  // C. Confiance faible → methodology
-  for (const d of present) {
-    if (d.score >= 55 && d.confidence < 55) {
+    if (d.score < 65) {
+      candidates.push(buildImprovementReco(d));
+    } else if (d.confidence < 70) {
       candidates.push(buildMethodologyReco(d));
+    } else {
+      candidates.push(buildConsolidationReco(d));
     }
   }
 
@@ -581,7 +676,10 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
     return pa - pb;
   });
 
-  const topRecommendations = sorted.slice(0, 3);
+  // Jusqu'à 4 recos : une par dimension métier (reach, engagement,
+  // appropriation, impact). La déduplication par dimension ci-dessus
+  // garantit qu'on n'en a pas plus.
+  const topRecommendations = sorted.slice(0, 4);
 
   // Normalisation FR pour compat UI existante
   const recommendationsFR = topRecommendations.map((r) => {
@@ -594,7 +692,7 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
 
   const topStrengths = strengths.slice(0, 3);
   const topWeaknesses = weaknesses.slice(0, 3);
-  const topDataGaps = dataGaps.slice(0, 3);
+  const topDataGaps = dataGaps.slice(0, 4);
 
   const summary = executiveSummaryText(
     globalScore,

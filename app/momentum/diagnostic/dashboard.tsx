@@ -341,7 +341,7 @@ export function ResultDashboard(props: {
           <CardTitle><span style={{ color: "#818cf8", marginRight: 8 }}>→</span> Recommandations actionnables</CardTitle>
           {interpretation.detailed_analysis.recommendations.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {interpretation.detailed_analysis.recommendations.slice(0, 3).map((r) => (
+              {interpretation.detailed_analysis.recommendations.slice(0, 4).map((r) => (
                 <RecommendationCard key={r.title} reco={r} />
               ))}
             </div>

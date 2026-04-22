@@ -48,7 +48,8 @@ export type InsightItem = { title: string; description: string };
 export type RecommendationType =
   | "improvement" // le score est trop bas → agir
   | "measurement" // la donnée manque → mesurer avant de décider
-  | "methodology"; // la donnée est peu fiable → professionnaliser la mesure
+  | "methodology" // la donnée est peu fiable → professionnaliser la mesure
+  | "consolidation"; // la dimension est solide → capitaliser / approfondir
 
 /** Priorité en anglais (spec) — mappée en français côté UI. */
 export type RecommendationPriority = "high" | "medium" | "low";
