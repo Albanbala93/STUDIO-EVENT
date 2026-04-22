@@ -121,14 +121,13 @@ function DiagnosticPageInner() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const searchParams = useSearchParams();
 
-  // Hydratation depuis URL + localStorage
+  // Hydratation depuis URL uniquement (on part toujours d'une feuille vierge :
+  // pas de reprise localStorage — le bug "le wizard commence à l'étape 2"
+  // venait d'un état persisté. On purge aussi l'ancienne clé au passage.)
   useEffect(() => {
-    const saved =
-      typeof window !== "undefined" ? localStorage.getItem(WIZARD_KEY) : null;
-    let hydrated: Partial<WizardState> = {};
-    if (saved) {
+    if (typeof window !== "undefined") {
       try {
-        hydrated = JSON.parse(saved);
+        localStorage.removeItem(WIZARD_KEY);
       } catch {
         /* noop */
       }
@@ -150,45 +149,21 @@ function DiagnosticPageInner() {
     if (intent) idPatch.intent = intent;
 
     const patch: Partial<WizardState> = {
-      ...hydrated,
-      id: {
-        ...initialState.id,
-        ...(hydrated.id ?? {}),
-        ...idPatch,
-      },
+      id: { ...initialState.id, ...idPatch },
     };
     if (fromCampaign) patch.fromCampaignId = fromCampaign;
 
-    if (Object.keys(patch).length > 0) {
+    if (Object.keys(idPatch).length > 0 || fromCampaign) {
       dispatch({ type: "HYDRATE", patch });
     }
   }, [searchParams]);
-
-  // Persistance
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (state.step === "result") return; // ne pas écraser avec l'état final
-    try {
-      localStorage.setItem(
-        WIZARD_KEY,
-        JSON.stringify({
-          id: state.id,
-          answers: state.answers,
-          step: state.step,
-          fromCampaignId: state.fromCampaignId,
-        })
-      );
-    } catch {
-      /* noop */
-    }
-  }, [state.id, state.answers, state.step, state.fromCampaignId]);
 
   const kpis: KPIQuestion[] = useMemo(() => {
     if (!state.id.initiativeType) return [];
     return KPI_PLAN[state.id.initiativeType] ?? [];
   }, [state.id.initiativeType]);
 
-  function submit() {
+  async function submit() {
     try {
       const signals: DimensionSignal[] = Object.values(state.answers)
         .filter((a) => typeof a.value === "number" && !Number.isNaN(a.value))
@@ -203,7 +178,42 @@ function DiagnosticPageInner() {
           };
         });
       const score = scoreMomentum(signals);
-      const interpretation = interpretScore(score);
+      const baseline = interpretScore(score);
+
+      // Tentative d'enrichissement LLM (Anthropic) ; fallback silencieux sur
+      // la baseline déterministe si l'API est indisponible.
+      let interpretation = baseline;
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 20000);
+        const res = await fetch("/api/momentum/enrich", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            score,
+            baseline,
+            context: {
+              name: state.id.name,
+              initiativeType: state.id.initiativeType,
+              audienceType: state.id.audienceType,
+              audienceSize: state.id.audienceSize,
+              intent: state.id.intent,
+            },
+            signals,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(tid);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.interpretation) {
+            interpretation = data.interpretation;
+          }
+        }
+      } catch {
+        /* fallback baseline */
+      }
+
       dispatch({
         type: "SUBMIT_SUCCESS",
         diagnostic: { score, interpretation },

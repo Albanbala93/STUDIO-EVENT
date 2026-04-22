@@ -163,6 +163,35 @@ export function ResultDashboard(props: {
           .grid-2, .grid-dims { grid-template-columns: 1fr; }
         }
       `}</style>
+      <style jsx global>{`
+        @media print {
+          @page { size: A4; margin: 12mm; }
+          html, body { background: #ffffff !important; }
+          body * { visibility: hidden !important; }
+          .dashboard-print-root, .dashboard-print-root * { visibility: visible !important; }
+          .dashboard-print-root {
+            position: absolute !important;
+            left: 0; top: 0;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+          }
+          .dashboard-print-root * {
+            color: #0f172a !important;
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          .dashboard-print-root h1,
+          .dashboard-print-root h2,
+          .dashboard-print-root h3,
+          .dashboard-print-root b,
+          .dashboard-print-root strong { color: #0b1020 !important; }
+          .no-print { display: none !important; }
+        }
+      `}</style>
 
       {/* BLOC 1 — En-tête du projet */}
       <DashCard>
@@ -347,10 +376,17 @@ export function ResultDashboard(props: {
         display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center",
       }}>
         <button
-          onClick={() => { if (typeof window !== "undefined") window.print(); }}
+          onClick={() => {
+            if (typeof window === "undefined") return;
+            setToast("Préparation du PDF — choisissez « Enregistrer au format PDF » dans la boîte d'impression.");
+            setTimeout(() => {
+              window.print();
+              setTimeout(() => setToast(null), 1500);
+            }, 300);
+          }}
           style={primaryBtn("#4d5fff")}
         >
-          ⬇ Export rapide
+          ⬇ Export PDF
         </button>
         {!props.readOnly && (
           <button
@@ -785,10 +821,11 @@ function ScoreGauge({ value }: { value: number }) {
 /* ── Radar chart SVG ──────────────────────────────────────────────── */
 
 function RadarChart({ dimensions }: { dimensions: { label: string; value: number; present: boolean }[] }) {
-  const size = 260;
+  // viewBox plus large + padding pour afficher les libellés en entier
+  const size = 520;
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = 95;
+  const maxR = 160;
   const n = dimensions.length;
 
   const angleFor = (i: number) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
@@ -808,7 +845,11 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
   }).join(" ");
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <svg
+      viewBox={`0 0 ${size} ${size}`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ width: "100%", height: "auto", maxWidth: 440, display: "block", margin: "0 auto" }}
+    >
       {rings.map((rf, idx) => {
         const pts = dimensions.map((_, i) => {
           const p = point(i, maxR * rf);
@@ -873,16 +914,33 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
       })}
 
       {dimensions.map((d, i) => {
-        const p = point(i, maxR + 18);
+        const p = point(i, maxR + 30);
         const ta = i === 0 || i === 2 ? "middle" : (i === 1 ? "start" : "end");
         const color = d.present ? "#cbd5e1" : "#64748b";
+        // Word-wrap : on coupe en lignes d'environ 14 caractères max
+        const words = d.label.split(" ");
+        const lines: string[] = [];
+        let cur = "";
+        for (const w of words) {
+          if ((cur + " " + w).trim().length > 14 && cur) {
+            lines.push(cur.trim());
+            cur = w;
+          } else {
+            cur = (cur + " " + w).trim();
+          }
+        }
+        if (cur) lines.push(cur);
+        const baseDy = i === 0 ? -6 : i === 2 ? 16 : 4;
         return (
           <text key={i} x={p.x} y={p.y} textAnchor={ta}
-            dy={i === 0 ? -4 : i === 2 ? 12 : 4}
-            style={{ fontSize: 11, fontWeight: 700, fill: color, letterSpacing: "0.02em" }}>
-            {d.label.length > 16 ? d.label.split(" ")[0] : d.label}
+            style={{ fontSize: 15, fontWeight: 700, fill: color, letterSpacing: "0.02em" }}>
+            {lines.map((ln, li) => (
+              <tspan key={li} x={p.x} dy={li === 0 ? baseDy : 17}>
+                {ln}
+              </tspan>
+            ))}
             {d.present && (
-              <tspan dx={4} style={{ fill: scoreColor(d.value), fontWeight: 800 }}>
+              <tspan x={p.x} dy={17} style={{ fill: scoreColor(d.value), fontWeight: 800, fontSize: 16 }}>
                 {Math.round(d.value)}
               </tspan>
             )}

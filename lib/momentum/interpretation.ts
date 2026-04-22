@@ -41,6 +41,42 @@ function cap(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/* ─── Élision française ────────────────────────────────────────────── */
+
+/** Retourne "l'" si le mot commence par voyelle ou h muet, "la " sinon.
+ *  Évite les fautes type "la impact concret" / "la implication". */
+function frArticle(word: string): "l'" | "la " {
+  if (!word) return "la ";
+  const first = word.trim().charAt(0).toLowerCase();
+  return "aeiouyhàâäéèêëîïôöùûü".includes(first) ? "l'" : "la ";
+}
+
+/** Préfixe un verbe avec l'article contracté correctement :
+ *  frPrefix("Réactiver ", "impact concret") → "Réactiver l'impact concret". */
+function frPrefix(verbWithSpace: string, word: string): string {
+  return `${verbWithSpace}${frArticle(word)}${word}`;
+}
+
+/** Scanne un texte et corrige toutes les fautes d'élision françaises
+ *  ("la impact" → "l'impact", "de la implication" → "de l'implication",
+ *   "La audience" → "L'audience", etc.). Post-processing déterministe
+ *  appliqué aux textes générés par le moteur pour garantir qu'aucune
+ *  faute ne passe, même si une interpolation manquante a laissé traîner
+ *  un "la + voyelle". */
+function fixFrenchElision(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(/\bla ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "l'$1")
+    .replace(/\bLa ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "L'$1")
+    .replace(/\bde la ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "de l'$1")
+    .replace(/\bDe la ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "De l'$1")
+    .replace(/\bà la ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "à l'$1")
+    .replace(/\bÀ la ([aeiouyhàâäéèêëîïôöùûüAEIOUYH])/g, "À l'$1")
+    // "de impact" → "d'impact" (quand "de" n'est pas suivi de "la")
+    .replace(/\bde ([aeiouyàâäéèêëîïôöùûü])/g, "d'$1")
+    .replace(/\bDe ([aeiouyàâäéèêëîïôöùûü])/g, "D'$1");
+}
+
 const PRIORITY_FR: Record<RecommendationPriority, string> = {
   high: "haute",
   medium: "moyenne",
@@ -296,7 +332,7 @@ function buildImprovementReco(dim: RawDim): RecommendationItem {
   };
 
   return {
-    title: `Réactiver la ${label}`,
+    title: frPrefix("Réactiver ", label),
     action: ACTIONS[dim.dimension],
     priority,
     dimension: dim.dimension,
@@ -347,7 +383,7 @@ function buildMeasurementReco(dim: Dimension): RecommendationItem {
   };
 
   return {
-    title: `Instrumenter la ${label}`,
+    title: frPrefix("Instrumenter ", label),
     action: ACTIONS[dim],
     priority,
     dimension: dim,
@@ -365,8 +401,8 @@ function buildMethodologyReco(dim: RawDim): RecommendationItem {
   const priority = computePriority("methodology", dim.score, dim.confidence);
 
   return {
-    title: `Fiabiliser la mesure de la ${label}`,
-    action: `Renforcer la qualité des données collectées sur la ${label} (taille d'échantillon, croisement déclaratif / observation, automatisation de la collecte) afin que les décisions prises à partir de cette dimension soient robustes.`,
+    title: `Fiabiliser la mesure de ${frArticle(label)}${label}`,
+    action: `Renforcer la qualité des données collectées sur ${frArticle(label)}${label} (taille d'échantillon, croisement déclaratif / observation, automatisation de la collecte) afin que les décisions prises à partir de cette dimension soient robustes.`,
     priority,
     dimension: dim.dimension,
     reco_type: "methodology",
@@ -566,7 +602,7 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
     recommendationsFR
   );
 
-  return {
+  const payload: InterpretationPayload = {
     executive_summary: {
       headline: headlineFromScore(globalScore),
       key_insight: keyInsight(
@@ -587,4 +623,25 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
       data_gaps: topDataGaps,
     },
   };
+
+  return deepFixElision(payload) as InterpretationPayload;
+}
+
+/** Recursive safety-net : applique fixFrenchElision à toutes les chaînes
+ *  du payload pour garantir qu'aucune faute d'élision ne passe. */
+function deepFixElision<T>(value: T): T {
+  if (typeof value === "string") {
+    return fixFrenchElision(value) as unknown as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => deepFixElision(v)) as unknown as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = deepFixElision(v);
+    }
+    return out as unknown as T;
+  }
+  return value;
 }
