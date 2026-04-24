@@ -1,28 +1,38 @@
 :root {
-  /* Core palette — deep navy, warm paper, consulting blue */
-  --navy: #0b1422;
-  --navy-mid: #14243a;
-  --navy-light: #1e3a5f;
-  --blue-conseil: #1a3a6e;
-  --blue-accent: #2a5298;
-  --blue-light: #eef3fb;
-  --blue-medium: #d4e1f5;
-  --indigo: #3730a3;
-  --indigo-dark: #312e81;
+  /* ─── Stratly Design System ───────────────────────────────────────
+     Aligné sur Momentum : indigo électrique, canvas neutre, DM Sans.
+     Les noms historiques (`--navy`, `--blue-conseil`, `--indigo`)
+     sont conservés pour ne pas casser les centaines d'usages dans les
+     fichiers .tsx, mais leurs valeurs basculent vers le système Stratly.
+     ───────────────────────────────────────────────────────────────── */
+
+  /* Core palette */
+  --navy: #0F172A;            /* sidebar bg + texte principal */
+  --navy-mid: #1E293B;
+  --navy-light: #334155;
+  --blue-conseil: #6366F1;    /* accent principal — indigo électrique */
+  --blue-accent: #8B5CF6;     /* accent secondaire — violet (gradient end) */
+  --blue-light: #EEF2FF;      /* accent tint 8 % */
+  --blue-medium: #C7D2FE;
+  --indigo: #6366F1;
+  --indigo-dark: #4F46E5;     /* indigo profond pour libellés / texte */
+
+  /* Brand gradient */
+  --brand-gradient: linear-gradient(135deg, #6366F1, #8B5CF6);
 
   /* Typography */
-  --slate: #4b5563;
-  --slate-light: #9ca3af;
-  --text: #0b1422;
-  --text-muted: #576070;
+  --slate: #64748B;
+  --slate-light: #94A3B8;
+  --text: #0F172A;
+  --text-muted: #64748B;
 
-  /* Surfaces & borders — warm, fine, barely there */
-  --border: #e4e1da;
-  --border-light: #ece9e2;
-  --border-strong: #cdc9c1;
-  --surface: #f8f7f4;
-  --surface-mid: #f0ede6;
-  --surface-warm: #faf9f7;
+  /* Surfaces & borders — neutres, barely there */
+  --border: rgba(0, 0, 0, 0.06);
+  --border-light: rgba(0, 0, 0, 0.04);
+  --border-strong: #E2EAF4;
+  --surface: #F6F7FB;
+  --surface-mid: #EEF2F8;
+  --surface-warm: #FAFAFC;
   --white: #ffffff;
 
   /* Semantic */
@@ -30,27 +40,28 @@
   --risk-high-bg: #fef2f2;
   --risk-medium: #92400e;
   --risk-medium-bg: #fffbeb;
-  --risk-low: #166534;
-  --risk-low-bg: #f0fdf4;
-  --success: #166534;
+  --risk-low: #4F46E5;        /* succès = indigo profond (vert remplacé) */
+  --risk-low-bg: #EEF2FF;
+  --success: #4F46E5;
 
-  /* Shadows — very subtle, layered */
-  --shadow-xs: 0 1px 2px rgba(11, 20, 34, 0.04);
-  --shadow-sm: 0 1px 3px rgba(11, 20, 34, 0.06), 0 1px 2px rgba(11, 20, 34, 0.04);
-  --shadow-md: 0 4px 16px rgba(11, 20, 34, 0.07), 0 1px 3px rgba(11, 20, 34, 0.04);
-  --shadow-lg: 0 12px 36px rgba(11, 20, 34, 0.10), 0 2px 6px rgba(11, 20, 34, 0.05);
+  /* Shadows — Stratly indigo-tinted */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(99, 102, 241, 0.06);
+  --shadow-md: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(99, 102, 241, 0.08);
+  --shadow-lg: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 16px 48px rgba(99, 102, 241, 0.12);
   --shadow-nav: 0 1px 0 var(--border);
+  --shadow-cta: 0 4px 12px rgba(99, 102, 241, 0.30);
 
   /* Spacing & geometry */
-  --radius-xs: 3px;
-  --radius-sm: 4px;
-  --radius: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
   /* Typography */
-  --font-body: "Inter", system-ui, -apple-system, Arial, sans-serif;
-  --font-display: "DM Serif Display", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "DM Sans", "Inter", system-ui, sans-serif;
 }
 
 * {
@@ -120,16 +131,18 @@ a:hover {
 
 .card {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
   padding: 20px 24px;
+  box-shadow: var(--shadow-md);
 }
 
 .card-tight {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius);
   padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ========================
@@ -159,12 +172,15 @@ a:hover {
 }
 
 .btn-primary {
-  background: var(--navy);
+  background: var(--brand-gradient);
   color: var(--white);
+  border-radius: 10px;
+  box-shadow: var(--shadow-cta);
+  font-weight: 600;
 }
 
 .btn-primary:hover {
-  background: var(--navy-mid);
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
   opacity: 1;
   text-decoration: none;
   color: var(--white);
@@ -215,7 +231,7 @@ a:hover {
 .input,
 textarea {
   width: 100%;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   padding: 11px 14px;
   font-size: 13.5px;
@@ -229,8 +245,8 @@ textarea {
 .input:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--navy);
-  box-shadow: 0 0 0 3px rgba(11, 20, 34, 0.06);
+  border-color: var(--indigo);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
   background: var(--white);
 }
 
@@ -270,15 +286,15 @@ textarea {
 
 .result-section {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
   padding: 26px 30px;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
 }
 
 .result-section:hover {
-  box-shadow: var(--shadow-sm);
-  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .result-section + .result-section {
@@ -315,7 +331,7 @@ textarea {
 .badge-low {
   background: var(--risk-low-bg);
   color: var(--risk-low);
-  border: 1px solid #a7f3d0;
+  border: 1px solid var(--blue-medium);
 }
 
 .badge-status {
@@ -347,12 +363,13 @@ textarea {
 ======================== */
 
 .executive-summary {
-  background: var(--surface-warm);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--navy);
+  background: var(--white);
+  border: 0;
+  border-left: 3px solid var(--indigo);
   border-radius: var(--radius-lg);
   padding: 26px 30px;
   position: relative;
+  box-shadow: var(--shadow-md);
 }
 
 .executive-summary p {
@@ -386,18 +403,19 @@ textarea {
 /* Premium card variant — elevated */
 .card-elevated {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
   padding: 22px 26px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 /* Deck section — consulting deliverable feel */
 .deck-section {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
 .deck-section-header {
@@ -428,9 +446,10 @@ textarea {
 
 .kpi-card {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius);
   padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
 }
 
 .kpi-card .kpi-indicator {
@@ -459,12 +478,13 @@ textarea {
 
 .scenario-card {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
   padding: 20px 22px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: var(--shadow-md);
 }
 
 .scenario-essentiel {
@@ -516,12 +536,13 @@ textarea {
 
 .audience-card {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: var(--shadow-sm);
 }
 
 .audience-card .audience-name {
@@ -901,7 +922,7 @@ textarea {
 .topnav-logo-mark {
   width: 28px;
   height: 28px;
-  background: var(--navy);
+  background: var(--brand-gradient);
   color: var(--white);
   border-radius: 6px;
   display: flex;
@@ -976,20 +997,21 @@ textarea {
   align-items: center;
   gap: 5px;
   padding: 7px 14px;
-  background: var(--navy);
+  background: var(--brand-gradient);
   color: var(--white);
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   letter-spacing: 0.01em;
-  transition: opacity 0.2s, background 0.15s;
+  transition: opacity 0.2s, background 0.15s, box-shadow 0.18s;
   flex-shrink: 0;
   white-space: nowrap;
+  box-shadow: var(--shadow-cta);
 }
 
 .topnav-cta:hover {
-  background: var(--navy-mid);
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
   color: var(--white);
   text-decoration: none;
   opacity: 1;
@@ -1001,16 +1023,17 @@ textarea {
 
 .project-card {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
   padding: 22px 26px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: box-shadow 0.2s, border-color 0.2s, transform 0.18s;
+  transition: box-shadow 0.2s, transform 0.18s;
   color: var(--text);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-md);
 }
 
 .project-card::before {
@@ -1018,15 +1041,14 @@ textarea {
   position: absolute;
   inset: 0 auto 0 0;
   width: 3px;
-  background: var(--navy);
+  background: var(--brand-gradient);
   opacity: 0;
   transition: opacity 0.2s;
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
 
 .project-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg);
   text-decoration: none;
   transform: translateY(-1px);
 }
@@ -1082,7 +1104,7 @@ textarea {
 }
 
 .maturity-bar-segment-active {
-  background: var(--navy);
+  background: var(--brand-gradient);
 }
 
 .maturity-bar-score {
@@ -1191,7 +1213,7 @@ textarea {
 .timeline-badge-impact-low {
   background: var(--risk-low-bg);
   color: var(--risk-low);
-  border: 1px solid #a7f3d0;
+  border: 1px solid var(--blue-medium);
 }
 
 .timeline-badge-complexity-high {
@@ -1754,7 +1776,7 @@ textarea {
 .dircom-list-arb li {
   color: rgba(255,255,255,0.7);
 }
-.dircom-list-arb li::before { background: #34d399; }
+.dircom-list-arb li::before { background: var(--indigo); }
 
 /* ========================
    Brief Specificity Block
@@ -2825,7 +2847,7 @@ textarea {
 .event-impl-leger {
   background: var(--risk-low-bg);
   color: var(--risk-low);
-  border: 1px solid #a7f3d0;
+  border: 1px solid var(--blue-medium);
 }
 
 .event-impl-intermediaire {
@@ -3072,16 +3094,18 @@ textarea {
 
 .card {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius-lg);
   padding: 20px 24px;
+  box-shadow: var(--shadow-md);
 }
 
 .card-tight {
   background: var(--white);
-  border: 1px solid var(--border);
+  border: 0;
   border-radius: var(--radius);
   padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
 }
 
 /* Number/step pill — editorial step labels */
@@ -3316,3 +3340,193 @@ textarea {
 
 .loading-dot:nth-child(2) { animation-delay: 0.2s; }
 .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ========================
+   Studio shell — Stratly sidebar layout
+======================== */
+
+/* Le root layout injecte une topnav globale ; on la masque dans le shell
+   Studio pour que la sidebar Stratly occupe toute la hauteur. */
+body:has([data-studio-shell]) > .topnav {
+  display: none !important;
+}
+
+body:has([data-studio-shell]) {
+  background: var(--surface) !important;
+}
+
+.studio-shell {
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+.studio-main {
+  margin-left: 240px;
+  min-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .studio-main {
+    margin-left: 0;
+  }
+}
+
+.studio-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 240px;
+  background: #0F172A;
+  color: #94A3B8;
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  font-family: var(--font-body);
+}
+
+.studio-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  height: 64px;
+  box-sizing: border-box;
+}
+
+.studio-sidebar-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--brand-gradient);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.studio-sidebar-wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.studio-sidebar-brand {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--white);
+}
+
+.studio-sidebar-product {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.studio-sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+}
+
+.studio-sidebar-section-label {
+  padding: 0 10px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #64748B;
+}
+
+.studio-sidebar-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.studio-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px 9px 14px;
+  border-radius: 6px;
+  border-left: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94A3B8;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  margin-left: -2px;
+}
+
+.studio-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #E2E8F0;
+  text-decoration: none;
+}
+
+.studio-sidebar-link.is-active {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--indigo);
+  border-left-color: var(--indigo);
+  font-weight: 600;
+}
+
+.studio-sidebar-link.is-active .studio-sidebar-icon {
+  color: var(--indigo);
+}
+
+.studio-sidebar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.studio-sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px;
+}
+
+.studio-sidebar-settings {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  opacity: 0.65;
+}
+
+.studio-sidebar-settings-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.studio-sidebar-settings-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #E2E8F0;
+}
+
+.studio-sidebar-settings-sub {
+  font-size: 10.5px;
+  color: #64748B;
+}
+
+@media print {
+  body:has([data-studio-shell]) [data-studio-sidebar] {
+    display: none !important;
+  }
+  body:has([data-studio-shell]) [data-studio-main] {
+    margin-left: 0 !important;
+  }
+}

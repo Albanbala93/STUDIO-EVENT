@@ -16,7 +16,7 @@ function statusLabel(status: string) {
 
 function statusColor(status: string) {
     switch (status) {
-        case "approved": return { bg: "#f0fdf4", color: "#059669", border: "#a7f3d0" };
+        case "approved": return { bg: "var(--risk-low-bg)", color: "var(--risk-low)", border: "var(--blue-medium)" };
         case "generated": return { bg: "var(--blue-light)", color: "var(--blue-conseil)", border: "var(--blue-medium)" };
         default: return { bg: "var(--surface)", color: "var(--slate)", border: "var(--border)" };
     }

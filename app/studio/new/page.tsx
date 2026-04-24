@@ -14,7 +14,7 @@ export default function NewProjectPage() {
                 <div style={{
                     position: "absolute",
                     inset: 0,
-                    backgroundImage: "radial-gradient(ellipse at 75% 50%, rgba(42, 82, 152, 0.16) 0%, transparent 60%)",
+                    backgroundImage: "radial-gradient(ellipse at 75% 50%, rgba(99, 102, 241, 0.18) 0%, transparent 60%)",
                     pointerEvents: "none",
                 }} />
 

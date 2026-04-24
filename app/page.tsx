@@ -44,7 +44,7 @@ export default function HomePage() {
         <div style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: "radial-gradient(ellipse at 75% 30%, rgba(42, 82, 152, 0.2) 0%, transparent 60%)",
+          backgroundImage: "radial-gradient(ellipse at 75% 30%, rgba(99, 102, 241, 0.22) 0%, transparent 60%)",
           pointerEvents: "none",
         }} />
 
