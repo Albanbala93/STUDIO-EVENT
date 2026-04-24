@@ -15,4 +15,21 @@
   -moz-osx-font-smoothing: grayscale;
   color: #1A1A2E;
   background: #F8F9FC;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Le root layout de Campaign Studio injecte une topnav sur toutes les
+   routes. On la masque ici pour que le dashboard v2 occupe tout l'écran
+   et que la sidebar Stratly soit visible sans collision avec l'ancien
+   chrome. On neutralise aussi le background et les typographies globales
+   héritées de globals.css. */
+body:has(.v2-root) > .topnav {
+  display: none !important;
+}
+
+body:has(.v2-root) {
+  background: #F8F9FC !important;
+  font-size: 14px;
+  line-height: 1.5;
 }
