@@ -6,7 +6,7 @@
  * (reach / engagement / appropriation / impact).
  */
 
-import type { InitiativeType, KPIQuestion } from "./types";
+import type { InitiativeType, KPIQuestion, RSEKPIQuestion } from "./types";
 
 export const KPI_PLAN: Record<InitiativeType, KPIQuestion[]> = {
   corporate_event: [
@@ -219,4 +219,137 @@ export const INTENT_OPTIONS = [
   "Expliquer un changement",
   "Célébrer",
   "Aligner",
+];
+
+/**
+ * Catalogue RSE — 13 indicateurs ESG universels, applicables à toute
+ * initiative de communication. Les kpiId sont alignés sur le mapping
+ * `RSE_KPI_DIMENSION` de lib/momentum/rse.ts et sur les modèles Python
+ * du backend. Les valeurs sont toutes normalisées 0-100 "plus c'est
+ * haut, mieux c'est", à l'exception de `csr.transport_emission_share`
+ * (inversée dans rse.ts).
+ */
+export const RSE_KPIS: RSEKPIQuestion[] = [
+  /* ─── Environnement ─── */
+  {
+    kpiId: "csr.estimated_carbon_footprint",
+    rseDimension: "environment",
+    label: "Maîtrise de l'empreinte carbone",
+    helper:
+      "Dans quelle mesure l'empreinte carbone globale de l'opération (transport, restauration, supports) est-elle connue et maîtrisée par rapport à une opération comparable ?",
+    unitHint: "0-100 — 100 = maîtrise totale",
+    defaultProvenance: "estimated",
+  },
+  {
+    kpiId: "csr.carbon_per_participant",
+    rseDimension: "environment",
+    label: "Sobriété carbone par participant",
+    helper:
+      "Note de sobriété carbone ramenée au participant (0 = très émissif, 100 = très sobre).",
+    unitHint: "0-100 — ex. 55",
+    defaultProvenance: "estimated",
+  },
+  {
+    kpiId: "csr.transport_emission_share",
+    rseDimension: "environment",
+    label: "Part des émissions liées au transport",
+    helper:
+      "Pourcentage de l'empreinte carbone attribuable aux déplacements des participants. Plus c'est bas, mieux c'est — la valeur est inversée dans le score.",
+    unitHint: "% — ex. 65",
+    defaultProvenance: "estimated",
+  },
+  {
+    kpiId: "csr.waste_reduction_score",
+    rseDimension: "environment",
+    label: "Score de réduction des déchets",
+    helper:
+      "Qualité des dispositifs anti-déchets mis en place (contenants réutilisables, tri, digital over print…).",
+    unitHint: "0-100 — ex. 60",
+    defaultProvenance: "declared",
+  },
+  {
+    kpiId: "csr.sobriety_score",
+    rseDimension: "environment",
+    label: "Sobriété des supports",
+    helper:
+      "Degré de sobriété des supports événementiels et communicationnels (goodies, impressions, décor, énergie).",
+    unitHint: "0-100 — ex. 55",
+    defaultProvenance: "declared",
+  },
+
+  /* ─── Social ─── */
+  {
+    kpiId: "csr.participant_coverage_rate",
+    rseDimension: "social",
+    label: "Couverture RSE des participants",
+    helper:
+      "Part des participants effectivement exposés à des messages ou dispositifs RSE pendant l'opération.",
+    unitHint: "% — ex. 70",
+    defaultProvenance: "measured",
+  },
+  {
+    kpiId: "csr.rse_message_visibility_rate",
+    rseDimension: "social",
+    label: "Visibilité des messages RSE",
+    helper:
+      "Part des communications de l'opération qui intègrent explicitement un message RSE (engagement, action, chiffre).",
+    unitHint: "% — ex. 40",
+    defaultProvenance: "measured",
+  },
+  {
+    kpiId: "csr.engagement_rate",
+    rseDimension: "social",
+    label: "Engagement sur les messages RSE",
+    helper:
+      "Interaction des participants avec les contenus RSE (lectures, clics, questions, participation aux ateliers).",
+    unitHint: "% — ex. 35",
+    defaultProvenance: "measured",
+  },
+  {
+    kpiId: "csr.accessibility_score",
+    rseDimension: "social",
+    label: "Score d'accessibilité",
+    helper:
+      "Accessibilité réelle de l'opération : lieu, supports, format, langues, publics en situation de handicap.",
+    unitHint: "0-100 — ex. 65",
+    defaultProvenance: "declared",
+  },
+  {
+    kpiId: "csr.inclusion_perception_score",
+    rseDimension: "social",
+    label: "Perception d'inclusion",
+    helper:
+      "Sentiment d'inclusion et de représentation rapporté par les participants (enquête post-opération).",
+    unitHint: "0-100 — ex. 68",
+    defaultProvenance: "declared",
+  },
+
+  /* ─── Gouvernance ─── */
+  {
+    kpiId: "csr.local_supplier_rate",
+    rseDimension: "governance",
+    label: "Part des fournisseurs locaux",
+    helper:
+      "Pourcentage de prestataires de l'opération localisés dans le même bassin économique que l'entreprise.",
+    unitHint: "% — ex. 60",
+    defaultProvenance: "measured",
+  },
+  {
+    kpiId: "csr.responsible_supplier_rate",
+    rseDimension: "governance",
+    label: "Part des fournisseurs responsables",
+    helper:
+      "Part des prestataires disposant d'une certification RSE / labellisation reconnue (ISO 26000, B-Corp, Ecovadis…).",
+    unitHint: "% — ex. 45",
+    defaultProvenance: "measured",
+  },
+  {
+    kpiId: "csr.rse_coherence_score",
+    rseDimension: "governance",
+    label: "Cohérence RSE de l'opération",
+    helper:
+      "Rattachement explicite de l'opération à des objectifs RSE formalisés, chiffrés et suivis dans le temps.",
+    unitHint: "0-100 — ex. 55",
+    defaultProvenance: "declared",
+  },
 ];

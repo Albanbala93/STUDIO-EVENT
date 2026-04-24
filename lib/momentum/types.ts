@@ -42,6 +42,20 @@ export type KPIQuestion = {
   max?: number;
 };
 
+/**
+ * Question RSE — structure jumelle de KPIQuestion, mais indexée sur un
+ * pilier ESG au lieu des dimensions "communication". Stockée séparément
+ * pour éviter toute pollution du scoring à 4 dimensions.
+ */
+export type RSEKPIQuestion = {
+  kpiId: string;
+  rseDimension: RSEDimension;
+  label: string;
+  helper: string;
+  unitHint: string;
+  defaultProvenance: Provenance;
+};
+
 export type InsightItem = { title: string; description: string };
 
 /** Typologie métier d'une recommandation. */

@@ -17,7 +17,7 @@ import React, { Suspense, useEffect, useMemo, useReducer } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-import { KPI_PLAN, INITIATIVE_OPTIONS, AUDIENCE_OPTIONS, INTENT_OPTIONS } from "../../../lib/momentum/kpi-catalog";
+import { KPI_PLAN, INITIATIVE_OPTIONS, AUDIENCE_OPTIONS, INTENT_OPTIONS, RSE_KPIS } from "../../../lib/momentum/kpi-catalog";
 import { scoreMomentum, type DimensionSignal } from "../../../lib/momentum/scoring";
 import { interpretScore } from "../../../lib/momentum/interpretation";
 import { interpretRse } from "../../../lib/momentum/rse";
@@ -25,6 +25,7 @@ import {
   CONFIDENCE_MAP,
   DIMENSION_LABELS,
   INITIATIVE_LABELS,
+  RSE_DIMENSION_LABELS,
   type ConfidenceLabel,
   type DiagnosticPayload,
   type IdentificationData,
@@ -32,6 +33,7 @@ import {
   type KPIAnswer,
   type KPIQuestion,
   type Provenance,
+  type RSEKPIQuestion,
 } from "../../../lib/momentum/types";
 import { ResultDashboard } from "./dashboard";
 
@@ -166,19 +168,45 @@ function DiagnosticPageInner() {
 
   async function submit() {
     try {
-      const signals: DimensionSignal[] = Object.values(state.answers)
-        .filter((a) => typeof a.value === "number" && !Number.isNaN(a.value))
-        .map((a) => {
+      const allAnswers = Object.values(state.answers).filter(
+        (a) => typeof a.value === "number" && !Number.isNaN(a.value)
+      );
+
+      // Signaux "communication" — seulement les KPIs du plan de l'initiative,
+      // ceux qui alimentent les 4 dimensions du score Momentum.
+      const commSignals: DimensionSignal[] = allAnswers
+        .map((a): DimensionSignal | null => {
           const kpi = kpis.find((k) => k.kpiId === a.kpiId);
+          if (!kpi) return null;
           return {
             kpi_id: a.kpiId,
-            dimension: kpi?.dimension ?? "impact",
+            dimension: kpi.dimension,
             value: Math.max(0, Math.min(100, a.value)),
             provenance: a.provenance,
             confidence: CONFIDENCE_MAP[a.confidenceLabel],
           };
-        });
-      const score = scoreMomentum(signals);
+        })
+        .filter((s): s is DimensionSignal => s !== null);
+
+      // Signaux RSE — tous les kpiId "csr.*" (identifiés par leur présence
+      // dans RSE_KPIS). `dimension` est un champ obligatoire du type
+      // DimensionSignal mais n'est jamais utilisé côté RSE (le moteur
+      // `interpretRse` dispatch par kpi_id).
+      const rseSignals: DimensionSignal[] = allAnswers
+        .map((a): DimensionSignal | null => {
+          const rseKpi = RSE_KPIS.find((k) => k.kpiId === a.kpiId);
+          if (!rseKpi) return null;
+          return {
+            kpi_id: a.kpiId,
+            dimension: "impact", // placeholder, ignoré par interpretRse
+            value: Math.max(0, Math.min(100, a.value)),
+            provenance: a.provenance,
+            confidence: CONFIDENCE_MAP[a.confidenceLabel],
+          };
+        })
+        .filter((s): s is DimensionSignal => s !== null);
+
+      const score = scoreMomentum(commSignals);
       const baseline = interpretScore(score);
 
       // Tentative d'enrichissement LLM (Anthropic) ; fallback silencieux sur
@@ -200,7 +228,7 @@ function DiagnosticPageInner() {
               audienceSize: state.id.audienceSize,
               intent: state.id.intent,
             },
-            signals,
+            signals: commSignals,
           }),
           signal: controller.signal,
         });
@@ -215,9 +243,9 @@ function DiagnosticPageInner() {
         /* fallback baseline */
       }
 
-      // Couche RSE additive — calculée localement à partir des mêmes
-      // signaux, indépendamment de l'enrichissement LLM.
-      const rse = interpretRse(signals);
+      // Couche RSE additive — calculée à partir des signaux RSE saisis
+      // dans l'onglet dédié. Indépendante de l'enrichissement LLM.
+      const rse = interpretRse(rseSignals);
 
       dispatch({
         type: "SUBMIT_SUCCESS",
@@ -297,6 +325,7 @@ function DiagnosticPageInner() {
         {state.step === "kpis" && (
           <KPIStep
             kpis={kpis}
+            rseKpis={RSE_KPIS}
             answers={state.answers}
             onAnswer={(kpiId, patch) =>
               dispatch({ type: "SET_ANSWER", kpiId, patch })
@@ -436,50 +465,144 @@ function IdentificationStep(props: {
   );
 }
 
+type KPITab = "communication" | "rse";
+
 function KPIStep(props: {
   kpis: KPIQuestion[];
+  rseKpis: RSEKPIQuestion[];
   answers: Record<string, KPIAnswer>;
   onAnswer: (kpiId: string, patch: Partial<KPIAnswer>) => void;
   onBack: () => void;
   onSubmit: () => void;
   error: string | null;
 }) {
-  const { kpis, answers, onAnswer, onBack, onSubmit, error } = props;
+  const { kpis, rseKpis, answers, onAnswer, onBack, onSubmit, error } = props;
+  const [tab, setTab] = React.useState<KPITab>("communication");
 
-  // Groupement par dimension
+  // Groupement communication par dimension
   const byDim = kpis.reduce<Record<string, KPIQuestion[]>>((acc, k) => {
     (acc[k.dimension] ??= []).push(k);
     return acc;
   }, {});
 
-  const answeredCount = Object.values(answers).filter(
-    (a) => typeof a.value === "number" && a.value > 0
+  // Groupement RSE par pilier (environment / social / governance)
+  const byPillar = rseKpis.reduce<Record<string, RSEKPIQuestion[]>>((acc, k) => {
+    (acc[k.rseDimension] ??= []).push(k);
+    return acc;
+  }, {});
+
+  const commIds = new Set(kpis.map((k) => k.kpiId));
+  const rseIds = new Set(rseKpis.map((k) => k.kpiId));
+
+  const commAnswered = Object.values(answers).filter(
+    (a) => commIds.has(a.kpiId) && typeof a.value === "number" && a.value > 0
   ).length;
+  const rseAnswered = Object.values(answers).filter(
+    (a) => rseIds.has(a.kpiId) && typeof a.value === "number" && a.value > 0
+  ).length;
+
+  const PILLAR_ORDER: Array<keyof typeof RSE_DIMENSION_LABELS> = [
+    "environment",
+    "social",
+    "governance",
+  ];
 
   return (
     <section style={styles.card}>
       <h2 style={styles.cardTitle}>Renseignez vos KPIs</h2>
-      <p style={styles.helper}>
-        Chaque KPI alimente une des 4 dimensions du score Momentum. Renseignez ce
-        que vous connaissez, laissez le reste à zéro. ({answeredCount}/{kpis.length}{" "}
-        renseignés)
-      </p>
 
-      {(Object.keys(byDim) as (keyof typeof byDim)[]).map((dim) => (
-        <div key={dim} style={styles.dimBlock}>
-          <h3 style={styles.dimTitle}>
-            {DIMENSION_LABELS[dim as keyof typeof DIMENSION_LABELS]}
-          </h3>
-          {byDim[dim].map((k) => (
-            <KPIRow
-              key={k.kpiId}
-              kpi={k}
-              answer={answers[k.kpiId]}
-              onAnswer={(patch) => onAnswer(k.kpiId, patch)}
-            />
+      {/* Tabs Communication / RSE */}
+      <div style={styles.tabRow} role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "communication"}
+          style={{
+            ...styles.tab,
+            ...(tab === "communication" ? styles.tabActive : {}),
+          }}
+          onClick={() => setTab("communication")}
+        >
+          <span>Mesure communication</span>
+          <span style={styles.tabBadge}>
+            {commAnswered}/{kpis.length}
+          </span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "rse"}
+          style={{
+            ...styles.tab,
+            ...(tab === "rse" ? styles.tabActive : {}),
+          }}
+          onClick={() => setTab("rse")}
+        >
+          <span>Mesure RSE</span>
+          <span style={styles.tabBadge}>
+            {rseAnswered}/{rseKpis.length}
+          </span>
+        </button>
+      </div>
+
+      {tab === "communication" && (
+        <>
+          <p style={styles.helper}>
+            Chaque KPI alimente une des 4 dimensions du score Momentum.
+            Renseignez ce que vous connaissez, laissez le reste à zéro.
+          </p>
+          {(Object.keys(byDim) as (keyof typeof byDim)[]).map((dim) => (
+            <div key={dim} style={styles.dimBlock}>
+              <h3 style={styles.dimTitle}>
+                {DIMENSION_LABELS[dim as keyof typeof DIMENSION_LABELS]}
+              </h3>
+              {byDim[dim].map((k) => (
+                <KPIRow
+                  key={k.kpiId}
+                  kpi={k}
+                  answer={answers[k.kpiId]}
+                  onAnswer={(patch) => onAnswer(k.kpiId, patch)}
+                />
+              ))}
+            </div>
           ))}
-        </div>
-      ))}
+        </>
+      )}
+
+      {tab === "rse" && (
+        <>
+          <p style={styles.helper}>
+            Ces indicateurs alimentent le volet RSE (Environnement, Social,
+            Gouvernance). Ils sont indépendants du score Momentum et
+            produisent un diagnostic ESG dédié avec recommandations et outils
+            prêts à l&apos;emploi.
+          </p>
+          {PILLAR_ORDER.map((pillar) => {
+            const items = byPillar[pillar] ?? [];
+            if (items.length === 0) return null;
+            return (
+              <div key={pillar} style={styles.dimBlock}>
+                <h3 style={styles.dimTitle}>{RSE_DIMENSION_LABELS[pillar]}</h3>
+                {items.map((k) => (
+                  <KPIRow
+                    key={k.kpiId}
+                    kpi={{
+                      kpiId: k.kpiId,
+                      dimension: "impact",
+                      label: k.label,
+                      helper: k.helper,
+                      unitHint: k.unitHint,
+                      defaultProvenance: k.defaultProvenance,
+                    }}
+                    answer={answers[k.kpiId]}
+                    onAnswer={(patch) => onAnswer(k.kpiId, patch)}
+                  />
+                ))}
+              </div>
+            );
+          })}
+        </>
+      )}
 
       {error && <div style={styles.error}>{error}</div>}
 
@@ -622,6 +745,41 @@ const styles: Record<string, React.CSSProperties> = {
     background: "#3b82f6",
     borderColor: "#3b82f6",
     color: "#fff",
+  },
+  tabRow: {
+    display: "flex",
+    gap: 8,
+    marginBottom: 20,
+    borderBottom: "1px solid #334155",
+  },
+  tab: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px 18px",
+    background: "transparent",
+    color: "#94a3b8",
+    border: "none",
+    borderBottom: "2px solid transparent",
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: "pointer",
+    marginBottom: -1,
+  },
+  tabActive: {
+    color: "#f1f5f9",
+    borderBottom: "2px solid #3b82f6",
+  },
+  tabBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "2px 8px",
+    background: "#0f172a",
+    border: "1px solid #334155",
+    borderRadius: 999,
+    fontSize: 11,
+    fontWeight: 600,
+    color: "#cbd5e1",
   },
   card: {
     background: "#1e293b",
