@@ -12,7 +12,9 @@ import { useParams, useRouter } from "next/navigation";
 
 import { getProject, deleteProject } from "../../../../lib/momentum/storage";
 import { KPI_PLAN } from "../../../../lib/momentum/kpi-catalog";
-import type { MomentumProject } from "../../../../lib/momentum/types";
+import { CONFIDENCE_MAP, type MomentumProject } from "../../../../lib/momentum/types";
+import { interpretRse } from "../../../../lib/momentum/rse";
+import type { DimensionSignal } from "../../../../lib/momentum/scoring";
 import { ResultDashboard } from "../../diagnostic/dashboard";
 
 export default function ProjectPage() {
@@ -61,9 +63,31 @@ export default function ProjectPage() {
       ? KPI_PLAN[project.payload.id.initiativeType]
       : [];
 
+  // Backfill : les projets sauvegardés avant l'introduction du volet RSE
+  // n'ont pas de champ `rse`. On le recalcule à la volée depuis les
+  // réponses KPI pour que le bloc reste toujours visible en lecture.
+  const diagnostic = project.payload.diagnostic;
+  const diagnosticWithRse = diagnostic.rse
+    ? diagnostic
+    : (() => {
+        const signals: DimensionSignal[] = Object.values(project.payload.answers)
+          .filter((a) => typeof a.value === "number" && !Number.isNaN(a.value))
+          .map((a) => {
+            const kpi = kpis.find((k) => k.kpiId === a.kpiId);
+            return {
+              kpi_id: a.kpiId,
+              dimension: kpi?.dimension ?? "impact",
+              value: Math.max(0, Math.min(100, a.value)),
+              provenance: a.provenance,
+              confidence: CONFIDENCE_MAP[a.confidenceLabel],
+            };
+          });
+        return { ...diagnostic, rse: interpretRse(signals) };
+      })();
+
   return (
     <ResultDashboard
-      diagnostic={project.payload.diagnostic}
+      diagnostic={diagnosticWithRse}
       id={project.payload.id}
       answers={project.payload.answers}
       kpis={kpis}
