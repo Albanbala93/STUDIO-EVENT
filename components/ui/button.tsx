@@ -9,8 +9,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // Primary = dégradé electric-indigo → violet (brand Stratly Momentum).
         primary:
-          "bg-accent text-white hover:bg-accent-600 active:bg-accent-700 shadow-card",
+          "text-white shadow-card bg-[linear-gradient(135deg,#6366F1,#8B5CF6)] hover:bg-[linear-gradient(135deg,#4F46E5,#7C3AED)] active:bg-[linear-gradient(135deg,#4338CA,#6D28D9)]",
         secondary:
           "bg-navy text-white hover:bg-navy-800 active:bg-navy-900 shadow-card",
         outline:

@@ -21,11 +21,19 @@ export function Gauge({ value, size = 200 }: { value: number; size?: number }) {
   const largeArcBg = 1;
   const largeArcFg = clamped > (180 / 270) * 100 ? 1 : 0;
 
-  const color =
-    clamped >= 70 ? "#00C48C" : clamped >= 50 ? "#F59E0B" : "#EF4444";
+  const useGradient = clamped >= 65;
+  const solidColor =
+    clamped >= 65 ? "#6366F1" : clamped >= 50 ? "#F59E0B" : "#EF4444";
+  const gradientId = `gauge-indigo-${size}`;
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#6366F1" />
+          <stop offset="100%" stopColor="#8B5CF6" />
+        </linearGradient>
+      </defs>
       <path
         d={`M ${a0.x} ${a0.y} A ${r} ${r} 0 ${largeArcBg} 1 ${a1.x} ${a1.y}`}
         fill="none"
@@ -37,7 +45,7 @@ export function Gauge({ value, size = 200 }: { value: number; size?: number }) {
         <path
           d={`M ${a0.x} ${a0.y} A ${r} ${r} 0 ${largeArcFg} 1 ${p.x} ${p.y}`}
           fill="none"
-          stroke={color}
+          stroke={useGradient ? `url(#${gradientId})` : solidColor}
           strokeWidth={stroke}
           strokeLinecap="round"
         />

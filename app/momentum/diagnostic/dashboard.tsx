@@ -61,39 +61,44 @@ const DIMENSION_HELP: Record<Dimension, string> = {
   impact: "Effets concrets observés après l'initiative.",
 };
 
-/** Renvoie un hex compatible avec le palette Stratly. */
+/** Couleur solide (hex) pour jauge / radar / progress bars. */
+const INDIGO = "#6366F1";
+const INDIGO_GRADIENT = "linear-gradient(135deg, #6366F1, #8B5CF6)";
+
 function scoreColor(score: number): string {
-  if (score >= 80) return "#00C48C"; // accent
-  if (score >= 65) return "#22c55e"; // emerald-500
+  if (score >= 65) return INDIGO;
   if (score >= 40) return "#f59e0b"; // warn amber
   return "#ef4444"; // danger
+}
+
+/** Fond CSS pour les progress bars — gradient en tier indigo, solide sinon. */
+function scoreFill(score: number): string {
+  if (score >= 65) return INDIGO_GRADIENT;
+  if (score >= 40) return "#f59e0b";
+  return "#ef4444";
 }
 
 function scoreTone(score: number): {
   label: string;
   pill: string;
   text: string;
-  ring: string;
 } {
   if (score >= 70)
     return {
       label: "Performance solide",
-      pill: "bg-emerald-50 border-emerald-200",
-      text: "text-emerald-700",
-      ring: "ring-emerald-500/20",
+      pill: "bg-accent-50 border-accent-200",
+      text: "text-accent-700",
     };
   if (score >= 50)
     return {
       label: "Performance mitigée",
       pill: "bg-amber-50 border-amber-200",
       text: "text-amber-700",
-      ring: "ring-amber-500/20",
     };
   return {
     label: "Performance faible",
     pill: "bg-rose-50 border-rose-200",
     text: "text-rose-700",
-    ring: "ring-rose-500/20",
   };
 }
 
@@ -106,9 +111,9 @@ function reliabilityTone(conf: number): {
   if (conf >= 75)
     return {
       label: "Données fiables",
-      pill: "bg-emerald-50 border-emerald-200",
-      text: "text-emerald-700",
-      dot: "bg-emerald-500",
+      pill: "bg-accent-50 border-accent-200",
+      text: "text-accent-700",
+      dot: "bg-accent",
     };
   if (conf >= 50)
     return {
@@ -299,7 +304,7 @@ export function ResultDashboard(props: {
           <CardContent className="p-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-[260px] flex-1">
-                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-accent-600">
                   Restitution exécutive
                 </div>
                 <h2 className="mb-2 text-[24px] font-bold leading-tight text-ink">
@@ -336,7 +341,7 @@ export function ResultDashboard(props: {
                 <ScoreGauge value={overall} />
               </div>
               <div className="min-w-[260px] flex-1">
-                <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
+                <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-accent-600">
                   Communication Score
                 </div>
                 <p className="mb-4 text-[14px] leading-relaxed text-ink">
@@ -391,7 +396,7 @@ export function ResultDashboard(props: {
                   const ds = dimensionMap.get(d);
                   const present = !!ds && ds.kpi_breakdown.length > 0;
                   const s = Math.round(ds?.score ?? 0);
-                  const color = present ? scoreColor(s) : "#94A3B8";
+                  const fill = present ? scoreFill(s) : "#94A3B8";
                   const relTone = reliabilityTone(ds?.confidence_score ?? 0);
                   return (
                     <div key={d}>
@@ -424,7 +429,7 @@ export function ResultDashboard(props: {
                           className="h-full rounded-full transition-[width] duration-700 ease-out"
                           style={{
                             width: `${present ? s : 0}%`,
-                            background: color,
+                            background: fill,
                           }}
                         />
                       </div>
@@ -458,7 +463,7 @@ export function ResultDashboard(props: {
                     key={s}
                     className="flex gap-2 text-[13px] leading-relaxed text-ink"
                   >
-                    <span className="mt-1.5 inline-block h-1 w-1 flex-shrink-0 rounded-full bg-emerald-500" />
+                    <span className="mt-1.5 inline-block h-1 w-1 flex-shrink-0 rounded-full bg-accent" />
                     <span>{s}</span>
                   </li>
                 ))}
@@ -649,10 +654,13 @@ const ACCENT_CLASSES: Record<
   DiagnosticAccent,
   { bar: string; iconWrap: string; iconColor: string }
 > = {
+  // "emerald" — conservé comme clé sémantique (succès / points forts),
+  // mais la teinte est désormais indigo pour rester cohérent avec le reste
+  // du système. La barre supérieure utilise le gradient brand.
   emerald: {
-    bar: "bg-emerald-500",
-    iconWrap: "bg-emerald-50",
-    iconColor: "text-emerald-600",
+    bar: "bg-[linear-gradient(135deg,#6366F1,#8B5CF6)]",
+    iconWrap: "bg-accent-50",
+    iconColor: "text-accent-600",
   },
   amber: {
     bar: "bg-amber-500",
@@ -660,7 +668,7 @@ const ACCENT_CLASSES: Record<
     iconColor: "text-amber-600",
   },
   accent: {
-    bar: "bg-accent",
+    bar: "bg-[linear-gradient(135deg,#6366F1,#8B5CF6)]",
     iconWrap: "bg-accent-50",
     iconColor: "text-accent",
   },
@@ -894,11 +902,13 @@ function ToolBlock({
   );
 }
 
+// Toutes les lignes de recommandation (Pourquoi / Action / Quand / Impact)
+// utilisent la teinte indigo profonde #4F46E5 pour un libellé homogène.
 const RECO_LINE_ACCENT: Record<string, string> = {
-  amber: "text-amber-600",
-  sky: "text-sky-600",
-  emerald: "text-emerald-600",
-  accent: "text-accent",
+  amber: "text-accent-600",
+  sky: "text-accent-600",
+  emerald: "text-accent-600",
+  accent: "text-accent-600",
 };
 
 function RecoLine({
@@ -957,10 +967,23 @@ function ScoreGauge({ value }: { value: number }) {
   const p = polar(progressA);
   const largeArcBg = 1;
   const largeArcFg = clamped > (180 / 270) * 100 ? 1 : 0;
-  const color = scoreColor(clamped);
+  const useGradient = clamped >= 65;
+  const solidColor = scoreColor(clamped);
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <defs>
+        <linearGradient
+          id="score-gauge-indigo"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+        >
+          <stop offset="0%" stopColor="#6366F1" />
+          <stop offset="100%" stopColor="#8B5CF6" />
+        </linearGradient>
+      </defs>
       <path
         d={`M ${a0.x} ${a0.y} A ${r} ${r} 0 ${largeArcBg} 1 ${a1.x} ${a1.y}`}
         fill="none"
@@ -972,7 +995,7 @@ function ScoreGauge({ value }: { value: number }) {
         <path
           d={`M ${a0.x} ${a0.y} A ${r} ${r} 0 ${largeArcFg} 1 ${p.x} ${p.y}`}
           fill="none"
-          stroke={color}
+          stroke={useGradient ? "url(#score-gauge-indigo)" : solidColor}
           strokeWidth={stroke}
           strokeLinecap="round"
         />
@@ -1045,6 +1068,28 @@ function RadarChart({
         margin: "0 auto",
       }}
     >
+      <defs>
+        <linearGradient
+          id="radar-indigo-fill"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+        >
+          <stop offset="0%" stopColor="#6366F1" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.18" />
+        </linearGradient>
+        <linearGradient
+          id="radar-indigo-stroke"
+          x1="0%"
+          y1="0%"
+          x2="100%"
+          y2="100%"
+        >
+          <stop offset="0%" stopColor="#6366F1" />
+          <stop offset="100%" stopColor="#8B5CF6" />
+        </linearGradient>
+      </defs>
       {rings.map((rf, idx) => {
         const pts = dimensions
           .map((_, i) => {
@@ -1093,8 +1138,8 @@ function RadarChart({
       {presentCount >= 3 && (
         <polygon
           points={polyPoints}
-          fill="rgba(0,196,140,0.14)"
-          stroke="#00C48C"
+          fill="url(#radar-indigo-fill)"
+          stroke="url(#radar-indigo-stroke)"
           strokeWidth={2}
           strokeLinejoin="round"
         />
@@ -1198,8 +1243,8 @@ const RSE_PILLAR_TONE: Record<
   { accent: string; bar: string; iconWrap: string; iconColor: string }
 > = {
   environment: {
-    accent: "#00C48C",
-    bar: "bg-accent",
+    accent: "#6366F1",
+    bar: "bg-[linear-gradient(135deg,#6366F1,#8B5CF6)]",
     iconWrap: "bg-accent-50",
     iconColor: "text-accent",
   },
@@ -1223,9 +1268,9 @@ function rseReliabilityTone(
   if (reliability === "high")
     return {
       label: "Fiabilité RSE élevée",
-      pill: "bg-emerald-50 border-emerald-200",
-      text: "text-emerald-700",
-      dot: "bg-emerald-500",
+      pill: "bg-accent-50 border-accent-200",
+      text: "text-accent-700",
+      dot: "bg-accent",
     };
   if (reliability === "partial")
     return {
@@ -1265,7 +1310,7 @@ function RseSection({ rse }: { rse: RSEInterpretation }) {
                 <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-accent-50">
                   <Leaf className="h-4 w-4 text-accent" />
                 </div>
-                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
+                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-accent-600">
                   Volet RSE · ESG
                 </div>
               </div>

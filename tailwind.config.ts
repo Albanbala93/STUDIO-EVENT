@@ -29,13 +29,17 @@ const config: Config = {
           800: "#142339",
           900: "#0e1a2b",
         },
+        // Electric indigo — remplace l'ancien vert accent partout où `accent-*`
+        // est utilisé. Les tons matchent Tailwind `indigo-*`, ce qui permet
+        // d'employer `indigo-200/300/400` au besoin sans étendre la config.
         accent: {
-          DEFAULT: "#00C48C",
-          50: "#ecfdf5",
-          100: "#d1fae5",
-          500: "#00C48C",
-          600: "#00a877",
-          700: "#008b62",
+          DEFAULT: "#6366F1",
+          50: "#EEF2FF",
+          100: "#E0E7FF",
+          200: "#C7D2FE",
+          500: "#6366F1",
+          600: "#4F46E5",
+          700: "#4338CA",
         },
         canvas: "#F8F9FC",
         ink: {
