@@ -3,27 +3,36 @@
 /**
  * Vue d'un projet Momentum sauvegardé — lecture seule.
  * Charge le projet depuis localStorage via getProject(id) et réutilise
- * le composant ResultDashboard en mode readOnly.
+ * le composant ResultDashboard en mode readOnly. Backfill RSE pour les
+ * projets créés avant l'introduction du volet ESG.
  */
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, FileX } from "lucide-react";
 
 import { getProject, deleteProject } from "../../../../lib/momentum/storage";
 import { KPI_PLAN } from "../../../../lib/momentum/kpi-catalog";
 import { CONFIDENCE_MAP, type MomentumProject } from "../../../../lib/momentum/types";
 import { interpretRse } from "../../../../lib/momentum/rse";
 import type { DimensionSignal } from "../../../../lib/momentum/scoring";
+import { buttonVariants } from "../../../../components/ui/button";
+import { Card, CardContent } from "../../../../components/ui/card";
 import { ResultDashboard } from "../../diagnostic/dashboard";
 
 export default function ProjectPage() {
   const params = useParams();
   const router = useRouter();
-  const id = typeof params?.id === "string" ? params.id : Array.isArray(params?.id) ? params.id[0] : "";
+  const id =
+    typeof params?.id === "string"
+      ? params.id
+      : Array.isArray(params?.id)
+        ? params.id[0]
+        : "";
 
   const [project, setProject] = useState<MomentumProject | null | "loading">(
-    "loading"
+    "loading",
   );
 
   useEffect(() => {
@@ -36,36 +45,51 @@ export default function ProjectPage() {
 
   if (project === "loading") {
     return (
-      <div style={fallbackStyles.page}>
-        <div style={fallbackStyles.card}>Chargement…</div>
+      <div className="mx-auto max-w-3xl px-8 py-16">
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center text-[13px] text-ink-muted">
+            Chargement…
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div style={fallbackStyles.page}>
-        <div style={fallbackStyles.card}>
-          <h1 style={{ fontSize: 20, margin: "0 0 12px" }}>Projet introuvable</h1>
-          <p style={{ color: "#94a3b8", marginBottom: 16 }}>
-            Ce projet n&apos;existe pas ou a été supprimé de ce navigateur.
-          </p>
-          <Link href="/momentum" style={fallbackStyles.link}>
-            ← Retour à Momentum
-          </Link>
-        </div>
+      <div className="mx-auto max-w-3xl px-8 py-16">
+        <Card>
+          <CardContent className="flex flex-col items-center py-12 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-sm bg-rose-50">
+              <FileX className="h-5 w-5 text-rose-500" />
+            </div>
+            <h1 className="mb-2 text-[18px] font-semibold text-ink">
+              Projet introuvable
+            </h1>
+            <p className="mb-5 max-w-md text-[13px] text-ink-muted">
+              Ce projet n&apos;existe pas ou a été supprimé de ce navigateur.
+            </p>
+            <Link
+              href="/momentum"
+              className={buttonVariants({ variant: "primary", size: "md" })}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour à Momentum
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   const kpis =
-    project.payload.id.initiativeType && KPI_PLAN[project.payload.id.initiativeType]
+    project.payload.id.initiativeType &&
+    KPI_PLAN[project.payload.id.initiativeType]
       ? KPI_PLAN[project.payload.id.initiativeType]
       : [];
 
   // Backfill : les projets sauvegardés avant l'introduction du volet RSE
-  // n'ont pas de champ `rse`. On le recalcule à la volée depuis les
-  // réponses KPI pour que le bloc reste toujours visible en lecture.
+  // n'ont pas de champ `rse`. On le recalcule à la volée.
   const diagnostic = project.payload.diagnostic;
   const diagnosticWithRse = diagnostic.rse
     ? diagnostic
@@ -107,24 +131,3 @@ export default function ProjectPage() {
     />
   );
 }
-
-const fallbackStyles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)",
-    color: "#e2e8f0",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 40,
-  },
-  card: {
-    background: "#1e293b",
-    border: "1px solid #334155",
-    borderRadius: 12,
-    padding: 32,
-    maxWidth: 480,
-    textAlign: "center",
-  },
-  link: { color: "#60a5fa", textDecoration: "none" },
-};

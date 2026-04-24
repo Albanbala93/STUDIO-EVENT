@@ -1,15 +1,31 @@
 "use client";
 
 /**
- * Dashboard de restitution Momentum (5 blocs).
+ * Dashboard de restitution Momentum — design system Stratly.
  *
- * Port de momentum/apps/web/src/app/diagnostic/dashboard.tsx avec une seule
- * différence : la sauvegarde utilise localStorage (via lib/momentum/storage)
- * au lieu de POST /projects. Le dashboard reste 100% client-side.
+ * Port de la version dark vers Tailwind + shadcn-style (light canvas,
+ * navy/accent). Conserve : jauge score, radar 4 dimensions, grille
+ * diagnostic, volet RSE (E/S/G), barre d'actions (PDF / Save / Edit).
+ * La sauvegarde utilise localStorage via lib/momentum/storage.
  */
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Circle,
+  Compass,
+  Download,
+  Leaf,
+  Pencil,
+  RefreshCcw,
+  Save,
+  Target,
+} from "lucide-react";
 
 import { saveProject } from "../../../lib/momentum/storage";
 import type {
@@ -30,6 +46,9 @@ import {
   INITIATIVE_LABELS,
   RSE_DIMENSION_LABELS,
 } from "../../../lib/momentum/types";
+import { cn } from "../../../lib/utils";
+import { buttonVariants } from "../../../components/ui/button";
+import { Card, CardContent } from "../../../components/ui/card";
 
 /* ═══════════════════════════════════════════════════════════════════
    HELPERS
@@ -42,29 +61,68 @@ const DIMENSION_HELP: Record<Dimension, string> = {
   impact: "Effets concrets observés après l'initiative.",
 };
 
+/** Renvoie un hex compatible avec le palette Stratly. */
 function scoreColor(score: number): string {
-  if (score >= 80) return "#22c55e";
-  if (score >= 65) return "#84cc16";
-  if (score >= 40) return "#fbbf24";
-  return "#ef4444";
+  if (score >= 80) return "#00C48C"; // accent
+  if (score >= 65) return "#22c55e"; // emerald-500
+  if (score >= 40) return "#f59e0b"; // warn amber
+  return "#ef4444"; // danger
 }
 
-function statusBadge(score: number): { label: string; color: string; icon: string } {
-  if (score >= 70) return { label: "Performance solide", color: "#22c55e", icon: "●" };
-  if (score >= 50) return { label: "Performance mitigée", color: "#fbbf24", icon: "●" };
-  return { label: "Performance faible", color: "#ef4444", icon: "●" };
+function scoreTone(score: number): {
+  label: string;
+  pill: string;
+  text: string;
+  ring: string;
+} {
+  if (score >= 70)
+    return {
+      label: "Performance solide",
+      pill: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+      ring: "ring-emerald-500/20",
+    };
+  if (score >= 50)
+    return {
+      label: "Performance mitigée",
+      pill: "bg-amber-50 border-amber-200",
+      text: "text-amber-700",
+      ring: "ring-amber-500/20",
+    };
+  return {
+    label: "Performance faible",
+    pill: "bg-rose-50 border-rose-200",
+    text: "text-rose-700",
+    ring: "ring-rose-500/20",
+  };
 }
 
-function reliabilityBadge(conf: number): { label: string; color: string } {
-  if (conf >= 75) return { label: "Données fiables", color: "#22c55e" };
-  if (conf >= 50) return { label: "Fiabilité partielle", color: "#fbbf24" };
-  return { label: "Données à consolider", color: "#ef4444" };
-}
-
-function reliabilityDot(conf: number): { color: string; label: string } {
-  if (conf >= 75) return { color: "#22c55e", label: "Fiabilité élevée" };
-  if (conf >= 50) return { color: "#fbbf24", label: "Fiabilité moyenne" };
-  return { color: "#ef4444", label: "Fiabilité faible" };
+function reliabilityTone(conf: number): {
+  label: string;
+  pill: string;
+  text: string;
+  dot: string;
+} {
+  if (conf >= 75)
+    return {
+      label: "Données fiables",
+      pill: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+      dot: "bg-emerald-500",
+    };
+  if (conf >= 50)
+    return {
+      label: "Fiabilité partielle",
+      pill: "bg-amber-50 border-amber-200",
+      text: "text-amber-700",
+      dot: "bg-amber-500",
+    };
+  return {
+    label: "Données à consolider",
+    pill: "bg-rose-50 border-rose-200",
+    text: "text-rose-700",
+    dot: "bg-rose-500",
+  };
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -78,13 +136,9 @@ export function ResultDashboard(props: {
   kpis: KPIQuestion[];
   onReset: () => void;
   onEditData?: () => void;
-  /** Mode lecture seule (projet sauvegardé) : pas de sauvegarde ni d'édition. */
   readOnly?: boolean;
-  /** Date d'enregistrement affichée sous le titre (défaut : aujourd'hui). */
   savedAt?: string;
-  /** Id du projet (sauvegardé). */
   projectId?: string;
-  /** Id du projet Campaign Studio d'origine — stocké dans le payload sauvegardé. */
   fromCampaignId?: string;
 }) {
   const router = useRouter();
@@ -95,28 +149,48 @@ export function ResultDashboard(props: {
 
   const overall = Math.round(score.overall_score);
   const confidence = Math.round(score.confidence_score);
-  const status = statusBadge(overall);
-  const reliability = reliabilityBadge(confidence);
+  const status = scoreTone(overall);
+  const reliability = reliabilityTone(confidence);
 
   const totalSignals =
-    score.measured_count + score.estimated_count + score.declared_count + score.proxy_count;
-  const notMeasuredPct = totalSignals > 0
-    ? Math.round(((totalSignals - score.measured_count) / totalSignals) * 100)
-    : 0;
+    score.measured_count +
+    score.estimated_count +
+    score.declared_count +
+    score.proxy_count;
+  const notMeasuredPct =
+    totalSignals > 0
+      ? Math.round(
+          ((totalSignals - score.measured_count) / totalSignals) * 100,
+        )
+      : 0;
 
-  const dimensionOrder: Dimension[] = ["reach", "engagement", "appropriation", "impact"];
-  const dimensionMap = new Map(score.dimension_scores.map(d => [d.dimension, d]));
+  const dimensionOrder: Dimension[] = [
+    "reach",
+    "engagement",
+    "appropriation",
+    "impact",
+  ];
+  const dimensionMap = new Map(
+    score.dimension_scores.map((d) => [d.dimension, d]),
+  );
 
   const displayDate = props.savedAt
-    ? new Date(props.savedAt).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })
-    : new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    ? new Date(props.savedAt).toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      })
+    : new Date().toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
 
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(null), 2800);
   }
 
-  /** Enregistre le projet en localStorage puis redirige vers sa page de détail. */
   function handleSave() {
     if (saving || savedId) return;
     setSaving(true);
@@ -136,8 +210,7 @@ export function ResultDashboard(props: {
         },
       });
       setSavedId(saved.id);
-      showToast("Projet sauvegardé ✓");
-      // Redirection douce vers la page de détail du projet Momentum sauvegardé.
+      showToast("Projet sauvegardé");
       setTimeout(() => router.push(`/momentum/projects/${saved.id}`), 900);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erreur inconnue";
@@ -148,292 +221,402 @@ export function ResultDashboard(props: {
   }
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #0b1422 0%, #111f36 55%, #0b1422 100%)",
-      padding: "32px 20px 60px",
-    }}>
-    <section className="dashboard-print-root" style={{
-      animation: "fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) both",
-      maxWidth: 1100, margin: "0 auto",
-    }}>
-      <style jsx>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .grid-dims { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: center; }
-        @media (max-width: 900px) {
-          .grid-2, .grid-dims { grid-template-columns: 1fr; }
-        }
-      `}</style>
+    <>
+      {/* Print CSS — hides chrome, expands dashboard to full page */}
       <style jsx global>{`
         @media print {
-          @page { size: A4; margin: 12mm; }
-          html, body { background: #ffffff !important; }
-          body * { visibility: hidden !important; }
-          .dashboard-print-root, .dashboard-print-root * { visibility: visible !important; }
+          @page {
+            size: A4;
+            margin: 12mm;
+          }
+          html,
+          body {
+            background: #ffffff !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          .dashboard-print-root,
+          .dashboard-print-root * {
+            visibility: visible !important;
+          }
           .dashboard-print-root {
             position: absolute !important;
-            left: 0; top: 0;
+            left: 0;
+            top: 0;
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             background: #ffffff !important;
-            color: #0f172a !important;
           }
-          .dashboard-print-root * {
-            color: #0f172a !important;
-            background: transparent !important;
-            box-shadow: none !important;
+          .no-print {
+            display: none !important;
           }
-          .dashboard-print-root h1,
-          .dashboard-print-root h2,
-          .dashboard-print-root h3,
-          .dashboard-print-root b,
-          .dashboard-print-root strong { color: #0b1020 !important; }
-          .no-print { display: none !important; }
+        }
+        @keyframes dashFadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .dash-animate {
+          animation: dashFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
       `}</style>
 
-      {/* BLOC 1 — En-tête du projet */}
-      <DashCard>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <Tag>Restitution</Tag>
-            <h1 style={{ fontSize: 28, lineHeight: 1.2, fontWeight: 800, color: "#f8fafc", margin: "2px 0 10px" }}>
+      {/* Sticky breadcrumb header */}
+      <header className="sticky top-0 z-30 border-b border-border bg-canvas/85 backdrop-blur-sm no-print">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-8">
+          <div className="flex flex-col leading-tight">
+            <span className="text-[11px] uppercase tracking-[0.14em] text-ink-muted">
+              Momentum · Restitution
+            </span>
+            <h1 className="text-[15px] font-semibold text-ink truncate max-w-[60vw]">
               {props.id.name || "Initiative sans nom"}
             </h1>
-            <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 10 }}>
-              {props.id.initiativeType
-                ? INITIATIVE_LABELS[props.id.initiativeType as InitiativeType]
-                : "—"}
-              {" · "}{props.id.audienceType || "Audience non précisée"}
-              {" · "}{displayDate}
-            </div>
-            {props.id.intent && (
-              <div style={{
-                fontStyle: "italic", fontSize: 14, color: "#cbd5e1",
-                paddingLeft: 12, borderLeft: "2px solid rgba(129,140,248,0.5)",
-              }}>
-                « {props.id.intent} »
-              </div>
+          </div>
+          <div
+            className={cn(
+              "inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 text-[12px] font-semibold",
+              status.pill,
+              status.text,
             )}
-          </div>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "8px 14px", borderRadius: 999,
-            background: status.color + "1f", border: `1px solid ${status.color}55`,
-            fontSize: 13, fontWeight: 700, color: status.color, whiteSpace: "nowrap",
-          }}>
-            <span style={{ fontSize: 10 }}>{status.icon}</span> {status.label}
+          >
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
+            {status.label}
           </div>
         </div>
-      </DashCard>
+      </header>
 
-      {/* BLOC 2 — Communication Score */}
-      <DashCard>
-        <div style={{ display: "flex", gap: 32, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <ScoreGauge value={overall} />
-          </div>
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#818cf8", marginBottom: 8 }}>
-              Communication Score
+      <section className="dashboard-print-root dash-animate mx-auto max-w-6xl space-y-6 px-8 py-8">
+        {/* BLOC 1 — Identification */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-[260px] flex-1">
+                <div className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-accent">
+                  Restitution exécutive
+                </div>
+                <h2 className="mb-2 text-[24px] font-bold leading-tight text-ink">
+                  {props.id.name || "Initiative sans nom"}
+                </h2>
+                <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-ink-muted">
+                  <span>
+                    {props.id.initiativeType
+                      ? INITIATIVE_LABELS[
+                          props.id.initiativeType as InitiativeType
+                        ]
+                      : "—"}
+                  </span>
+                  <span className="text-border">•</span>
+                  <span>{props.id.audienceType || "Audience non précisée"}</span>
+                  <span className="text-border">•</span>
+                  <span>{displayDate}</span>
+                </div>
+                {props.id.intent && (
+                  <blockquote className="mt-3 border-l-2 border-accent/60 pl-3 text-[13px] italic text-ink-muted">
+                    « {props.id.intent} »
+                  </blockquote>
+                )}
+              </div>
             </div>
-            <p style={{ fontSize: 15, color: "#e2e8f0", lineHeight: 1.6, margin: "0 0 18px" }}>
-              {interpretation.executive_summary.key_insight}
-            </p>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "6px 12px", borderRadius: 8,
-              background: reliability.color + "1f", border: `1px solid ${reliability.color}55`,
-              fontSize: 12, fontWeight: 700, color: reliability.color, marginBottom: 8,
-            }}>
-              ● {reliability.label}
-            </div>
-            <div style={{ fontSize: 12, color: "#94a3b8" }}>
-              {totalSignals > 0
-                ? `${notMeasuredPct}% des données sont déclarées ou estimées. Interpréter avec prudence.`
-                : "Aucune donnée exploitable — compléter les saisies pour obtenir un score."}
-            </div>
-          </div>
-        </div>
-      </DashCard>
+          </CardContent>
+        </Card>
 
-      {/* BLOC 3 — 4 dimensions */}
-      <DashCard>
-        <CardTitle>Les 4 dimensions</CardTitle>
-        <div className="grid-dims" style={{ marginTop: 4 }}>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <RadarChart
-              dimensions={dimensionOrder.map(d => {
-                const ds = dimensionMap.get(d);
-                return { label: DIMENSION_LABELS[d], value: ds?.score ?? 0, present: !!ds && ds.kpi_breakdown.length > 0 };
-              })}
-            />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {dimensionOrder.map(d => {
-              const ds = dimensionMap.get(d);
-              const present = !!ds && ds.kpi_breakdown.length > 0;
-              const s = Math.round(ds?.score ?? 0);
-              const color = present ? scoreColor(s) : "#475569";
-              const dot = reliabilityDot(ds?.confidence_score ?? 0);
-              return (
-                <div key={d}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0", letterSpacing: "0.04em", textTransform: "uppercase" }}>
-                      {DIMENSION_LABELS[d]}
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {present && (
-                        <span title={dot.label} style={{
-                          width: 8, height: 8, borderRadius: "50%", background: dot.color,
-                          display: "inline-block",
-                        }} />
-                      )}
-                      <div style={{ fontSize: 13, fontWeight: 800, color: present ? "#f1f5f9" : "#64748b" }}>
-                        {present ? `${s}/100` : "Non évaluée"}
+        {/* BLOC 2 — Communication Score */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex flex-wrap items-center gap-8">
+              <div className="flex flex-shrink-0 justify-center">
+                <ScoreGauge value={overall} />
+              </div>
+              <div className="min-w-[260px] flex-1">
+                <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
+                  Communication Score
+                </div>
+                <p className="mb-4 text-[14px] leading-relaxed text-ink">
+                  {interpretation.executive_summary.key_insight}
+                </p>
+                <div
+                  className={cn(
+                    "mb-3 inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 text-[12px] font-semibold",
+                    reliability.pill,
+                    reliability.text,
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "inline-block h-1.5 w-1.5 rounded-full",
+                      reliability.dot,
+                    )}
+                  />
+                  {reliability.label}
+                </div>
+                <div className="text-[12px] text-ink-muted">
+                  {totalSignals > 0
+                    ? `${notMeasuredPct}% des données sont déclarées ou estimées. Interpréter avec prudence.`
+                    : "Aucune donnée exploitable — compléter les saisies pour obtenir un score."}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* BLOC 3 — 4 dimensions */}
+        <Card>
+          <CardContent className="p-6">
+            <SectionTitle icon={<Target className="h-4 w-4 text-accent" />}>
+              Les 4 dimensions
+            </SectionTitle>
+            <div className="mt-4 grid gap-6 md:grid-cols-[1.1fr_1fr] md:items-center">
+              <div className="flex justify-center">
+                <RadarChart
+                  dimensions={dimensionOrder.map((d) => {
+                    const ds = dimensionMap.get(d);
+                    return {
+                      label: DIMENSION_LABELS[d],
+                      value: ds?.score ?? 0,
+                      present: !!ds && ds.kpi_breakdown.length > 0,
+                    };
+                  })}
+                />
+              </div>
+              <div className="flex flex-col gap-4">
+                {dimensionOrder.map((d) => {
+                  const ds = dimensionMap.get(d);
+                  const present = !!ds && ds.kpi_breakdown.length > 0;
+                  const s = Math.round(ds?.score ?? 0);
+                  const color = present ? scoreColor(s) : "#94A3B8";
+                  const relTone = reliabilityTone(ds?.confidence_score ?? 0);
+                  return (
+                    <div key={d}>
+                      <div className="mb-1 flex items-center justify-between">
+                        <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink">
+                          {DIMENSION_LABELS[d]}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {present && (
+                            <span
+                              title={relTone.label}
+                              className={cn(
+                                "inline-block h-2 w-2 rounded-full",
+                                relTone.dot,
+                              )}
+                            />
+                          )}
+                          <div
+                            className={cn(
+                              "text-[13px] font-bold tabular-nums",
+                              present ? "text-ink" : "text-ink-muted",
+                            )}
+                          >
+                            {present ? `${s}/100` : "Non évaluée"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-canvas">
+                        <div
+                          className="h-full rounded-full transition-[width] duration-700 ease-out"
+                          style={{
+                            width: `${present ? s : 0}%`,
+                            background: color,
+                          }}
+                        />
+                      </div>
+                      <div className="mt-1.5 text-[11px] leading-snug text-ink-muted">
+                        {present
+                          ? DIMENSION_HELP[d]
+                          : "Aucune mesure collectée sur cette dimension."}
                       </div>
                     </div>
-                  </div>
-                  <div style={{ height: 10, background: "rgba(255,255,255,0.05)", borderRadius: 999, overflow: "hidden" }}>
-                    <div style={{
-                      width: `${present ? s : 0}%`, height: "100%", background: color,
-                      borderRadius: 999, transition: "width 0.6s cubic-bezier(0.16,1,0.3,1)",
-                    }} />
-                  </div>
-                  <div style={{ fontSize: 11, color: "#a3b4c9", marginTop: 4, lineHeight: 1.5 }}>
-                    {present ? DIMENSION_HELP[d] : "Aucune mesure collectée sur cette dimension."}
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* BLOC 4 — Diagnostic métier (2 colonnes) */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <DiagnosticCard
+            accent="emerald"
+            icon={<CheckCircle2 className="h-4 w-4" />}
+            title="Points forts"
+            empty={interpretation.executive_summary.top_strengths.length === 0}
+            emptyHint="Aucun point fort clairement consolidé pour l'instant."
+          >
+            <ul className="space-y-2">
+              {interpretation.executive_summary.top_strengths
+                .slice(0, 3)
+                .map((s) => (
+                  <li
+                    key={s}
+                    className="flex gap-2 text-[13px] leading-relaxed text-ink"
+                  >
+                    <span className="mt-1.5 inline-block h-1 w-1 flex-shrink-0 rounded-full bg-emerald-500" />
+                    <span>{s}</span>
+                  </li>
+                ))}
+            </ul>
+          </DiagnosticCard>
+
+          <DiagnosticCard
+            accent="amber"
+            icon={<AlertTriangle className="h-4 w-4" />}
+            title="Points de vigilance"
+            empty={interpretation.detailed_analysis.weaknesses.length === 0}
+            emptyHint="Aucun point de vigilance identifié."
+          >
+            <ul className="space-y-3">
+              {interpretation.detailed_analysis.weaknesses
+                .slice(0, 3)
+                .map((w) => (
+                  <li key={w.title} className="text-[13px] leading-relaxed">
+                    <b className="text-ink">{w.title}</b>
+                    <span className="text-ink-muted"> — {w.description}</span>
+                  </li>
+                ))}
+            </ul>
+          </DiagnosticCard>
+
+          <div className="md:col-span-2">
+            <DiagnosticCard
+              accent="accent"
+              icon={<ArrowRight className="h-4 w-4" />}
+              title="Recommandations actionnables"
+              empty={
+                interpretation.detailed_analysis.recommendations.length === 0
+              }
+              emptyHint="Les données actuelles ne permettent pas de formuler des recommandations précises — commencez par instrumenter les angles morts identifiés."
+            >
+              <div className="flex flex-col gap-3">
+                {interpretation.detailed_analysis.recommendations
+                  .slice(0, 4)
+                  .map((r) => (
+                    <RecommendationCard key={r.title} reco={r} />
+                  ))}
+              </div>
+            </DiagnosticCard>
+          </div>
+
+          <div className="md:col-span-2">
+            <DiagnosticCard
+              accent="slate"
+              icon={<Circle className="h-4 w-4" />}
+              title="Angles morts de mesure"
+              empty={interpretation.detailed_analysis.data_gaps.length === 0}
+              emptyHint="Aucun angle mort détecté à ce stade."
+            >
+              <div className="flex flex-col gap-3">
+                {interpretation.detailed_analysis.data_gaps
+                  .slice(0, 5)
+                  .map((g) => (
+                    <div
+                      key={`${g.field}-${g.issue}`}
+                      className="rounded-sm border border-border bg-canvas/60 p-3"
+                    >
+                      <div className="text-[13px] leading-relaxed">
+                        <b className="text-ink">{g.field}</b>
+                        <span className="text-ink-muted"> — {g.issue}</span>
+                      </div>
+                      <div className="mt-1 text-[11px] text-ink-muted">
+                        Impact : {g.impact}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </DiagnosticCard>
           </div>
         </div>
-      </DashCard>
 
-      {/* BLOC 4 — Diagnostic métier */}
-      <div className="grid-2" style={{ marginTop: 16 }}>
-        <DashCard accent="#22c55e">
-          <CardTitle><span style={{ color: "#22c55e", marginRight: 8 }}>✓</span> Points forts</CardTitle>
-          {interpretation.executive_summary.top_strengths.length > 0 ? (
-            <ul style={{ margin: 0, padding: "0 0 0 18px", color: "#cbd5e1", fontSize: 13, lineHeight: 1.7 }}>
-              {interpretation.executive_summary.top_strengths.slice(0, 3).map(s => <li key={s}>{s}</li>)}
-            </ul>
-          ) : (
-            <EmptyHint>Aucun point fort clairement consolidé pour l&apos;instant.</EmptyHint>
-          )}
-        </DashCard>
+        {/* BLOC 4bis — Volet RSE (ESG) */}
+        {rse && <RseSection rse={rse} />}
 
-        <DashCard accent="#fbbf24">
-          <CardTitle><span style={{ color: "#fbbf24", marginRight: 8 }}>⚠</span> Points de vigilance</CardTitle>
-          {interpretation.detailed_analysis.weaknesses.length > 0 ? (
-            <ul style={{ margin: 0, padding: "0 0 0 18px", color: "#cbd5e1", fontSize: 13, lineHeight: 1.7 }}>
-              {interpretation.detailed_analysis.weaknesses.slice(0, 3).map(w => (
-                <li key={w.title}><b style={{ color: "#f1f5f9" }}>{w.title}</b> — {w.description}</li>
-              ))}
-            </ul>
-          ) : (
-            <EmptyHint>Aucun point de vigilance identifié.</EmptyHint>
-          )}
-        </DashCard>
-
-        <DashCard accent="#4d5fff">
-          <CardTitle><span style={{ color: "#818cf8", marginRight: 8 }}>→</span> Recommandations actionnables</CardTitle>
-          {interpretation.detailed_analysis.recommendations.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {interpretation.detailed_analysis.recommendations.slice(0, 4).map((r) => (
-                <RecommendationCard key={r.title} reco={r} />
-              ))}
-            </div>
-          ) : (
-            <EmptyHint>
-              Les données actuelles ne permettent pas de formuler des recommandations précises — commencez par instrumenter les angles morts identifiés.
-            </EmptyHint>
-          )}
-        </DashCard>
-
-        <DashCard accent="#94a3b8">
-          <CardTitle><span style={{ color: "#94a3b8", marginRight: 8 }}>◌</span> Angles morts de mesure</CardTitle>
-          {interpretation.detailed_analysis.data_gaps.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {interpretation.detailed_analysis.data_gaps.slice(0, 5).map(g => (
-                <div key={`${g.field}-${g.issue}`} style={{ fontSize: 13, color: "#cbd5e1", lineHeight: 1.55 }}>
-                  <b style={{ color: "#f1f5f9" }}>{g.field}</b> — {g.issue}
-                  <div style={{ fontSize: 11, color: "#a3b4c9", marginTop: 2 }}>Impact : {g.impact}</div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <EmptyHint>Aucun angle mort détecté à ce stade.</EmptyHint>
-          )}
-        </DashCard>
-      </div>
-
-      {/* BLOC 4bis — Volet RSE (ESG) */}
-      {rse && <RseSection rse={rse} />}
-
-      {/* BLOC 5 — Barre d'actions */}
-      <div className="no-print" style={{
-        marginTop: 20, padding: 16, borderRadius: 16,
-        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-        display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center",
-      }}>
-        <button
-          onClick={() => {
-            if (typeof window === "undefined") return;
-            setToast("Préparation du PDF — choisissez « Enregistrer au format PDF » dans la boîte d'impression.");
-            setTimeout(() => {
-              window.print();
-              setTimeout(() => setToast(null), 1500);
-            }, 300);
-          }}
-          style={primaryBtn("#4d5fff")}
-        >
-          ⬇ Export PDF
-        </button>
-        {!props.readOnly && (
+        {/* BLOC 5 — Barre d'actions */}
+        <div className="no-print flex flex-wrap items-center gap-3 rounded-lg border border-border bg-white p-4 shadow-card">
           <button
-            onClick={handleSave}
-            disabled={saving || !!savedId}
+            onClick={() => {
+              if (typeof window === "undefined") return;
+              setToast(
+                "Préparation du PDF — choisissez « Enregistrer au format PDF » dans la boîte d'impression.",
+              );
+              setTimeout(() => {
+                window.print();
+                setTimeout(() => setToast(null), 1500);
+              }, 300);
+            }}
+            className={buttonVariants({ variant: "primary", size: "md" })}
+          >
+            <Download className="h-4 w-4" />
+            Export PDF
+          </button>
+
+          {!props.readOnly && (
+            <button
+              onClick={handleSave}
+              disabled={saving || !!savedId}
+              className={cn(
+                buttonVariants({ variant: "secondary", size: "md" }),
+                (saving || savedId) && "cursor-default opacity-60",
+              )}
+            >
+              {savedId ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Sauvegardé
+                </>
+              ) : saving ? (
+                <>
+                  <Save className="h-4 w-4 animate-pulse" />
+                  Sauvegarde…
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Sauvegarder le projet
+                </>
+              )}
+            </button>
+          )}
+
+          <button
+            onClick={props.onReset}
+            className={buttonVariants({ variant: "outline", size: "md" })}
+          >
+            <RefreshCcw className="h-4 w-4" />
+            {props.readOnly ? "Supprimer" : "Nouvelle analyse"}
+          </button>
+
+          <div className="flex-1" />
+
+          {!props.readOnly && props.onEditData && (
+            <button
+              onClick={props.onEditData}
+              className={buttonVariants({ variant: "ghost", size: "md" })}
+            >
+              <Pencil className="h-4 w-4" />
+              Modifier les données
+            </button>
+          )}
+        </div>
+
+        {toast && (
+          <div
+            className="no-print fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-md border border-border bg-white px-5 py-3 text-[13px] font-medium text-ink shadow-card-hover"
             style={{
-              ...primaryBtn("#22c55e"),
-              opacity: saving || savedId ? 0.6 : 1,
-              cursor: saving || savedId ? "default" : "pointer",
+              animation: "dashFadeUp 0.25s cubic-bezier(0.16,1,0.3,1) both",
             }}
           >
-            {savedId ? "✓ Sauvegardé" : saving ? "Sauvegarde…" : "◉ Sauvegarder le projet"}
-          </button>
+            {toast}
+          </div>
         )}
-        <button onClick={props.onReset} style={primaryBtn("#7c3aed")}>
-          ↻ Nouvelle analyse
-        </button>
-        <div style={{ flex: 1 }} />
-        {!props.readOnly && props.onEditData && (
-          <button onClick={props.onEditData} style={ghostBtn()}>
-            Modifier les données
-          </button>
-        )}
-      </div>
-
-      {toast && (
-        <div className="no-print" style={{
-          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
-          padding: "12px 20px", borderRadius: 12,
-          background: "rgba(15,23,42,0.95)", border: "1px solid rgba(129,140,248,0.4)",
-          color: "#f1f5f9", fontSize: 13, fontWeight: 500,
-          boxShadow: "0 10px 40px rgba(0,0,0,0.4)", zIndex: 50,
-          animation: "fadeUp 0.25s cubic-bezier(0.16,1,0.3,1) both",
-        }}>
-          {toast}
-        </div>
-      )}
-    </section>
-    </div>
+      </section>
+    </>
   );
 }
 
@@ -441,60 +624,128 @@ export function ResultDashboard(props: {
    PRIMITIVES UI
    ═══════════════════════════════════════════════════════════════════ */
 
-function Tag({ children }: { children: React.ReactNode }) {
+function SectionTitle({
+  icon,
+  children,
+}: {
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div style={{
-      fontSize: 10, fontWeight: 800, letterSpacing: "0.14em",
-      textTransform: "uppercase", color: "#818cf8", marginBottom: 10,
-    }}>{children}</div>
-  );
-}
-
-function CardTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", marginBottom: 14, display: "flex", alignItems: "center" }}>
-      {children}
+    <div className="flex items-center gap-2">
+      {icon && (
+        <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-accent-50">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-[14px] font-semibold text-ink">{children}</h3>
     </div>
   );
 }
 
-function DashCard({ children, accent }: { children: React.ReactNode; accent?: string }) {
-  return (
-    <div style={{
-      padding: 22, borderRadius: 16, marginTop: 16,
-      background: "rgba(255,255,255,0.03)",
-      border: "1px solid rgba(255,255,255,0.06)",
-      borderTop: accent ? `2px solid ${accent}` : undefined,
-    }}>
-      {children}
-    </div>
-  );
-}
+type DiagnosticAccent = "emerald" | "amber" | "accent" | "slate";
 
-function EmptyHint({ children }: { children: React.ReactNode }) {
+const ACCENT_CLASSES: Record<
+  DiagnosticAccent,
+  { bar: string; iconWrap: string; iconColor: string }
+> = {
+  emerald: {
+    bar: "bg-emerald-500",
+    iconWrap: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+  },
+  amber: {
+    bar: "bg-amber-500",
+    iconWrap: "bg-amber-50",
+    iconColor: "text-amber-600",
+  },
+  accent: {
+    bar: "bg-accent",
+    iconWrap: "bg-accent-50",
+    iconColor: "text-accent",
+  },
+  slate: {
+    bar: "bg-slate-400",
+    iconWrap: "bg-slate-100",
+    iconColor: "text-slate-600",
+  },
+};
+
+function DiagnosticCard({
+  accent,
+  icon,
+  title,
+  empty,
+  emptyHint,
+  children,
+}: {
+  accent: DiagnosticAccent;
+  icon: React.ReactNode;
+  title: string;
+  empty: boolean;
+  emptyHint: string;
+  children: React.ReactNode;
+}) {
+  const tone = ACCENT_CLASSES[accent];
   return (
-    <div style={{
-      fontSize: 12, color: "#a3b4c9", fontStyle: "italic",
-      padding: "8px 0", lineHeight: 1.55,
-    }}>
-      {children}
-    </div>
+    <Card className="relative h-full overflow-hidden">
+      <div className={cn("absolute inset-x-0 top-0 h-0.5", tone.bar)} />
+      <CardContent className="p-5">
+        <div className="mb-4 flex items-center gap-2">
+          <div
+            className={cn(
+              "flex h-7 w-7 items-center justify-center rounded-sm",
+              tone.iconWrap,
+              tone.iconColor,
+            )}
+          >
+            {icon}
+          </div>
+          <h3 className="text-[14px] font-semibold text-ink">{title}</h3>
+        </div>
+        {empty ? (
+          <div className="py-2 text-[12px] italic leading-relaxed text-ink-muted">
+            {emptyHint}
+          </div>
+        ) : (
+          children
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   RECOMMANDATION ENRICHIE (why / action / when / impact + outil)
+   RECOMMANDATION ENRICHIE
    ═══════════════════════════════════════════════════════════════════ */
+
+function priorityTone(priority: string): {
+  pill: string;
+  text: string;
+  bar: string;
+} {
+  if (priority === "haute" || priority === "high")
+    return {
+      pill: "bg-rose-50 border-rose-200",
+      text: "text-rose-700",
+      bar: "bg-rose-500",
+    };
+  if (priority === "moyenne" || priority === "medium")
+    return {
+      pill: "bg-amber-50 border-amber-200",
+      text: "text-amber-700",
+      bar: "bg-amber-500",
+    };
+  return {
+    pill: "bg-sky-50 border-sky-200",
+    text: "text-sky-700",
+    bar: "bg-sky-500",
+  };
+}
 
 function RecommendationCard({ reco }: { reco: RecommendationItem }) {
   const [toolOpen, setToolOpen] = useState(false);
-
-  const prioColor =
-    reco.priority === "haute" || reco.priority === "high"
-      ? "#f87171"
-      : reco.priority === "moyenne" || reco.priority === "medium"
-      ? "#fbbf24"
-      : "#60a5fa";
+  const prio = priorityTone(reco.priority);
 
   const typeLabel: Record<string, string> = {
     improvement: "Amélioration",
@@ -504,195 +755,119 @@ function RecommendationCard({ reco }: { reco: RecommendationItem }) {
   const typeBadge = reco.reco_type ? typeLabel[reco.reco_type] : null;
 
   return (
-    <div
-      style={{
-        padding: 16,
-        borderRadius: 12,
-        background: "rgba(255,255,255,0.045)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderLeft: `3px solid ${prioColor}`,
-      }}
-    >
-      {/* Header : titre + badges */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 10,
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-          marginBottom: 10,
-        }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 14, color: "#f8fafc", flex: 1, minWidth: 200, lineHeight: 1.35 }}>
+    <div className="relative overflow-hidden rounded-sm border border-border bg-canvas/40 p-4">
+      <div className={cn("absolute inset-y-0 left-0 w-0.5", prio.bar)} />
+
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-2 pl-2">
+        <div className="min-w-[200px] flex-1 text-[14px] font-semibold leading-snug text-ink">
           {reco.title}
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <div className="flex flex-wrap gap-1.5">
           {typeBadge && (
-            <span
-              style={{
-                fontSize: 10,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                fontWeight: 700,
-                color: "#cbd5e1",
-                padding: "2px 8px",
-                borderRadius: 4,
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
-            >
+            <span className="rounded-sm border border-border bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
               {typeBadge}
             </span>
           )}
           <span
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              fontWeight: 800,
-              color: prioColor,
-              padding: "2px 8px",
-              borderRadius: 4,
-              background: prioColor + "20",
-              border: `1px solid ${prioColor}55`,
-            }}
+            className={cn(
+              "rounded-sm border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+              prio.pill,
+              prio.text,
+            )}
           >
             Priorité {reco.priority}
           </span>
         </div>
       </div>
 
-      {/* Corps : why / action / when / impact */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="flex flex-col gap-2.5 pl-2">
         {reco.why && (
-          <RecoLine label="Pourquoi" value={reco.why} accent="#fbbf24" />
+          <RecoLine label="Pourquoi" value={reco.why} accent="amber" />
         )}
-        <RecoLine label="Action" value={reco.action} accent="#818cf8" strong />
+        <RecoLine label="Action" value={reco.action} accent="accent" strong />
         {reco.when && (
-          <RecoLine label="Quand" value={reco.when} accent="#60a5fa" />
+          <RecoLine label="Quand" value={reco.when} accent="sky" />
         )}
         {reco.impact && (
-          <RecoLine label="Impact attendu" value={reco.impact} accent="#22c55e" />
+          <RecoLine
+            label="Impact attendu"
+            value={reco.impact}
+            accent="emerald"
+          />
         )}
       </div>
 
-      {/* Outil livrable */}
       {reco.tool && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: 12,
-            borderRadius: 10,
-            background: "rgba(99,102,241,0.08)",
-            border: "1px solid rgba(129,140,248,0.25)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 10,
-              flexWrap: "wrap",
-            }}
-          >
+        <div className="mt-3 ml-2 rounded-sm border border-accent/20 bg-accent-50/50 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 800,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "#a5b4fc",
-                  marginBottom: 2,
-                }}
-              >
+              <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-700">
                 Outil livré · {reco.tool.type}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>
+              <div className="text-[13px] font-semibold text-ink">
                 {reco.tool.name}
               </div>
             </div>
             <button
               onClick={() => setToolOpen((o) => !o)}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 8,
-                background: "#4f46e5",
-                color: "#fff",
-                fontSize: 12,
-                fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
+              className={cn(
+                buttonVariants({ variant: "primary", size: "sm" }),
+                "gap-1",
+              )}
             >
-              {toolOpen ? "Masquer" : "Utiliser ce template"}
+              {toolOpen ? (
+                <>
+                  <ChevronUp className="h-3.5 w-3.5" />
+                  Masquer
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3.5 w-3.5" />
+                  Utiliser ce template
+                </>
+              )}
             </button>
           </div>
 
           {toolOpen && (
-            <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-              <div style={{ fontSize: 12.5, color: "#e2e8f0", lineHeight: 1.6 }}>
+            <div className="mt-3 flex flex-col gap-3 border-t border-accent/20 pt-3">
+              <div className="text-[13px] leading-relaxed text-ink">
                 {reco.tool.usage}
               </div>
 
               {reco.tool.timing.length > 0 && (
-                <div>
-                  <div style={reCaptionStyle}>Timing</div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <ToolBlock label="Timing">
+                  <div className="flex flex-wrap gap-1.5">
                     {reco.tool.timing.map((t) => (
-                      <span key={t} style={pillStyle}>
+                      <span
+                        key={t}
+                        className="rounded-full border border-border bg-white px-2.5 py-0.5 text-[11px] text-ink"
+                      >
                         {t}
                       </span>
                     ))}
                   </div>
-                </div>
+                </ToolBlock>
               )}
 
               {reco.tool.questions.length > 0 && (
-                <div>
-                  <div style={reCaptionStyle}>Questions clés</div>
-                  <ol
-                    style={{
-                      margin: 0,
-                      padding: "0 0 0 20px",
-                      color: "#cbd5e1",
-                      fontSize: 13,
-                      lineHeight: 1.6,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                    }}
-                  >
+                <ToolBlock label="Questions clés">
+                  <ol className="ml-4 list-decimal space-y-1 text-[13px] leading-relaxed text-ink">
                     {reco.tool.questions.slice(0, 5).map((q) => (
                       <li key={q}>{q}</li>
                     ))}
                   </ol>
-                </div>
+                </ToolBlock>
               )}
 
               {reco.tool.tips.length > 0 && (
-                <div>
-                  <div style={reCaptionStyle}>Bonnes pratiques</div>
-                  <ul
-                    style={{
-                      margin: 0,
-                      padding: "0 0 0 20px",
-                      color: "#cbd5e1",
-                      fontSize: 12.5,
-                      lineHeight: 1.55,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 3,
-                    }}
-                  >
+                <ToolBlock label="Bonnes pratiques">
+                  <ul className="ml-4 list-disc space-y-1 text-[12.5px] leading-relaxed text-ink">
                     {reco.tool.tips.map((t) => (
                       <li key={t}>{t}</li>
                     ))}
                   </ul>
-                </div>
+                </ToolBlock>
               )}
             </div>
           )}
@@ -702,6 +877,30 @@ function RecommendationCard({ reco }: { reco: RecommendationItem }) {
   );
 }
 
+function ToolBlock({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-700">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+const RECO_LINE_ACCENT: Record<string, string> = {
+  amber: "text-amber-600",
+  sky: "text-sky-600",
+  emerald: "text-emerald-600",
+  accent: "text-accent",
+};
+
 function RecoLine({
   label,
   value,
@@ -710,73 +909,29 @@ function RecoLine({
 }: {
   label: string;
   value: string;
-  accent: string;
+  accent: keyof typeof RECO_LINE_ACCENT;
   strong?: boolean;
 }) {
   return (
-    <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+    <div className="flex items-start gap-3">
       <div
-        style={{
-          fontSize: 10,
-          fontWeight: 800,
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          color: accent,
-          minWidth: 92,
-          paddingTop: 2,
-          whiteSpace: "nowrap",
-        }}
+        className={cn(
+          "min-w-[92px] pt-0.5 text-[10px] font-bold uppercase tracking-[0.1em] whitespace-nowrap",
+          RECO_LINE_ACCENT[accent],
+        )}
       >
         {label}
       </div>
       <div
-        style={{
-          fontSize: strong ? 13.5 : 13,
-          color: strong ? "#f1f5f9" : "#d8dfea",
-          lineHeight: 1.55,
-          flex: 1,
-        }}
+        className={cn(
+          "flex-1 leading-relaxed",
+          strong ? "text-[13.5px] font-medium text-ink" : "text-[13px] text-ink-muted",
+        )}
       >
         {value}
       </div>
     </div>
   );
-}
-
-const reCaptionStyle: React.CSSProperties = {
-  fontSize: 10,
-  fontWeight: 800,
-  letterSpacing: "0.12em",
-  textTransform: "uppercase",
-  color: "#a5b4fc",
-  marginBottom: 6,
-};
-
-const pillStyle: React.CSSProperties = {
-  fontSize: 11,
-  padding: "3px 10px",
-  borderRadius: 999,
-  background: "rgba(255,255,255,0.08)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  color: "#e2e8f0",
-};
-
-function primaryBtn(color: string): React.CSSProperties {
-  return {
-    padding: "10px 16px", borderRadius: 10,
-    background: color, border: "none",
-    color: "#fff", fontWeight: 700, fontSize: 13,
-    cursor: "pointer", boxShadow: `0 4px 14px ${color}33`,
-  };
-}
-
-function ghostBtn(): React.CSSProperties {
-  return {
-    padding: "10px 14px", borderRadius: 10,
-    background: "transparent", border: "1px solid rgba(255,255,255,0.12)",
-    color: "#cbd5e1", fontWeight: 600, fontSize: 12,
-    cursor: "pointer",
-  };
 }
 
 /* ── Jauge circulaire SVG ─────────────────────────────────────────── */
@@ -793,7 +948,10 @@ function ScoreGauge({ value }: { value: number }) {
   const clamped = Math.max(0, Math.min(100, value));
   const progressA = startA + (totalArc * clamped) / 100;
 
-  const polar = (a: number) => ({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+  const polar = (a: number) => ({
+    x: cx + r * Math.cos(a),
+    y: cy + r * Math.sin(a),
+  });
   const a0 = polar(startA);
   const a1 = polar(endA);
   const p = polar(progressA);
@@ -805,21 +963,39 @@ function ScoreGauge({ value }: { value: number }) {
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <path
         d={`M ${a0.x} ${a0.y} A ${r} ${r} 0 ${largeArcBg} 1 ${a1.x} ${a1.y}`}
-        fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={stroke} strokeLinecap="round"
+        fill="none"
+        stroke="#E5E7EB"
+        strokeWidth={stroke}
+        strokeLinecap="round"
       />
       {clamped > 0 && (
         <path
           d={`M ${a0.x} ${a0.y} A ${r} ${r} 0 ${largeArcFg} 1 ${p.x} ${p.y}`}
-          fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round"
-          style={{ filter: `drop-shadow(0 0 8px ${color}99)` }}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
         />
       )}
-      <text x={cx} y={cy - 4} textAnchor="middle"
-        style={{ fontSize: 44, fontWeight: 800, fill: "#f8fafc" }}>
+      <text
+        x={cx}
+        y={cy - 4}
+        textAnchor="middle"
+        style={{ fontSize: 44, fontWeight: 800, fill: "#1A1A2E" }}
+      >
         {Math.round(clamped)}
       </text>
-      <text x={cx} y={cy + 20} textAnchor="middle"
-        style={{ fontSize: 12, fontWeight: 600, fill: "#a3b4c9", letterSpacing: "0.1em" }}>
+      <text
+        x={cx}
+        y={cy + 20}
+        textAnchor="middle"
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          fill: "#6B7280",
+          letterSpacing: "0.1em",
+        }}
+      >
         /100
       </text>
     </svg>
@@ -828,8 +1004,11 @@ function ScoreGauge({ value }: { value: number }) {
 
 /* ── Radar chart SVG ──────────────────────────────────────────────── */
 
-function RadarChart({ dimensions }: { dimensions: { label: string; value: number; present: boolean }[] }) {
-  // viewBox plus large + padding pour afficher les libellés en entier
+function RadarChart({
+  dimensions,
+}: {
+  dimensions: { label: string; value: number; present: boolean }[];
+}) {
   const size = 520;
   const cx = size / 2;
   const cy = size / 2;
@@ -843,29 +1022,44 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
   });
 
   const rings = [0.25, 0.5, 0.75, 1.0];
-  const presentCount = dimensions.filter(d => d.present).length;
+  const presentCount = dimensions.filter((d) => d.present).length;
 
-  const polyPoints = dimensions.map((d, i) => {
-    const value = d.present ? Math.max(0, Math.min(100, d.value)) : 0;
-    const r = (value / 100) * maxR;
-    const p = point(i, r);
-    return `${p.x},${p.y}`;
-  }).join(" ");
+  const polyPoints = dimensions
+    .map((d, i) => {
+      const value = d.present ? Math.max(0, Math.min(100, d.value)) : 0;
+      const r = (value / 100) * maxR;
+      const p = point(i, r);
+      return `${p.x},${p.y}`;
+    })
+    .join(" ");
 
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
       preserveAspectRatio="xMidYMid meet"
-      style={{ width: "100%", height: "auto", maxWidth: 440, display: "block", margin: "0 auto" }}
+      style={{
+        width: "100%",
+        height: "auto",
+        maxWidth: 440,
+        display: "block",
+        margin: "0 auto",
+      }}
     >
       {rings.map((rf, idx) => {
-        const pts = dimensions.map((_, i) => {
-          const p = point(i, maxR * rf);
-          return `${p.x},${p.y}`;
-        }).join(" ");
+        const pts = dimensions
+          .map((_, i) => {
+            const p = point(i, maxR * rf);
+            return `${p.x},${p.y}`;
+          })
+          .join(" ");
         return (
-          <polygon key={idx} points={pts}
-            fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
+          <polygon
+            key={idx}
+            points={pts}
+            fill="none"
+            stroke="#E5E7EB"
+            strokeWidth={1}
+          />
         );
       })}
 
@@ -874,8 +1068,11 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
         return (
           <line
             key={i}
-            x1={cx} y1={cy} x2={p.x} y2={p.y}
-            stroke={d.present ? "rgba(255,255,255,0.12)" : "rgba(148,163,184,0.25)"}
+            x1={cx}
+            y1={cy}
+            x2={p.x}
+            y2={p.y}
+            stroke={d.present ? "#E5E7EB" : "#CBD5E1"}
             strokeWidth={1}
             strokeDasharray={d.present ? undefined : "3 3"}
           />
@@ -887,7 +1084,7 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
           key={idx}
           x={cx + 4}
           y={cy - maxR * (v / 100) + 3}
-          style={{ fontSize: 9, fill: "rgba(148,163,184,0.4)" }}
+          style={{ fontSize: 9, fill: "#94A3B8" }}
         >
           {v}
         </text>
@@ -896,8 +1093,8 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
       {presentCount >= 3 && (
         <polygon
           points={polyPoints}
-          fill="rgba(129,140,248,0.18)"
-          stroke="#818cf8"
+          fill="rgba(0,196,140,0.14)"
+          stroke="#00C48C"
           strokeWidth={2}
           strokeLinejoin="round"
         />
@@ -906,8 +1103,7 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
       {dimensions.map((d, i) => {
         if (!d.present) {
           return (
-            <circle key={i} cx={cx} cy={cy} r={3}
-              fill="#475569" opacity={0.4} />
+            <circle key={i} cx={cx} cy={cy} r={3} fill="#94A3B8" opacity={0.4} />
           );
         }
         const r = (Math.max(0, Math.min(100, d.value)) / 100) * maxR;
@@ -915,17 +1111,22 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
         const color = scoreColor(d.value);
         return (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r={5}
-              fill={color} stroke="#0a0d1a" strokeWidth={2} />
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={5}
+              fill={color}
+              stroke="#ffffff"
+              strokeWidth={2}
+            />
           </g>
         );
       })}
 
       {dimensions.map((d, i) => {
         const p = point(i, maxR + 30);
-        const ta = i === 0 || i === 2 ? "middle" : (i === 1 ? "start" : "end");
-        const color = d.present ? "#cbd5e1" : "#64748b";
-        // Word-wrap : on coupe en lignes d'environ 14 caractères max
+        const ta = i === 0 || i === 2 ? "middle" : i === 1 ? "start" : "end";
+        const color = d.present ? "#1A1A2E" : "#94A3B8";
         const words = d.label.split(" ");
         const lines: string[] = [];
         let cur = "";
@@ -940,15 +1141,33 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
         if (cur) lines.push(cur);
         const baseDy = i === 0 ? -6 : i === 2 ? 16 : 4;
         return (
-          <text key={i} x={p.x} y={p.y} textAnchor={ta}
-            style={{ fontSize: 15, fontWeight: 700, fill: color, letterSpacing: "0.02em" }}>
+          <text
+            key={i}
+            x={p.x}
+            y={p.y}
+            textAnchor={ta}
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              fill: color,
+              letterSpacing: "0.02em",
+            }}
+          >
             {lines.map((ln, li) => (
               <tspan key={li} x={p.x} dy={li === 0 ? baseDy : 17}>
                 {ln}
               </tspan>
             ))}
             {d.present && (
-              <tspan x={p.x} dy={17} style={{ fill: scoreColor(d.value), fontWeight: 800, fontSize: 16 }}>
+              <tspan
+                x={p.x}
+                dy={17}
+                style={{
+                  fill: scoreColor(d.value),
+                  fontWeight: 800,
+                  fontSize: 15,
+                }}
+              >
                 {Math.round(d.value)}
               </tspan>
             )}
@@ -957,8 +1176,12 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
       })}
 
       {presentCount < 3 && (
-        <text x={cx} y={cy + 4} textAnchor="middle"
-          style={{ fontSize: 10, fill: "#a3b4c9", fontStyle: "italic" }}>
+        <text
+          x={cx}
+          y={cy + 4}
+          textAnchor="middle"
+          style={{ fontSize: 10, fill: "#6B7280", fontStyle: "italic" }}
+        >
           Couverture partielle
         </text>
       )}
@@ -967,32 +1190,61 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   VOLET RSE (ESG) — E / S / G + recommandations + gaps
+   VOLET RSE (ESG)
    ═══════════════════════════════════════════════════════════════════ */
 
-const RSE_PILLAR_ACCENT: Record<RSEDimension, string> = {
-  environment: "#22c55e",
-  social: "#60a5fa",
-  governance: "#a78bfa",
+const RSE_PILLAR_TONE: Record<
+  RSEDimension,
+  { accent: string; bar: string; iconWrap: string; iconColor: string }
+> = {
+  environment: {
+    accent: "#00C48C",
+    bar: "bg-accent",
+    iconWrap: "bg-accent-50",
+    iconColor: "text-accent",
+  },
+  social: {
+    accent: "#0EA5E9",
+    bar: "bg-sky-500",
+    iconWrap: "bg-sky-50",
+    iconColor: "text-sky-600",
+  },
+  governance: {
+    accent: "#8B5CF6",
+    bar: "bg-violet-500",
+    iconWrap: "bg-violet-50",
+    iconColor: "text-violet-600",
+  },
 };
 
-function rseReliabilityBadge(
-  reliability: RSEInterpretation["summary"]["reliability"]
-): { label: string; color: string } {
-  if (reliability === "high") return { label: "Fiabilité RSE élevée", color: "#22c55e" };
-  if (reliability === "partial") return { label: "Fiabilité RSE partielle", color: "#fbbf24" };
-  return { label: "Fiabilité RSE insuffisante", color: "#ef4444" };
-}
-
-function rsePriorityColor(priority: RSERecommendation["priority"]): string {
-  if (priority === "haute") return "#f87171";
-  if (priority === "moyenne") return "#fbbf24";
-  return "#60a5fa";
+function rseReliabilityTone(
+  reliability: RSEInterpretation["summary"]["reliability"],
+): { label: string; pill: string; text: string; dot: string } {
+  if (reliability === "high")
+    return {
+      label: "Fiabilité RSE élevée",
+      pill: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+      dot: "bg-emerald-500",
+    };
+  if (reliability === "partial")
+    return {
+      label: "Fiabilité RSE partielle",
+      pill: "bg-amber-50 border-amber-200",
+      text: "text-amber-700",
+      dot: "bg-amber-500",
+    };
+  return {
+    label: "Fiabilité RSE insuffisante",
+    pill: "bg-rose-50 border-rose-200",
+    text: "text-rose-700",
+    dot: "bg-rose-500",
+  };
 }
 
 function RseSection({ rse }: { rse: RSEInterpretation }) {
   const { summary, recommendations, gaps } = rse;
-  const reliability = rseReliabilityBadge(summary.reliability);
+  const reliability = rseReliabilityTone(summary.reliability);
   const overall = Math.round(summary.overall_rse_score);
 
   const pillarRows: Array<{ key: RSEDimension; value: number }> = [
@@ -1002,230 +1254,265 @@ function RseSection({ rse }: { rse: RSEInterpretation }) {
   ];
 
   return (
-    <>
-      <DashCard accent="#22c55e">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 260 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#22c55e", marginBottom: 8 }}>
-              Volet RSE · ESG
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#f8fafc", lineHeight: 1.25, marginBottom: 8 }}>
-              {summary.headline}
-            </div>
-            <p style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.6, margin: 0 }}>
-              {summary.key_insight}
-            </p>
-          </div>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "6px 12px", borderRadius: 999,
-            background: reliability.color + "1f", border: `1px solid ${reliability.color}55`,
-            fontSize: 12, fontWeight: 700, color: reliability.color, whiteSpace: "nowrap",
-          }}>
-            ● {reliability.label}
-          </div>
-        </div>
-
-        <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
-          {pillarRows.map((p) => {
-            const v = Math.max(0, Math.min(100, Math.round(p.value)));
-            const accent = RSE_PILLAR_ACCENT[p.key];
-            const active = summary.reliability !== "low" && p.value > 0;
-            return (
-              <div key={p.key} style={{
-                padding: 14, borderRadius: 12,
-                background: "rgba(255,255,255,0.035)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderLeft: `3px solid ${active ? accent : "#475569"}`,
-              }}>
-                <div style={{
-                  fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-                  textTransform: "uppercase", color: active ? accent : "#64748b", marginBottom: 6,
-                }}>
-                  {RSE_DIMENSION_LABELS[p.key]}
+    <div className="space-y-4">
+      {/* En-tête RSE + piliers */}
+      <Card className="relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-accent" />
+        <CardContent className="p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-[260px] flex-1">
+              <div className="mb-2 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-accent-50">
+                  <Leaf className="h-4 w-4 text-accent" />
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: active ? "#f1f5f9" : "#64748b", lineHeight: 1 }}>
-                  {active ? `${v}` : "—"}
-                  {active && <span style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", marginLeft: 4 }}>/100</span>}
-                </div>
-                <div style={{ marginTop: 8, height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 999, overflow: "hidden" }}>
-                  <div style={{
-                    width: `${active ? v : 0}%`, height: "100%", background: accent,
-                    borderRadius: 999, transition: "width 0.6s cubic-bezier(0.16,1,0.3,1)",
-                  }} />
+                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
+                  Volet RSE · ESG
                 </div>
               </div>
-            );
-          })}
-          <div style={{
-            padding: 14, borderRadius: 12,
-            background: "rgba(34,197,94,0.07)",
-            border: "1px solid rgba(34,197,94,0.22)",
-          }}>
-            <div style={{
-              fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-              textTransform: "uppercase", color: "#86efac", marginBottom: 6,
-            }}>
-              Score RSE global
+              <h3 className="mb-2 text-[18px] font-bold leading-snug text-ink">
+                {summary.headline}
+              </h3>
+              <p className="text-[14px] leading-relaxed text-ink-muted">
+                {summary.key_insight}
+              </p>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", lineHeight: 1 }}>
-              {summary.reliability !== "low" ? `${overall}` : "—"}
-              {summary.reliability !== "low" && (
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", marginLeft: 4 }}>/100</span>
+            <div
+              className={cn(
+                "inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 text-[12px] font-semibold whitespace-nowrap",
+                reliability.pill,
+                reliability.text,
               )}
-            </div>
-            <div style={{ marginTop: 8, fontSize: 11, color: "#a3b4c9", lineHeight: 1.5 }}>
-              Moyenne simple des piliers mesurés — à interpréter avec la fiabilité affichée.
+            >
+              <span
+                className={cn(
+                  "inline-block h-1.5 w-1.5 rounded-full",
+                  reliability.dot,
+                )}
+              />
+              {reliability.label}
             </div>
           </div>
-        </div>
-      </DashCard>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {pillarRows.map((p) => {
+              const v = Math.max(0, Math.min(100, Math.round(p.value)));
+              const tone = RSE_PILLAR_TONE[p.key];
+              const active = summary.reliability !== "low" && p.value > 0;
+              return (
+                <div
+                  key={p.key}
+                  className="relative overflow-hidden rounded-sm border border-border bg-canvas/40 p-4"
+                >
+                  <div
+                    className={cn(
+                      "absolute inset-y-0 left-0 w-0.5",
+                      active ? tone.bar : "bg-slate-300",
+                    )}
+                  />
+                  <div className="pl-2">
+                    <div
+                      className={cn(
+                        "mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em]",
+                        active ? tone.iconColor : "text-ink-muted",
+                      )}
+                    >
+                      {RSE_DIMENSION_LABELS[p.key]}
+                    </div>
+                    <div
+                      className={cn(
+                        "text-[22px] font-bold leading-none tabular-nums",
+                        active ? "text-ink" : "text-ink-muted",
+                      )}
+                    >
+                      {active ? v : "—"}
+                      {active && (
+                        <span className="ml-1 text-[12px] font-semibold text-ink-muted">
+                          /100
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-canvas">
+                      <div
+                        className={cn("h-full rounded-full", tone.bar)}
+                        style={{ width: `${active ? v : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="relative overflow-hidden rounded-sm border border-accent/30 bg-accent-50/40 p-4">
+              <div className="absolute inset-y-0 left-0 w-0.5 bg-accent" />
+              <div className="pl-2">
+                <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-700">
+                  Score RSE global
+                </div>
+                <div className="text-[22px] font-bold leading-none tabular-nums text-ink">
+                  {summary.reliability !== "low" ? overall : "—"}
+                  {summary.reliability !== "low" && (
+                    <span className="ml-1 text-[12px] font-semibold text-ink-muted">
+                      /100
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 text-[11px] leading-snug text-ink-muted">
+                  Moyenne simple des piliers mesurés — à interpréter avec la
+                  fiabilité affichée.
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {recommendations.length > 0 && (
-        <DashCard accent="#818cf8">
-          <CardTitle>
-            <span style={{ color: "#818cf8", marginRight: 8 }}>→</span> Recommandations RSE prioritaires
-          </CardTitle>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {recommendations.map((r) => (
-              <RseRecommendationCard key={`${r.dimension}-${r.title}`} reco={r} />
-            ))}
-          </div>
-        </DashCard>
+        <Card>
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-accent-50 text-accent">
+                <ArrowRight className="h-4 w-4" />
+              </div>
+              <h3 className="text-[14px] font-semibold text-ink">
+                Recommandations RSE prioritaires
+              </h3>
+            </div>
+            <div className="flex flex-col gap-3">
+              {recommendations.map((r) => (
+                <RseRecommendationCard
+                  key={`${r.dimension}-${r.title}`}
+                  reco={r}
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {gaps.length > 0 && (
-        <DashCard accent="#94a3b8">
-          <CardTitle>
-            <span style={{ color: "#94a3b8", marginRight: 8 }}>◌</span> Angles morts RSE
-          </CardTitle>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {gaps.map((g, i) => (
-              <RseGapRow key={`${g.dimension}-${i}`} gap={g} />
-            ))}
-          </div>
-        </DashCard>
+        <Card>
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-slate-100 text-slate-600">
+                <Compass className="h-4 w-4" />
+              </div>
+              <h3 className="text-[14px] font-semibold text-ink">
+                Angles morts RSE
+              </h3>
+            </div>
+            <div className="flex flex-col gap-3">
+              {gaps.map((g, i) => (
+                <RseGapRow key={`${g.dimension}-${i}`} gap={g} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
-    </>
+    </div>
   );
 }
 
 function RseRecommendationCard({ reco }: { reco: RSERecommendation }) {
   const [toolOpen, setToolOpen] = useState(false);
-  const prioColor = rsePriorityColor(reco.priority);
-  const dimAccent = RSE_PILLAR_ACCENT[reco.dimension];
+  const prio = priorityTone(reco.priority);
+  const tone = RSE_PILLAR_TONE[reco.dimension];
   const dimLabel = RSE_DIMENSION_LABELS[reco.dimension];
 
   return (
-    <div style={{
-      padding: 16, borderRadius: 12,
-      background: "rgba(255,255,255,0.045)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      borderLeft: `3px solid ${prioColor}`,
-    }}>
-      <div style={{
-        display: "flex", justifyContent: "space-between", gap: 10,
-        alignItems: "flex-start", flexWrap: "wrap", marginBottom: 10,
-      }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: "#f8fafc", flex: 1, minWidth: 200, lineHeight: 1.35 }}>
+    <div className="relative overflow-hidden rounded-sm border border-border bg-canvas/40 p-4">
+      <div className={cn("absolute inset-y-0 left-0 w-0.5", prio.bar)} />
+
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-2 pl-2">
+        <div className="min-w-[200px] flex-1 text-[14px] font-semibold leading-snug text-ink">
           {reco.title}
         </div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <span style={{
-            fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase",
-            fontWeight: 700, color: dimAccent,
-            padding: "2px 8px", borderRadius: 4,
-            background: dimAccent + "20",
-            border: `1px solid ${dimAccent}55`,
-          }}>
+        <div className="flex flex-wrap gap-1.5">
+          <span
+            className={cn(
+              "rounded-sm border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+              tone.iconWrap,
+              tone.iconColor,
+              "border-transparent",
+            )}
+          >
             {dimLabel}
           </span>
-          <span style={{
-            fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase",
-            fontWeight: 800, color: prioColor,
-            padding: "2px 8px", borderRadius: 4,
-            background: prioColor + "20",
-            border: `1px solid ${prioColor}55`,
-          }}>
+          <span
+            className={cn(
+              "rounded-sm border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+              prio.pill,
+              prio.text,
+            )}
+          >
             Priorité {reco.priority}
           </span>
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <RecoLine label="Pourquoi" value={reco.why} accent="#fbbf24" />
-        <RecoLine label="Action" value={reco.action} accent="#818cf8" strong />
-        <RecoLine label="Quand" value={reco.when} accent="#60a5fa" />
-        <RecoLine label="Impact attendu" value={reco.impact} accent="#22c55e" />
+      <div className="flex flex-col gap-2.5 pl-2">
+        <RecoLine label="Pourquoi" value={reco.why} accent="amber" />
+        <RecoLine label="Action" value={reco.action} accent="accent" strong />
+        <RecoLine label="Quand" value={reco.when} accent="sky" />
+        <RecoLine label="Impact attendu" value={reco.impact} accent="emerald" />
       </div>
 
-      <div style={{
-        marginTop: 12, padding: 12, borderRadius: 10,
-        background: "rgba(99,102,241,0.08)",
-        border: "1px solid rgba(129,140,248,0.25)",
-      }}>
-        <div style={{
-          display: "flex", justifyContent: "space-between",
-          alignItems: "center", gap: 10, flexWrap: "wrap",
-        }}>
+      <div className="mt-3 ml-2 rounded-sm border border-accent/20 bg-accent-50/50 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <div style={{
-              fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-              textTransform: "uppercase", color: "#a5b4fc", marginBottom: 2,
-            }}>
+            <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-700">
               Outil livré
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>
+            <div className="text-[13px] font-semibold text-ink">
               {reco.tool.name}
             </div>
           </div>
           <button
             onClick={() => setToolOpen((o) => !o)}
-            style={{
-              padding: "6px 12px", borderRadius: 8,
-              background: "#4f46e5", color: "#fff",
-              fontSize: 12, fontWeight: 700, border: "none",
-              cursor: "pointer", whiteSpace: "nowrap",
-            }}
+            className={cn(
+              buttonVariants({ variant: "primary", size: "sm" }),
+              "gap-1",
+            )}
           >
-            {toolOpen ? "Masquer" : "Utiliser ce template"}
+            {toolOpen ? (
+              <>
+                <ChevronUp className="h-3.5 w-3.5" />
+                Masquer
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-3.5 w-3.5" />
+                Utiliser ce template
+              </>
+            )}
           </button>
         </div>
 
         {toolOpen && (
-          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ fontSize: 12.5, color: "#e2e8f0", lineHeight: 1.6 }}>
+          <div className="mt-3 flex flex-col gap-3 border-t border-accent/20 pt-3">
+            <div className="text-[13px] leading-relaxed text-ink">
               {reco.tool.usage}
             </div>
-            <div>
-              <div style={reCaptionStyle}>Timing</div>
-              <div style={{ fontSize: 12.5, color: "#cbd5e1", lineHeight: 1.55 }}>
+            <ToolBlock label="Timing">
+              <div className="text-[13px] leading-relaxed text-ink-muted">
                 {reco.tool.timing}
               </div>
-            </div>
+            </ToolBlock>
             {reco.tool.questions.length > 0 && (
-              <div>
-                <div style={reCaptionStyle}>Questions clés</div>
-                <ol style={{
-                  margin: 0, padding: "0 0 0 20px",
-                  color: "#cbd5e1", fontSize: 13, lineHeight: 1.6,
-                  display: "flex", flexDirection: "column", gap: 4,
-                }}>
-                  {reco.tool.questions.slice(0, 5).map((q) => <li key={q}>{q}</li>)}
+              <ToolBlock label="Questions clés">
+                <ol className="ml-4 list-decimal space-y-1 text-[13px] leading-relaxed text-ink">
+                  {reco.tool.questions.slice(0, 5).map((q) => (
+                    <li key={q}>{q}</li>
+                  ))}
                 </ol>
-              </div>
+              </ToolBlock>
             )}
             {reco.tool.tips.length > 0 && (
-              <div>
-                <div style={reCaptionStyle}>Bonnes pratiques</div>
-                <ul style={{
-                  margin: 0, padding: "0 0 0 20px",
-                  color: "#cbd5e1", fontSize: 12.5, lineHeight: 1.55,
-                  display: "flex", flexDirection: "column", gap: 3,
-                }}>
-                  {reco.tool.tips.map((t) => <li key={t}>{t}</li>)}
+              <ToolBlock label="Bonnes pratiques">
+                <ul className="ml-4 list-disc space-y-1 text-[12.5px] leading-relaxed text-ink">
+                  {reco.tool.tips.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
                 </ul>
-              </div>
+              </ToolBlock>
             )}
           </div>
         )}
@@ -1235,25 +1522,25 @@ function RseRecommendationCard({ reco }: { reco: RSERecommendation }) {
 }
 
 function RseGapRow({ gap }: { gap: RSEGap }) {
-  const accent = RSE_PILLAR_ACCENT[gap.dimension];
+  const tone = RSE_PILLAR_TONE[gap.dimension];
   return (
-    <div style={{
-      padding: 12, borderRadius: 10,
-      background: "rgba(255,255,255,0.03)",
-      border: "1px solid rgba(255,255,255,0.07)",
-      borderLeft: `3px solid ${accent}`,
-    }}>
-      <div style={{
-        fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
-        textTransform: "uppercase", color: accent, marginBottom: 6,
-      }}>
-        {RSE_DIMENSION_LABELS[gap.dimension]}
-      </div>
-      <div style={{ fontSize: 13, color: "#e2e8f0", lineHeight: 1.55, marginBottom: 4 }}>
-        {gap.message}
-      </div>
-      <div style={{ fontSize: 12, color: "#a3b4c9", lineHeight: 1.55 }}>
-        Impact : {gap.impact}
+    <div className="relative overflow-hidden rounded-sm border border-border bg-canvas/40 p-3">
+      <div className={cn("absolute inset-y-0 left-0 w-0.5", tone.bar)} />
+      <div className="pl-2">
+        <div
+          className={cn(
+            "mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em]",
+            tone.iconColor,
+          )}
+        >
+          {RSE_DIMENSION_LABELS[gap.dimension]}
+        </div>
+        <div className="mb-1 text-[13px] leading-relaxed text-ink">
+          {gap.message}
+        </div>
+        <div className="text-[12px] leading-relaxed text-ink-muted">
+          Impact : {gap.impact}
+        </div>
       </div>
     </div>
   );

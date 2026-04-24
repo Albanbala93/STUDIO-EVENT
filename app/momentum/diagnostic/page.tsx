@@ -1,23 +1,38 @@
 "use client";
 
 /**
- * Wizard Momentum — port simplifié de
- * momentum/apps/web/src/app/diagnostic/page.tsx.
+ * Wizard Momentum — design system Stratly (Tailwind + shadcn-style).
  *
  * Flux :
  *   1. Identification (nom, type d'initiative, audience, taille, intention)
- *   2. Saisie des KPIs (catalogue dépendant du type d'initiative)
+ *   2. Saisie des KPIs — deux onglets :
+ *        · Mesure communication (reach / engagement / appropriation / impact)
+ *        · Mesure RSE (environment / social / governance)
  *   3. Scoring + interprétation (100% client-side) → ResultDashboard
  *
  * Hydratation via URL : ?from_campaign=...&name=...&type=...&audience=...&intent=...
- * Sauvegarde intermédiaire localStorage : momentum_wizard_v1
  */
 
-import React, { Suspense, useEffect, useMemo, useReducer } from "react";
+import React, { Suspense, useEffect, useMemo, useReducer, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Leaf,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 
-import { KPI_PLAN, INITIATIVE_OPTIONS, AUDIENCE_OPTIONS, INTENT_OPTIONS, RSE_KPIS } from "../../../lib/momentum/kpi-catalog";
+import {
+  KPI_PLAN,
+  INITIATIVE_OPTIONS,
+  AUDIENCE_OPTIONS,
+  INTENT_OPTIONS,
+  RSE_KPIS,
+} from "../../../lib/momentum/kpi-catalog";
 import { scoreMomentum, type DimensionSignal } from "../../../lib/momentum/scoring";
 import { interpretScore } from "../../../lib/momentum/interpretation";
 import { interpretRse } from "../../../lib/momentum/rse";
@@ -35,6 +50,9 @@ import {
   type Provenance,
   type RSEKPIQuestion,
 } from "../../../lib/momentum/types";
+import { cn } from "../../../lib/utils";
+import { Button } from "../../../components/ui/button";
+import { Card, CardContent } from "../../../components/ui/card";
 import { ResultDashboard } from "./dashboard";
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -92,13 +110,21 @@ function reducer(state: WizardState, action: Action): WizardState {
       };
       return {
         ...state,
-        answers: { ...state.answers, [action.kpiId]: { ...prev, ...action.patch } },
+        answers: {
+          ...state.answers,
+          [action.kpiId]: { ...prev, ...action.patch },
+        },
       };
     }
     case "SET_STEP":
       return { ...state, step: action.step, error: null };
     case "SUBMIT_SUCCESS":
-      return { ...state, diagnostic: action.diagnostic, step: "result", error: null };
+      return {
+        ...state,
+        diagnostic: action.diagnostic,
+        step: "result",
+        error: null,
+      };
     case "SUBMIT_ERROR":
       return { ...state, error: action.error };
     case "RESET":
@@ -114,7 +140,14 @@ function reducer(state: WizardState, action: Action): WizardState {
 
 export default function DiagnosticPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 40, color: "#94a3b8" }}>Chargement…</div>}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[60vh] text-ink-muted">
+          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+          Chargement…
+        </div>
+      }
+    >
       <DiagnosticPageInner />
     </Suspense>
   );
@@ -122,11 +155,9 @@ export default function DiagnosticPage() {
 
 function DiagnosticPageInner() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [submitting, setSubmitting] = useState(false);
   const searchParams = useSearchParams();
 
-  // Hydratation depuis URL uniquement (on part toujours d'une feuille vierge :
-  // pas de reprise localStorage — le bug "le wizard commence à l'étape 2"
-  // venait d'un état persisté. On purge aussi l'ancienne clé au passage.)
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
@@ -145,7 +176,8 @@ function DiagnosticPageInner() {
 
     const idPatch: Partial<IdentificationData> = {};
     if (name) idPatch.name = name;
-    if (type && INITIATIVE_OPTIONS.find((o) => o.id === type)) idPatch.initiativeType = type;
+    if (type && INITIATIVE_OPTIONS.find((o) => o.id === type))
+      idPatch.initiativeType = type;
     if (audience) idPatch.audienceType = audience;
     if (audienceSize && !Number.isNaN(Number(audienceSize)))
       idPatch.audienceSize = Number(audienceSize);
@@ -167,13 +199,12 @@ function DiagnosticPageInner() {
   }, [state.id.initiativeType]);
 
   async function submit() {
+    setSubmitting(true);
     try {
       const allAnswers = Object.values(state.answers).filter(
-        (a) => typeof a.value === "number" && !Number.isNaN(a.value)
+        (a) => typeof a.value === "number" && !Number.isNaN(a.value),
       );
 
-      // Signaux "communication" — seulement les KPIs du plan de l'initiative,
-      // ceux qui alimentent les 4 dimensions du score Momentum.
       const commSignals: DimensionSignal[] = allAnswers
         .map((a): DimensionSignal | null => {
           const kpi = kpis.find((k) => k.kpiId === a.kpiId);
@@ -188,17 +219,13 @@ function DiagnosticPageInner() {
         })
         .filter((s): s is DimensionSignal => s !== null);
 
-      // Signaux RSE — tous les kpiId "csr.*" (identifiés par leur présence
-      // dans RSE_KPIS). `dimension` est un champ obligatoire du type
-      // DimensionSignal mais n'est jamais utilisé côté RSE (le moteur
-      // `interpretRse` dispatch par kpi_id).
       const rseSignals: DimensionSignal[] = allAnswers
         .map((a): DimensionSignal | null => {
           const rseKpi = RSE_KPIS.find((k) => k.kpiId === a.kpiId);
           if (!rseKpi) return null;
           return {
             kpi_id: a.kpiId,
-            dimension: "impact", // placeholder, ignoré par interpretRse
+            dimension: "impact",
             value: Math.max(0, Math.min(100, a.value)),
             provenance: a.provenance,
             confidence: CONFIDENCE_MAP[a.confidenceLabel],
@@ -209,8 +236,6 @@ function DiagnosticPageInner() {
       const score = scoreMomentum(commSignals);
       const baseline = interpretScore(score);
 
-      // Tentative d'enrichissement LLM (Anthropic) ; fallback silencieux sur
-      // la baseline déterministe si l'API est indisponible.
       let interpretation = baseline;
       try {
         const controller = new AbortController();
@@ -243,8 +268,6 @@ function DiagnosticPageInner() {
         /* fallback baseline */
       }
 
-      // Couche RSE additive — calculée à partir des signaux RSE saisis
-      // dans l'onglet dédié. Indépendante de l'enrichissement LLM.
       const rse = interpretRse(rseSignals);
 
       dispatch({
@@ -254,6 +277,8 @@ function DiagnosticPageInner() {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erreur de calcul";
       dispatch({ type: "SUBMIT_ERROR", error: msg });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -283,19 +308,39 @@ function DiagnosticPageInner() {
 
   /* ─── WIZARD ─── */
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <Link href="/momentum" style={styles.backLink}>
-            ← Momentum
-          </Link>
-          <h1 style={styles.title}>Nouveau diagnostic Momentum</h1>
-          <p style={styles.subtitle}>
-            Mesurez la performance d&apos;une initiative de communication interne sur
-            4 dimensions : mobilisation, implication, compréhension, impact.
+    <div>
+      <header className="sticky top-0 z-30 bg-canvas/85 backdrop-blur-sm border-b border-border">
+        <div className="mx-auto max-w-5xl px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/momentum"
+              className="inline-flex items-center gap-1 text-[13px] text-ink-muted hover:text-ink transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Momentum
+            </Link>
+            <span className="text-ink-muted">/</span>
+            <span className="text-[13px] font-medium text-ink">
+              Nouveau diagnostic
+            </span>
+          </div>
+          <StepBadge step={state.step} />
+        </div>
+      </header>
+
+      <div className="mx-auto max-w-5xl px-8 py-8 space-y-6">
+        <div>
+          <h1 className="text-[28px] font-bold text-ink leading-tight">
+            Mesurez la performance de votre initiative
+          </h1>
+          <p className="text-[14px] text-ink-muted mt-2 max-w-2xl">
+            Diagnostic en deux étapes : identification de l&apos;initiative, puis
+            saisie des indicateurs communication et RSE. Moins de 10 minutes
+            pour une restitution exécutive complète.
           </p>
-          <StepNav step={state.step} />
-        </header>
+        </div>
+
+        <StepNav step={state.step} />
 
         {state.step === "identification" && (
           <IdentificationStep
@@ -327,10 +372,13 @@ function DiagnosticPageInner() {
             kpis={kpis}
             rseKpis={RSE_KPIS}
             answers={state.answers}
+            submitting={submitting}
             onAnswer={(kpiId, patch) =>
               dispatch({ type: "SET_ANSWER", kpiId, patch })
             }
-            onBack={() => dispatch({ type: "SET_STEP", step: "identification" })}
+            onBack={() =>
+              dispatch({ type: "SET_STEP", step: "identification" })
+            }
             onSubmit={submit}
             error={state.error}
           />
@@ -344,25 +392,61 @@ function DiagnosticPageInner() {
    SOUS-COMPOSANTS
    ═══════════════════════════════════════════════════════════════════ */
 
+function StepBadge({ step }: { step: Step }) {
+  const idx = step === "identification" ? 1 : step === "kpis" ? 2 : 3;
+  return (
+    <div className="inline-flex items-center gap-2 rounded-sm bg-accent-50 px-3 py-1.5 text-[12px] font-semibold text-accent-700">
+      <Sparkles className="h-3.5 w-3.5" />
+      Étape {idx}/3
+    </div>
+  );
+}
+
 function StepNav({ step }: { step: Step }) {
   const steps: { id: Step; label: string }[] = [
-    { id: "identification", label: "1. Identification" },
-    { id: "kpis", label: "2. KPIs" },
-    { id: "result", label: "3. Diagnostic" },
+    { id: "identification", label: "Identification" },
+    { id: "kpis", label: "Indicateurs" },
+    { id: "result", label: "Diagnostic" },
   ];
+  const activeIdx = steps.findIndex((s) => s.id === step);
   return (
-    <div style={styles.stepNav}>
-      {steps.map((s) => (
-        <div
-          key={s.id}
-          style={{
-            ...styles.stepNavItem,
-            ...(s.id === step ? styles.stepNavItemActive : {}),
-          }}
-        >
-          {s.label}
-        </div>
-      ))}
+    <div className="flex items-center gap-3">
+      {steps.map((s, i) => {
+        const done = i < activeIdx;
+        const active = i === activeIdx;
+        return (
+          <React.Fragment key={s.id}>
+            <div className="flex items-center gap-2">
+              <div
+                className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-full border text-[12px] font-bold transition-colors",
+                  active && "bg-accent text-white border-accent",
+                  done && "bg-accent/10 text-accent border-accent/30",
+                  !active && !done && "bg-white text-ink-muted border-border",
+                )}
+              >
+                {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
+              </div>
+              <span
+                className={cn(
+                  "text-[13px] font-medium transition-colors",
+                  active ? "text-ink" : "text-ink-muted",
+                )}
+              >
+                {s.label}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className={cn(
+                  "h-px flex-1 min-w-[32px] transition-colors",
+                  i < activeIdx ? "bg-accent/30" : "bg-border",
+                )}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }
@@ -375,95 +459,84 @@ function IdentificationStep(props: {
 }) {
   const { id, onChange, onNext, error } = props;
   return (
-    <section style={styles.card}>
-      <h2 style={styles.cardTitle}>Identifiez l&apos;initiative</h2>
-
-      <Field label="Nom de l'initiative">
-        <input
-          style={styles.input}
-          value={id.name}
-          onChange={(e) => onChange({ name: e.target.value })}
-          placeholder="Ex. Convention annuelle 2026"
-        />
-      </Field>
-
-      <Field label="Type d'initiative">
-        <div style={styles.chipGrid}>
-          {INITIATIVE_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              style={{
-                ...styles.chip,
-                ...(id.initiativeType === opt.id ? styles.chipActive : {}),
-              }}
-              onClick={() => onChange({ initiativeType: opt.id })}
-            >
-              {opt.label}
-            </button>
-          ))}
+    <Card>
+      <CardContent className="p-8">
+        <div className="mb-6">
+          <h2 className="text-[18px] font-semibold text-ink">
+            Identifiez l&apos;initiative
+          </h2>
+          <p className="text-[13px] text-ink-muted mt-1">
+            Les informations saisies alimentent le diagnostic et la sélection
+            des indicateurs pertinents.
+          </p>
         </div>
-      </Field>
 
-      <Field label="Audience principale">
-        <div style={styles.chipGrid}>
-          {AUDIENCE_OPTIONS.map((a) => (
-            <button
-              key={a}
-              type="button"
-              style={{
-                ...styles.chip,
-                ...(id.audienceType === a ? styles.chipActive : {}),
-              }}
-              onClick={() => onChange({ audienceType: a })}
-            >
-              {a}
-            </button>
-          ))}
+        <div className="space-y-6">
+          <Field label="Nom de l'initiative" required>
+            <input
+              className={inputCls}
+              value={id.name}
+              onChange={(e) => onChange({ name: e.target.value })}
+              placeholder="Ex. Convention annuelle 2026"
+            />
+          </Field>
+
+          <Field label="Type d'initiative" required>
+            <ChipGrid
+              options={INITIATIVE_OPTIONS.map((o) => ({ id: o.id, label: o.label }))}
+              value={id.initiativeType}
+              onChange={(v) =>
+                onChange({ initiativeType: v as InitiativeType })
+              }
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Field label="Audience principale">
+              <ChipGrid
+                options={AUDIENCE_OPTIONS.map((a) => ({ id: a, label: a }))}
+                value={id.audienceType}
+                onChange={(v) => onChange({ audienceType: v })}
+              />
+            </Field>
+
+            <Field label="Taille de l'audience cible">
+              <input
+                type="number"
+                className={inputCls}
+                value={id.audienceSize || ""}
+                onChange={(e) =>
+                  onChange({ audienceSize: Number(e.target.value) || 0 })
+                }
+                placeholder="Ex. 500"
+                min={0}
+              />
+            </Field>
+          </div>
+
+          <Field label="Intention principale">
+            <ChipGrid
+              options={INTENT_OPTIONS.map((i) => ({ id: i, label: i }))}
+              value={id.intent}
+              onChange={(v) => onChange({ intent: v })}
+            />
+          </Field>
         </div>
-      </Field>
 
-      <Field label="Taille de l'audience cible">
-        <input
-          type="number"
-          style={styles.input}
-          value={id.audienceSize || ""}
-          onChange={(e) =>
-            onChange({ audienceSize: Number(e.target.value) || 0 })
-          }
-          placeholder="Ex. 500"
-          min={0}
-        />
-      </Field>
+        {error && <ErrorBanner>{error}</ErrorBanner>}
 
-      <Field label="Intention principale">
-        <div style={styles.chipGrid}>
-          {INTENT_OPTIONS.map((i) => (
-            <button
-              key={i}
-              type="button"
-              style={{
-                ...styles.chip,
-                ...(id.intent === i ? styles.chipActive : {}),
-              }}
-              onClick={() => onChange({ intent: i })}
-            >
-              {i}
-            </button>
-          ))}
+        <div className="flex justify-end mt-8">
+          <Button variant="primary" size="md" onClick={onNext}>
+            Continuer
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
-      </Field>
-
-      {error && <div style={styles.error}>{error}</div>}
-
-      <div style={styles.actions}>
-        <button style={styles.btnPrimary} onClick={onNext}>
-          Continuer →
-        </button>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
+
+/* ─── KPI STEP ─── */
 
 type KPITab = "communication" | "rse";
 
@@ -471,34 +544,44 @@ function KPIStep(props: {
   kpis: KPIQuestion[];
   rseKpis: RSEKPIQuestion[];
   answers: Record<string, KPIAnswer>;
+  submitting: boolean;
   onAnswer: (kpiId: string, patch: Partial<KPIAnswer>) => void;
   onBack: () => void;
   onSubmit: () => void;
   error: string | null;
 }) {
-  const { kpis, rseKpis, answers, onAnswer, onBack, onSubmit, error } = props;
-  const [tab, setTab] = React.useState<KPITab>("communication");
+  const {
+    kpis,
+    rseKpis,
+    answers,
+    submitting,
+    onAnswer,
+    onBack,
+    onSubmit,
+    error,
+  } = props;
+  const [tab, setTab] = useState<KPITab>("communication");
 
-  // Groupement communication par dimension
   const byDim = kpis.reduce<Record<string, KPIQuestion[]>>((acc, k) => {
     (acc[k.dimension] ??= []).push(k);
     return acc;
   }, {});
 
-  // Groupement RSE par pilier (environment / social / governance)
-  const byPillar = rseKpis.reduce<Record<string, RSEKPIQuestion[]>>((acc, k) => {
-    (acc[k.rseDimension] ??= []).push(k);
-    return acc;
-  }, {});
+  const byPillar = rseKpis.reduce<Record<string, RSEKPIQuestion[]>>(
+    (acc, k) => {
+      (acc[k.rseDimension] ??= []).push(k);
+      return acc;
+    },
+    {},
+  );
 
   const commIds = new Set(kpis.map((k) => k.kpiId));
   const rseIds = new Set(rseKpis.map((k) => k.kpiId));
-
   const commAnswered = Object.values(answers).filter(
-    (a) => commIds.has(a.kpiId) && typeof a.value === "number" && a.value > 0
+    (a) => commIds.has(a.kpiId) && typeof a.value === "number" && a.value > 0,
   ).length;
   const rseAnswered = Object.values(answers).filter(
-    (a) => rseIds.has(a.kpiId) && typeof a.value === "number" && a.value > 0
+    (a) => rseIds.has(a.kpiId) && typeof a.value === "number" && a.value > 0,
   ).length;
 
   const PILLAR_ORDER: Array<keyof typeof RSE_DIMENSION_LABELS> = [
@@ -508,130 +591,232 @@ function KPIStep(props: {
   ];
 
   return (
-    <section style={styles.card}>
-      <h2 style={styles.cardTitle}>Renseignez vos KPIs</h2>
+    <Card>
+      <CardContent className="p-0">
+        {/* Tabs */}
+        <div className="flex border-b border-border">
+          <TabButton
+            active={tab === "communication"}
+            onClick={() => setTab("communication")}
+            icon={<BarChart3 className="h-4 w-4" />}
+            label="Mesure communication"
+            count={commAnswered}
+            total={kpis.length}
+          />
+          <TabButton
+            active={tab === "rse"}
+            onClick={() => setTab("rse")}
+            icon={<Leaf className="h-4 w-4" />}
+            label="Mesure RSE"
+            count={rseAnswered}
+            total={rseKpis.length}
+          />
+        </div>
 
-      {/* Tabs Communication / RSE */}
-      <div style={styles.tabRow} role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "communication"}
-          style={{
-            ...styles.tab,
-            ...(tab === "communication" ? styles.tabActive : {}),
-          }}
-          onClick={() => setTab("communication")}
-        >
-          <span>Mesure communication</span>
-          <span style={styles.tabBadge}>
-            {commAnswered}/{kpis.length}
-          </span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === "rse"}
-          style={{
-            ...styles.tab,
-            ...(tab === "rse" ? styles.tabActive : {}),
-          }}
-          onClick={() => setTab("rse")}
-        >
-          <span>Mesure RSE</span>
-          <span style={styles.tabBadge}>
-            {rseAnswered}/{rseKpis.length}
-          </span>
-        </button>
-      </div>
-
-      {tab === "communication" && (
-        <>
-          <p style={styles.helper}>
-            Chaque KPI alimente une des 4 dimensions du score Momentum.
-            Renseignez ce que vous connaissez, laissez le reste à zéro.
-          </p>
-          {(Object.keys(byDim) as (keyof typeof byDim)[]).map((dim) => (
-            <div key={dim} style={styles.dimBlock}>
-              <h3 style={styles.dimTitle}>
-                {DIMENSION_LABELS[dim as keyof typeof DIMENSION_LABELS]}
-              </h3>
-              {byDim[dim].map((k) => (
-                <KPIRow
-                  key={k.kpiId}
-                  kpi={k}
-                  answer={answers[k.kpiId]}
-                  onAnswer={(patch) => onAnswer(k.kpiId, patch)}
-                />
-              ))}
-            </div>
-          ))}
-        </>
-      )}
-
-      {tab === "rse" && (
-        <>
-          <p style={styles.helper}>
-            Ces indicateurs alimentent le volet RSE (Environnement, Social,
-            Gouvernance). Ils sont indépendants du score Momentum et
-            produisent un diagnostic ESG dédié avec recommandations et outils
-            prêts à l&apos;emploi.
-          </p>
-          {PILLAR_ORDER.map((pillar) => {
-            const items = byPillar[pillar] ?? [];
-            if (items.length === 0) return null;
-            return (
-              <div key={pillar} style={styles.dimBlock}>
-                <h3 style={styles.dimTitle}>{RSE_DIMENSION_LABELS[pillar]}</h3>
-                {items.map((k) => (
-                  <KPIRow
-                    key={k.kpiId}
-                    kpi={{
-                      kpiId: k.kpiId,
-                      dimension: "impact",
-                      label: k.label,
-                      helper: k.helper,
-                      unitHint: k.unitHint,
-                      defaultProvenance: k.defaultProvenance,
-                    }}
-                    answer={answers[k.kpiId]}
-                    onAnswer={(patch) => onAnswer(k.kpiId, patch)}
-                  />
+        <div className="p-8">
+          {tab === "communication" && (
+            <>
+              <p className="text-[13px] text-ink-muted mb-6 max-w-2xl">
+                Chaque KPI alimente une des quatre dimensions du score Momentum.
+                Renseignez ce que vous connaissez, laissez le reste vide — les
+                angles morts seront signalés dans le diagnostic.
+              </p>
+              <div className="space-y-6">
+                {(Object.keys(byDim) as (keyof typeof byDim)[]).map((dim) => (
+                  <DimensionBlock
+                    key={dim}
+                    title={
+                      DIMENSION_LABELS[dim as keyof typeof DIMENSION_LABELS]
+                    }
+                  >
+                    {byDim[dim].map((k) => (
+                      <KPIRow
+                        key={k.kpiId}
+                        kpiId={k.kpiId}
+                        label={k.label}
+                        helper={k.helper}
+                        unitHint={k.unitHint}
+                        defaultProvenance={k.defaultProvenance}
+                        answer={answers[k.kpiId]}
+                        onAnswer={(patch) => onAnswer(k.kpiId, patch)}
+                      />
+                    ))}
+                  </DimensionBlock>
                 ))}
               </div>
-            );
-          })}
-        </>
+            </>
+          )}
+
+          {tab === "rse" && (
+            <>
+              <p className="text-[13px] text-ink-muted mb-6 max-w-2xl">
+                13 indicateurs ESG (Environnement, Social, Gouvernance) pour
+                compléter le diagnostic avec un volet RSE dédié —
+                recommandations et outils prêts à l&apos;emploi.
+              </p>
+              <div className="space-y-6">
+                {PILLAR_ORDER.map((pillar) => {
+                  const items = byPillar[pillar] ?? [];
+                  if (items.length === 0) return null;
+                  return (
+                    <DimensionBlock
+                      key={pillar}
+                      title={RSE_DIMENSION_LABELS[pillar]}
+                      accent
+                    >
+                      {items.map((k) => (
+                        <KPIRow
+                          key={k.kpiId}
+                          kpiId={k.kpiId}
+                          label={k.label}
+                          helper={k.helper}
+                          unitHint={k.unitHint}
+                          defaultProvenance={k.defaultProvenance}
+                          answer={answers[k.kpiId]}
+                          onAnswer={(patch) => onAnswer(k.kpiId, patch)}
+                        />
+                      ))}
+                    </DimensionBlock>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {error && <ErrorBanner>{error}</ErrorBanner>}
+
+          <div className="flex justify-between mt-8 pt-6 border-t border-border">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={onBack}
+              disabled={submitting}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={onSubmit}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Calcul en cours…
+                </>
+              ) : (
+                <>
+                  Calculer le diagnostic
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  icon,
+  label,
+  count,
+  total,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  count: number;
+  total: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex-1 flex items-center justify-center gap-3 px-6 py-4 text-[14px] font-semibold border-b-2 transition-colors",
+        active
+          ? "border-accent text-ink bg-accent-50/40"
+          : "border-transparent text-ink-muted hover:text-ink hover:bg-canvas",
       )}
+    >
+      <span className={active ? "text-accent" : "text-ink-muted"}>{icon}</span>
+      <span>{label}</span>
+      <span
+        className={cn(
+          "inline-flex items-center justify-center min-w-[36px] h-5 px-2 rounded-full text-[11px] font-bold",
+          active
+            ? "bg-accent text-white"
+            : "bg-canvas text-ink-muted border border-border",
+        )}
+      >
+        {count}/{total}
+      </span>
+    </button>
+  );
+}
 
-      {error && <div style={styles.error}>{error}</div>}
-
-      <div style={styles.actions}>
-        <button style={styles.btnSecondary} onClick={onBack}>
-          ← Retour
-        </button>
-        <button style={styles.btnPrimary} onClick={onSubmit}>
-          Calculer mon diagnostic →
-        </button>
+function DimensionBlock({
+  title,
+  accent = false,
+  children,
+}: {
+  title: string;
+  accent?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <div
+          className={cn(
+            "h-1 w-6 rounded-full",
+            accent ? "bg-accent" : "bg-navy",
+          )}
+        />
+        <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-ink">
+          {title}
+        </h3>
       </div>
-    </section>
+      <div className="rounded-md border border-border bg-white divide-y divide-border">
+        {children}
+      </div>
+    </div>
   );
 }
 
 function KPIRow(props: {
-  kpi: KPIQuestion;
+  kpiId: string;
+  label: string;
+  helper: string;
+  unitHint: string;
+  defaultProvenance: Provenance;
   answer: KPIAnswer | undefined;
   onAnswer: (patch: Partial<KPIAnswer>) => void;
 }) {
-  const { kpi, answer, onAnswer } = props;
+  const {
+    kpiId,
+    label,
+    helper,
+    unitHint,
+    defaultProvenance,
+    answer,
+    onAnswer,
+  } = props;
   const value = answer?.value ?? 0;
-  const provenance = answer?.provenance ?? kpi.defaultProvenance;
+  const provenance = answer?.provenance ?? defaultProvenance;
   const confidenceLabel = answer?.confidenceLabel ?? "medium";
+  const hasValue = value > 0;
 
-  // Initialisation implicite au premier changement
   function update(patch: Partial<KPIAnswer>) {
     onAnswer({
-      kpiId: kpi.kpiId,
+      kpiId,
       value,
       provenance,
       confidenceLabel,
@@ -640,30 +825,40 @@ function KPIRow(props: {
   }
 
   return (
-    <div style={styles.kpiRow}>
-      <div style={styles.kpiHeader}>
-        <div>
-          <div style={styles.kpiLabel}>{kpi.label}</div>
-          <div style={styles.kpiHelper}>{kpi.helper}</div>
+    <div className="p-4">
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <div className="text-[14px] font-semibold text-ink">{label}</div>
+            {hasValue && (
+              <CheckCircle2 className="h-3.5 w-3.5 text-accent shrink-0" />
+            )}
+          </div>
+          <div className="text-[12px] text-ink-muted mt-1 leading-relaxed">
+            {helper}
+          </div>
         </div>
-        <div style={styles.kpiUnit}>{kpi.unitHint}</div>
+        <div className="text-[11px] text-ink-muted whitespace-nowrap font-mono">
+          {unitHint}
+        </div>
       </div>
 
-      <div style={styles.kpiControls}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <input
           type="number"
-          style={styles.input}
+          className={inputCls}
           value={value || ""}
           placeholder="0"
           min={0}
           max={100}
           onChange={(e) =>
-            update({ value: Math.max(0, Math.min(100, Number(e.target.value) || 0)) })
+            update({
+              value: Math.max(0, Math.min(100, Number(e.target.value) || 0)),
+            })
           }
         />
-
         <select
-          style={styles.select}
+          className={selectCls}
           value={provenance}
           onChange={(e) => update({ provenance: e.target.value as Provenance })}
         >
@@ -672,9 +867,8 @@ function KPIRow(props: {
           <option value="estimated">Estimé</option>
           <option value="proxy">Proxy</option>
         </select>
-
         <select
-          style={styles.select}
+          className={selectCls}
           value={confidenceLabel}
           onChange={(e) =>
             update({ confidenceLabel: e.target.value as ConfidenceLabel })
@@ -691,217 +885,70 @@ function KPIRow(props: {
 
 function Field({
   label,
+  required,
   children,
 }: {
   label: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div style={styles.field}>
-      <label style={styles.fieldLabel}>{label}</label>
+    <div>
+      <label className="block text-[13px] font-semibold text-ink mb-2">
+        {label}
+        {required && <span className="text-accent ml-1">*</span>}
+      </label>
       {children}
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   STYLES
-   ═══════════════════════════════════════════════════════════════════ */
+function ChipGrid({
+  options,
+  value,
+  onChange,
+}: {
+  options: { id: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => {
+        const active = value === opt.id;
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            className={cn(
+              "inline-flex items-center px-3 py-2 rounded-sm border text-[13px] font-medium transition-all",
+              active
+                ? "bg-navy text-white border-navy shadow-card"
+                : "bg-white text-ink border-border hover:border-ink-muted/40 hover:bg-canvas",
+            )}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)",
-    color: "#e2e8f0",
-    padding: "40px 20px",
-  },
-  container: {
-    maxWidth: 860,
-    margin: "0 auto",
-  },
-  header: { marginBottom: 32 },
-  backLink: {
-    color: "#94a3b8",
-    textDecoration: "none",
-    fontSize: 14,
-  },
-  title: { fontSize: 28, margin: "12px 0 8px", fontWeight: 700 },
-  subtitle: { color: "#94a3b8", fontSize: 15, lineHeight: 1.6 },
-  stepNav: {
-    display: "flex",
-    gap: 8,
-    marginTop: 20,
-    flexWrap: "wrap",
-  },
-  stepNavItem: {
-    padding: "6px 12px",
-    borderRadius: 999,
-    background: "#1e293b",
-    border: "1px solid #334155",
-    fontSize: 13,
-    color: "#94a3b8",
-  },
-  stepNavItemActive: {
-    background: "#3b82f6",
-    borderColor: "#3b82f6",
-    color: "#fff",
-  },
-  tabRow: {
-    display: "flex",
-    gap: 8,
-    marginBottom: 20,
-    borderBottom: "1px solid #334155",
-  },
-  tab: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "10px 18px",
-    background: "transparent",
-    color: "#94a3b8",
-    border: "none",
-    borderBottom: "2px solid transparent",
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: "pointer",
-    marginBottom: -1,
-  },
-  tabActive: {
-    color: "#f1f5f9",
-    borderBottom: "2px solid #3b82f6",
-  },
-  tabBadge: {
-    display: "inline-flex",
-    alignItems: "center",
-    padding: "2px 8px",
-    background: "#0f172a",
-    border: "1px solid #334155",
-    borderRadius: 999,
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#cbd5e1",
-  },
-  card: {
-    background: "#1e293b",
-    border: "1px solid #334155",
-    borderRadius: 12,
-    padding: 28,
-  },
-  cardTitle: { fontSize: 20, margin: "0 0 16px", color: "#f1f5f9" },
-  helper: { color: "#94a3b8", fontSize: 14, marginBottom: 20 },
-  field: { marginBottom: 20 },
-  fieldLabel: {
-    display: "block",
-    fontSize: 13,
-    fontWeight: 600,
-    color: "#cbd5e1",
-    marginBottom: 8,
-  },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    background: "#0f172a",
-    border: "1px solid #334155",
-    borderRadius: 8,
-    color: "#e2e8f0",
-    fontSize: 14,
-    boxSizing: "border-box",
-  },
-  select: {
-    padding: "10px 12px",
-    background: "#0f172a",
-    border: "1px solid #334155",
-    borderRadius: 8,
-    color: "#e2e8f0",
-    fontSize: 14,
-  },
-  chipGrid: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  chip: {
-    padding: "8px 14px",
-    background: "#0f172a",
-    border: "1px solid #334155",
-    borderRadius: 999,
-    color: "#cbd5e1",
-    cursor: "pointer",
-    fontSize: 14,
-  },
-  chipActive: {
-    background: "#3b82f6",
-    borderColor: "#3b82f6",
-    color: "#fff",
-  },
-  dimBlock: {
-    marginBottom: 24,
-    padding: 16,
-    background: "#0f172a",
-    borderRadius: 10,
-    border: "1px solid #334155",
-  },
-  dimTitle: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: "#60a5fa",
-    margin: "0 0 12px",
-    textTransform: "uppercase" as const,
-    letterSpacing: 0.5,
-  },
-  kpiRow: {
-    padding: "14px 0",
-    borderBottom: "1px solid #1e293b",
-  },
-  kpiHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 12,
-    marginBottom: 10,
-  },
-  kpiLabel: { fontSize: 14, fontWeight: 600, color: "#f1f5f9" },
-  kpiHelper: { fontSize: 12, color: "#94a3b8", marginTop: 2 },
-  kpiUnit: { fontSize: 12, color: "#64748b", whiteSpace: "nowrap" as const },
-  kpiControls: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gap: 8,
-  },
-  error: {
-    padding: 12,
-    background: "#7f1d1d",
-    color: "#fecaca",
-    borderRadius: 8,
-    margin: "16px 0",
-    fontSize: 14,
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 12,
-    marginTop: 24,
-  },
-  btnPrimary: {
-    padding: "12px 24px",
-    background: "#3b82f6",
-    color: "#fff",
-    border: "none",
-    borderRadius: 8,
-    fontSize: 15,
-    fontWeight: 600,
-    cursor: "pointer",
-    marginLeft: "auto",
-  },
-  btnSecondary: {
-    padding: "12px 24px",
-    background: "transparent",
-    color: "#cbd5e1",
-    border: "1px solid #334155",
-    borderRadius: 8,
-    fontSize: 15,
-    cursor: "pointer",
-  },
-};
+function ErrorBanner({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-6 rounded-sm border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-700">
+      {children}
+    </div>
+  );
+}
+
+const inputCls =
+  "block w-full rounded-sm border border-border bg-white px-3 py-2 text-[14px] text-ink placeholder:text-ink-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors";
+
+const selectCls =
+  "block w-full rounded-sm border border-border bg-white px-3 py-2 text-[14px] text-ink focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors cursor-pointer";
 
 /* Évite un warning ESLint pour l'import non utilisé éventuel d'INITIATIVE_LABELS */
 void INITIATIVE_LABELS;

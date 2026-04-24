@@ -9,7 +9,7 @@ import animate from "tailwindcss-animate";
  */
 const config: Config = {
   content: [
-    "./app/momentum/v2/**/*.{ts,tsx}",
+    "./app/momentum/**/*.{ts,tsx}",
     "./components/ui/**/*.{ts,tsx}",
   ],
   theme: {

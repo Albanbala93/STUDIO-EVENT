@@ -1,13 +1,22 @@
 "use client";
 
-/**
- * Landing Momentum — liste des diagnostics sauvegardés + CTA nouveau diagnostic.
- */
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  Gauge as GaugeIcon,
+  Leaf,
+  PlusCircle,
+  ShieldCheck,
+  Trash2,
+} from "lucide-react";
+
 import { listProjects, deleteProject } from "../../lib/momentum/storage";
 import { INITIATIVE_LABELS, type MomentumProject } from "../../lib/momentum/types";
+import { cn } from "../../lib/utils";
+import { buttonVariants } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
 
 export default function MomentumLanding() {
   const [projects, setProjects] = useState<MomentumProject[]>([]);
@@ -24,92 +33,93 @@ export default function MomentumLanding() {
     setProjects(listProjects());
   }
 
-  const avgScore =
-    projects.length > 0
-      ? Math.round(
-          projects.reduce((s, p) => s + p.overallScore, 0) / projects.length
-        )
-      : null;
+  const stats = useMemo(() => {
+    if (projects.length === 0) {
+      return { count: 0, avg: null as number | null, topDimension: null as string | null };
+    }
+    const avg = Math.round(
+      projects.reduce((s, p) => s + p.overallScore, 0) / projects.length,
+    );
+    return { count: projects.length, avg, topDimension: null };
+  }, [projects]);
 
   return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <Link href="/" style={styles.backLink}>
-            ← Campaign Studio
+    <div>
+      <header className="sticky top-0 z-30 bg-canvas/85 backdrop-blur-sm border-b border-border">
+        <div className="mx-auto max-w-6xl px-8 h-16 flex items-center justify-between">
+          <div className="flex flex-col leading-tight">
+            <span className="text-[11px] uppercase tracking-[0.14em] text-ink-muted">
+              Momentum
+            </span>
+            <h1 className="text-[18px] font-semibold text-ink">
+              Diagnostics de performance
+            </h1>
+          </div>
+          <Link
+            href="/momentum/diagnostic"
+            className={buttonVariants({ variant: "primary", size: "md" })}
+          >
+            <PlusCircle className="h-4 w-4" />
+            Nouveau diagnostic
           </Link>
-          <h1 style={styles.title}>Momentum</h1>
-          <p style={styles.subtitle}>
-            Mesurez la performance réelle de vos initiatives de communication interne
-            sur 4 dimensions : mobilisation, implication, compréhension, impact.
-          </p>
-        </header>
-
-        <div style={styles.ctaRow}>
-          <Link href="/momentum/diagnostic" style={styles.btnPrimary}>
-            + Nouveau diagnostic
-          </Link>
-          {avgScore !== null && (
-            <div style={styles.memoryBadge}>
-              <span style={styles.memoryLabel}>Score moyen</span>
-              <span style={styles.memoryValue}>{avgScore}/100</span>
-              <span style={styles.memorySub}>
-                sur {projects.length} diagnostic{projects.length > 1 ? "s" : ""}
-              </span>
-            </div>
-          )}
         </div>
+      </header>
+
+      <div className="mx-auto max-w-6xl px-8 py-8 space-y-8">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard
+            icon={<BarChart3 className="h-4 w-4 text-accent" />}
+            label="Diagnostics"
+            value={stats.count.toString()}
+            sub={stats.count > 0 ? "mesurés à date" : "à initier"}
+          />
+          <StatCard
+            icon={<GaugeIcon className="h-4 w-4 text-accent" />}
+            label="Score moyen"
+            value={stats.avg !== null ? `${stats.avg}/100` : "—"}
+            sub={
+              stats.avg === null
+                ? "aucune mesure"
+                : stats.avg >= 70
+                  ? "performance solide"
+                  : stats.avg >= 50
+                    ? "performance en construction"
+                    : "à ancrer"
+            }
+          />
+          <StatCard
+            icon={<Leaf className="h-4 w-4 text-accent" />}
+            label="Volet RSE"
+            value="Actif"
+            sub="Environnement · Social · Gouvernance"
+          />
+        </section>
 
         <section>
-          <h2 style={styles.sectionTitle}>Vos diagnostics</h2>
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="text-[15px] font-semibold text-ink">
+              Vos diagnostics
+            </h2>
+            {stats.count > 0 && (
+              <span className="text-[12px] text-ink-muted">
+                {stats.count} diagnostic{stats.count > 1 ? "s" : ""} enregistré
+                {stats.count > 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+
           {!hydrated ? (
-            <div style={styles.empty}>Chargement…</div>
+            <EmptyCard>Chargement…</EmptyCard>
           ) : projects.length === 0 ? (
-            <div style={styles.empty}>
-              Aucun diagnostic pour le moment. Démarrez-en un pour mesurer votre
-              prochaine initiative.
-            </div>
+            <EmptyState />
           ) : (
-            <ul style={styles.list}>
+            <ul className="grid gap-3">
               {projects.map((p) => (
-                <li key={p.id} style={styles.card}>
-                  <Link
-                    href={`/momentum/projects/${p.id}`}
-                    style={styles.cardLink}
-                  >
-                    <div style={styles.cardHeader}>
-                      <div>
-                        <div style={styles.cardName}>{p.name}</div>
-                        <div style={styles.cardMeta}>
-                          {p.initiativeType
-                            ? INITIATIVE_LABELS[p.initiativeType]
-                            : "Initiative"}
-                          {p.audience ? ` · ${p.audience}` : ""}
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          ...styles.scorePill,
-                          background: scoreBg(p.overallScore),
-                        }}
-                      >
-                        {Math.round(p.overallScore)}
-                      </div>
-                    </div>
-                    <div style={styles.cardFooter}>
-                      <span>{new Date(p.createdAt).toLocaleDateString("fr-FR")}</span>
-                      {p.fromCampaignId && (
-                        <span style={styles.tag}>↔ Campaign Studio</span>
-                      )}
-                    </div>
-                  </Link>
-                  <button
-                    style={styles.deleteBtn}
-                    onClick={() => handleDelete(p.id, p.name)}
-                    aria-label="Supprimer"
-                  >
-                    ×
-                  </button>
+                <li key={p.id}>
+                  <ProjectCard
+                    project={p}
+                    onDelete={() => handleDelete(p.id, p.name)}
+                  />
                 </li>
               ))}
             </ul>
@@ -120,124 +130,155 @@ export default function MomentumLanding() {
   );
 }
 
-function scoreBg(score: number): string {
-  if (score >= 70) return "#16a34a";
-  if (score >= 50) return "#ca8a04";
-  return "#dc2626";
+/* ─── SOUS-COMPOSANTS ──────────────────────────────────────────────── */
+
+function StatCard({
+  icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-accent-50">
+            {icon}
+          </div>
+          <span className="text-[11px] uppercase tracking-[0.12em] text-ink-muted font-semibold">
+            {label}
+          </span>
+        </div>
+        <div className="text-[24px] font-bold text-ink leading-none">
+          {value}
+        </div>
+        <div className="text-[12px] text-ink-muted mt-2">{sub}</div>
+      </CardContent>
+    </Card>
+  );
 }
 
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)",
-    color: "#e2e8f0",
-    padding: "40px 20px",
-  },
-  container: { maxWidth: 900, margin: "0 auto" },
-  header: { marginBottom: 32 },
-  backLink: { color: "#94a3b8", textDecoration: "none", fontSize: 14 },
-  title: { fontSize: 36, margin: "12px 0 8px", fontWeight: 700 },
-  subtitle: {
-    color: "#94a3b8",
-    fontSize: 15,
-    lineHeight: 1.6,
-    maxWidth: 640,
-  },
-  ctaRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 16,
-    marginBottom: 32,
-    flexWrap: "wrap",
-  },
-  btnPrimary: {
-    padding: "12px 24px",
-    background: "#3b82f6",
-    color: "#fff",
-    borderRadius: 8,
-    textDecoration: "none",
-    fontWeight: 600,
-    fontSize: 15,
-  },
-  memoryBadge: {
-    padding: "10px 16px",
-    background: "#1e293b",
-    border: "1px solid #334155",
-    borderRadius: 10,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-    gap: 2,
-  },
-  memoryLabel: { fontSize: 11, color: "#94a3b8", textTransform: "uppercase" as const },
-  memoryValue: { fontSize: 20, fontWeight: 700, color: "#f1f5f9" },
-  memorySub: { fontSize: 11, color: "#64748b" },
-  sectionTitle: { fontSize: 18, margin: "0 0 16px", color: "#cbd5e1" },
-  empty: {
-    padding: 40,
-    background: "#1e293b",
-    border: "1px dashed #334155",
-    borderRadius: 12,
-    color: "#94a3b8",
-    textAlign: "center",
-  },
-  list: { listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 },
-  card: {
-    background: "#1e293b",
-    border: "1px solid #334155",
-    borderRadius: 12,
-    position: "relative",
-  },
-  cardLink: {
-    display: "block",
-    padding: 20,
-    textDecoration: "none",
-    color: "inherit",
-  },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12,
-  },
-  cardName: { fontSize: 16, fontWeight: 600, color: "#f1f5f9" },
-  cardMeta: { fontSize: 13, color: "#94a3b8", marginTop: 4 },
-  scorePill: {
-    minWidth: 48,
-    padding: "8px 12px",
-    borderRadius: 10,
-    fontSize: 18,
-    fontWeight: 700,
-    color: "#fff",
-    textAlign: "center",
-  },
-  cardFooter: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: 12,
-    fontSize: 12,
-    color: "#64748b",
-  },
-  tag: {
-    padding: "2px 8px",
-    background: "#0f172a",
-    border: "1px solid #334155",
-    borderRadius: 4,
-    color: "#60a5fa",
-  },
-  deleteBtn: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    background: "transparent",
-    border: "1px solid #334155",
-    color: "#94a3b8",
-    cursor: "pointer",
-    fontSize: 18,
-    lineHeight: 1,
-  },
-};
+function ProjectCard({
+  project,
+  onDelete,
+}: {
+  project: MomentumProject;
+  onDelete: () => void;
+}) {
+  const scoreColor =
+    project.overallScore >= 70
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : project.overallScore >= 50
+        ? "bg-amber-50 text-amber-700 border-amber-200"
+        : "bg-rose-50 text-rose-700 border-rose-200";
+
+  return (
+    <Card className="relative overflow-hidden transition-shadow hover:shadow-card-hover">
+      <Link
+        href={`/momentum/projects/${project.id}`}
+        className="block p-5 pr-14"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="text-[15px] font-semibold text-ink truncate">
+              {project.name}
+            </div>
+            <div className="text-[12px] text-ink-muted mt-1">
+              {project.initiativeType
+                ? INITIATIVE_LABELS[project.initiativeType]
+                : "Initiative"}
+              {project.audience ? ` · ${project.audience}` : ""}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <div
+              className={cn(
+                "flex items-center justify-center min-w-[56px] px-3 py-2 rounded-sm border text-[16px] font-bold",
+                scoreColor,
+              )}
+            >
+              {Math.round(project.overallScore)}
+            </div>
+            <ArrowRight className="h-4 w-4 text-ink-muted" />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-border text-[11px] text-ink-muted">
+          <div className="flex items-center gap-3">
+            <span>
+              {new Date(project.createdAt).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+            <span className="inline-flex items-center gap-1 text-accent-700">
+              <ShieldCheck className="h-3 w-3" />
+              Confiance {Math.round(project.confidenceScore)}%
+            </span>
+          </div>
+          {project.fromCampaignId && (
+            <span className="px-2 py-0.5 rounded-sm bg-accent-50 text-accent-700 font-medium">
+              ↔ Campaign Studio
+            </span>
+          )}
+        </div>
+      </Link>
+
+      <button
+        type="button"
+        aria-label="Supprimer ce diagnostic"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDelete();
+        }}
+        className="absolute top-3 right-3 h-8 w-8 inline-flex items-center justify-center rounded-sm border border-border bg-white text-ink-muted hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </Card>
+  );
+}
+
+function EmptyState() {
+  return (
+    <Card className="border-dashed">
+      <CardContent className="py-12 flex flex-col items-center text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-accent-50 mb-4">
+          <BarChart3 className="h-5 w-5 text-accent" />
+        </div>
+        <h3 className="text-[16px] font-semibold text-ink mb-2">
+          Aucun diagnostic pour le moment
+        </h3>
+        <p className="text-[13px] text-ink-muted max-w-md mb-5">
+          Démarrez votre premier diagnostic Momentum pour mesurer la performance
+          d&apos;une initiative sur 4 dimensions communication et 3 piliers RSE.
+        </p>
+        <Link
+          href="/momentum/diagnostic"
+          className={buttonVariants({ variant: "primary", size: "md" })}
+        >
+          <PlusCircle className="h-4 w-4" />
+          Lancer un diagnostic
+        </Link>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EmptyCard({ children }: { children: React.ReactNode }) {
+  return (
+    <Card className="border-dashed">
+      <CardContent className="py-10 text-center text-[13px] text-ink-muted">
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
