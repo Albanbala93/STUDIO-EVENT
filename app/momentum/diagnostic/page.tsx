@@ -20,6 +20,7 @@ import Link from "next/link";
 import { KPI_PLAN, INITIATIVE_OPTIONS, AUDIENCE_OPTIONS, INTENT_OPTIONS } from "../../../lib/momentum/kpi-catalog";
 import { scoreMomentum, type DimensionSignal } from "../../../lib/momentum/scoring";
 import { interpretScore } from "../../../lib/momentum/interpretation";
+import { interpretRse } from "../../../lib/momentum/rse";
 import {
   CONFIDENCE_MAP,
   DIMENSION_LABELS,
@@ -214,9 +215,13 @@ function DiagnosticPageInner() {
         /* fallback baseline */
       }
 
+      // Couche RSE additive — calculée localement à partir des mêmes
+      // signaux, indépendamment de l'enrichissement LLM.
+      const rse = interpretRse(signals);
+
       dispatch({
         type: "SUBMIT_SUCCESS",
-        diagnostic: { score, interpretation },
+        diagnostic: { score, interpretation, rse },
       });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erreur de calcul";

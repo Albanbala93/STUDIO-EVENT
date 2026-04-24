@@ -145,6 +145,62 @@ export type ScoreResult = {
 export type DiagnosticPayload = {
   score: ScoreResult;
   interpretation: InterpretationPayload;
+  /** Volet RSE (ESG) additif — peut être absent pour les projets sauvegardés
+   *  avant l'introduction de la couche RSE. */
+  rse?: RSEInterpretation;
+};
+
+/* ─── RSE / ESG layer ────────────────────────────────────────────── */
+
+export type RSEDimension = "environment" | "social" | "governance";
+export type RSEReliability = "high" | "partial" | "low";
+export type RSEPriority = "haute" | "moyenne" | "basse";
+
+export type RSETool = {
+  name: string;
+  usage: string;
+  timing: string;
+  questions: string[];
+  tips: string[];
+};
+
+export type RSESummary = {
+  headline: string;
+  key_insight: string;
+  environment_score: number;
+  social_score: number;
+  governance_score: number;
+  overall_rse_score: number;
+  reliability: RSEReliability;
+};
+
+export type RSERecommendation = {
+  title: string;
+  priority: RSEPriority;
+  dimension: RSEDimension;
+  why: string;
+  action: string;
+  when: string;
+  impact: string;
+  tool: RSETool;
+};
+
+export type RSEGap = {
+  dimension: RSEDimension;
+  message: string;
+  impact: string;
+};
+
+export type RSEInterpretation = {
+  summary: RSESummary;
+  recommendations: RSERecommendation[];
+  gaps: RSEGap[];
+};
+
+export const RSE_DIMENSION_LABELS: Record<RSEDimension, string> = {
+  environment: "Environnement",
+  social: "Social",
+  governance: "Gouvernance",
 };
 
 /** Projet Momentum sauvegardé en localStorage. */

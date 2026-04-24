@@ -9,6 +9,10 @@ from models.interpretation import (
     InsightItem,
     InterpretationResponse,
     RecommendationItem,
+    RSEGap,
+    RSEInterpretation,
+    RSERecommendation,
+    RSESummary,
     ScoreInterpretation,
 )
 
@@ -513,3 +517,571 @@ def interpret_score(result: AdvancedScoreResult) -> InterpretationResponse:
         executive_summary=executive,
         detailed_analysis=detailed,
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RSE layer — interprétation ESG (Environment / Social / Governance)
+# Additive : ne touche pas à `score_momentum` ni `interpret_score`.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Mapping KPI → pilier ESG. Aligné sur le catalogue csr_sustainability.
+# Une extension future consistera à enrichir cette table plutôt qu'à déplacer
+# la logique — c'est intentionnel de garder le mapping localement lisible.
+RSE_KPI_DIMENSION: Dict[str, str] = {
+    # Environment
+    "csr.estimated_carbon_footprint": "environment",
+    "csr.carbon_per_participant": "environment",
+    "csr.transport_emission_share": "environment",
+    "csr.waste_reduction_score": "environment",
+    "csr.sobriety_score": "environment",
+    # Social
+    "csr.participant_coverage_rate": "social",
+    "csr.rse_message_visibility_rate": "social",
+    "csr.engagement_rate": "social",
+    "csr.accessibility_score": "social",
+    "csr.inclusion_perception_score": "social",
+    # Governance
+    "csr.local_supplier_rate": "governance",
+    "csr.responsible_supplier_rate": "governance",
+    "csr.rse_coherence_score": "governance",
+}
+
+RSE_DIMENSION_LABEL_FR: Dict[str, str] = {
+    "environment": "environnementale",
+    "social": "sociale",
+    "governance": "de gouvernance",
+}
+
+# KPI dont la valeur brute est "plus c'est haut, plus c'est mauvais".
+# Convention V1 : on attend des valeurs 0-100 déjà normalisées "plus c'est haut,
+# mieux c'est". Pour ces KPI on inverse (100 - value) afin de rester cohérent.
+RSE_INVERTED_KPIS = {
+    "csr.transport_emission_share",
+}
+
+
+def _rse_signal_to_dict(signal: Any) -> Dict[str, Any]:
+    """Lit un signal aussi bien depuis un objet Pydantic que depuis un dict."""
+    if isinstance(signal, dict):
+        return {
+            "kpi_id": signal.get("kpi_id"),
+            "value": _to_float(signal.get("value"), 0.0),
+            "confidence": _to_float(signal.get("confidence"), 0.0),
+            "provenance": signal.get("provenance"),
+        }
+    return {
+        "kpi_id": getattr(signal, "kpi_id", None),
+        "value": _to_float(getattr(signal, "value", 0.0), 0.0),
+        "confidence": _to_float(getattr(signal, "confidence", 0.0), 0.0),
+        "provenance": getattr(signal, "provenance", None),
+    }
+
+
+def _rse_bucket_score(signals: List[Dict[str, Any]]) -> Tuple[float, float, int]:
+    """Moyenne pondérée par confiance. Retourne (score, avg_confidence, count).
+    Si la somme des confiances est nulle, bascule sur une moyenne simple."""
+    if not signals:
+        return 0.0, 0.0, 0
+
+    weighted_values: List[Tuple[float, float]] = []
+    for s in signals:
+        val = s["value"]
+        if s["kpi_id"] in RSE_INVERTED_KPIS:
+            val = max(0.0, 100.0 - val)
+        weighted_values.append((val, s["confidence"]))
+
+    total_weight = sum(c for _, c in weighted_values if c > 0)
+    if total_weight > 0:
+        score = sum(v * c for v, c in weighted_values) / total_weight
+    else:
+        score = sum(v for v, _ in weighted_values) / len(weighted_values)
+
+    avg_conf = sum(c for _, c in weighted_values) / len(weighted_values)
+    return round(score, 2), round(avg_conf, 3), len(signals)
+
+
+def _rse_reliability(
+    total_signals: int,
+    missing_pillars: int,
+    avg_confidence: float,
+) -> str:
+    """Règle V1 simple et explicable :
+    - pas assez de signaux → low
+    - couverture partielle ou confiance faible → partial
+    - sinon → high
+    """
+    if total_signals == 0 or missing_pillars == 3:
+        return "low"
+    if total_signals < 3 or missing_pillars >= 2:
+        return "low"
+    if total_signals < 6 or missing_pillars == 1 or avg_confidence < 0.5:
+        return "partial"
+    return "high"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Outils RSE statiques — prêts à être servis tels quels au frontend.
+# Chaque outil adresse les sous-dimensions clés d'un pilier ESG :
+#   Environment → déplacements, restauration, déchets
+#   Social      → accessibilité, compréhension des engagements, perception
+#   Governance  → existence d'objectifs RSE, suivi et traçabilité
+# Les questions sont limitées à 5, les tips à 2–3, pour tenir dans un format
+# exploitable en atelier ou en questionnaire court.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def get_environment_tool() -> Dict[str, Any]:
+    """Diagnostic d'empreinte événementielle : déplacements, restauration, déchets."""
+    return {
+        "name": "Diagnostic empreinte événementielle",
+        "usage": (
+            "Questionnaire court à administrer aux participants pour reconstituer "
+            "l'empreinte environnementale d'une opération sur ses trois postes "
+            "majeurs : déplacements, restauration et déchets."
+        ),
+        "timing": (
+            "À envoyer en sortie d'événement (J+0 à J+2) pour limiter les biais "
+            "de rappel ; relance ciblée à J+5 pour sécuriser le taux de réponse."
+        ),
+        "questions": [
+            "Quel mode de transport avez-vous utilisé pour venir (voiture, train, avion, mobilité douce) ?",
+            "Quelle distance avez-vous parcourue, aller simple, pour rejoindre l'événement ?",
+            "Quel type de repas avez-vous consommé sur place (carné, végétarien, végétalien) ?",
+            "Les contenants, la vaisselle et les supports étaient-ils réutilisables ou recyclables ?",
+            "Avez-vous emporté des goodies ou supports physiques à l'issue de l'événement ?",
+        ],
+        "tips": [
+            "Intégrer la question du transport dès l'inscription afin de disposer d'une donnée fiable sans dépendre du rappel à posteriori.",
+            "Croiser les réponses par site de rattachement pour identifier les axes de progrès les plus contributeurs à l'empreinte globale.",
+            "Appliquer les facteurs d'émission ADEME de l'année en cours pour garantir la cohérence avec le bilan carbone de l'entreprise.",
+        ],
+    }
+
+
+def get_social_tool() -> Dict[str, Any]:
+    """Baromètre perception RSE, compréhension des engagements et inclusion."""
+    return {
+        "name": "Baromètre perception RSE & inclusion",
+        "usage": (
+            "Sondage bref auprès des participants pour mesurer la compréhension "
+            "des engagements RSE présentés, leur utilité perçue et la qualité "
+            "de l'inclusion ressentie durant l'opération."
+        ),
+        "timing": (
+            "À diffuser à J+1 par email ou QR code en sortie de session, avec "
+            "une fenêtre de réponse ouverte sur 7 jours."
+        ),
+        "questions": [
+            "Avez-vous compris les engagements RSE présentés durant l'événement ?",
+            "Quels messages RSE retenez-vous spontanément ?",
+            "Ces engagements vous semblent-ils utiles pour votre quotidien professionnel ?",
+            "L'événement vous a-t-il semblé accessible à l'ensemble des publics concernés ?",
+            "Vous êtes-vous senti pleinement inclus et représenté durant l'opération ?",
+        ],
+        "tips": [
+            "Maintenir le questionnaire sous deux minutes pour préserver un taux de réponse représentatif.",
+            "Segmenter les résultats par population cible (métier, ancienneté, site) afin de détecter des angles morts d'inclusion.",
+        ],
+    }
+
+
+def get_governance_tool() -> Dict[str, Any]:
+    """Grille d'auto-audit sur l'existence et le suivi des objectifs RSE."""
+    return {
+        "name": "Grille de pilotage des objectifs RSE",
+        "usage": (
+            "Auto-audit interne permettant de vérifier que chaque opération est "
+            "rattachée à des objectifs RSE formalisés, chiffrés et effectivement "
+            "suivis dans la durée."
+        ),
+        "timing": (
+            "À compléter en amont de chaque opération, puis revue systématique "
+            "à J+30 pour consolider les résultats et les écarts."
+        ),
+        "questions": [
+            "Des objectifs RSE ont-ils été définis formellement avant l'opération ?",
+            "Ces objectifs sont-ils chiffrés, datés et assortis d'indicateurs mesurables ?",
+            "Les résultats obtenus ont-ils été effectivement mesurés et consolidés ?",
+            "Les résultats sont-ils suivis dans le temps et partagés avec les parties prenantes internes ?",
+            "Les écarts constatés donnent-ils lieu à un plan d'action documenté et assumé ?",
+        ],
+        "tips": [
+            "Rattacher les objectifs RSE à la trajectoire CSRD de l'entreprise pour éviter les mesures orphelines.",
+            "Archiver les résultats dans un espace commun et traçable afin de sécuriser l'auditabilité d'une opération à l'autre.",
+        ],
+    }
+
+
+_RSE_TOOL_BUILDERS = {
+    "environment": get_environment_tool,
+    "social": get_social_tool,
+    "governance": get_governance_tool,
+}
+
+
+# Seuil à partir duquel un pilier est considéré comme suffisamment solide :
+# en-dessous, on émet une recommandation ciblée ; au-dessus, on s'abstient
+# pour ne pas bruiter la restitution avec des conseils non prioritaires.
+_RSE_WEAK_THRESHOLD = 60.0
+
+
+def _build_rse_recommendation(
+    dimension: str,
+    score: float,
+    has_data: bool,
+) -> RSERecommendation | None:
+    """Construit une recommandation riche pour un pilier donné.
+
+    Retourne None si le pilier est mesuré ET au-dessus du seuil de vigilance :
+    inutile de recommander quand tout va bien, cela dilue les priorités.
+    """
+    if has_data and score >= _RSE_WEAK_THRESHOLD:
+        return None
+
+    # Priorité et horizon d'action.
+    if not has_data:
+        priority = "haute"
+        when = "À lancer immédiatement, sur la prochaine opération."
+    elif score < 45:
+        priority = "haute"
+        when = "À engager dans les 30 jours sur les opérations en cours."
+    else:
+        priority = "moyenne"
+        when = "À structurer dans le trimestre, sur l'ensemble des opérations."
+
+    tool = _RSE_TOOL_BUILDERS[dimension]()
+
+    if dimension == "environment":
+        if not has_data:
+            title = "Mesurer l'empreinte environnementale de vos opérations"
+            why = (
+                "Vous ne disposez aujourd'hui d'aucune donnée sur les déplacements, "
+                "la restauration et les déchets générés par vos actions."
+            )
+            action = (
+                "Déployer le diagnostic d'empreinte événementielle sur la prochaine "
+                "opération pour collecter une première série de données fiables sur "
+                "ces trois postes."
+            )
+            impact = (
+                "Vous posez le socle factuel qui vous permettra d'identifier les "
+                "postes les plus contributeurs et d'engager un plan de réduction chiffré."
+            )
+        else:
+            title = "Réduire l'empreinte environnementale de vos opérations"
+            why = (
+                "Les signaux disponibles sur les déplacements, la restauration et "
+                "les déchets sont trop faibles pour soutenir une démarche crédible "
+                "de réduction auprès de vos parties prenantes."
+            )
+            action = (
+                "Identifier les deux postes les plus contributeurs à l'empreinte de "
+                "vos opérations et fixer un objectif de réduction chiffré à 12 mois, "
+                "porté par un référent nommé."
+            )
+            impact = (
+                "Vous transformez un signal faible en trajectoire pilotée et vous "
+                "sécurisez votre capacité à défendre le volet environnemental en "
+                "comex comme en reporting extra-financier."
+            )
+
+    elif dimension == "social":
+        if not has_data:
+            title = "Mesurer la perception et l'inclusion des participants"
+            why = (
+                "Vous ne disposez d'aucun signal sur l'accessibilité de vos "
+                "opérations, la compréhension des engagements RSE par les "
+                "participants ni leur perception globale de l'action."
+            )
+            action = (
+                "Déployer le baromètre de perception RSE et d'inclusion à l'issue "
+                "de la prochaine opération pour constituer une première baseline "
+                "exploitable."
+            )
+            impact = (
+                "Vous objectivez la dimension sociale, vous prévenez les angles "
+                "morts d'exclusion et vous vous dotez d'une base de comparaison "
+                "d'une opération à l'autre."
+            )
+        else:
+            title = "Renforcer l'inclusion et la compréhension RSE"
+            why = (
+                "Les résultats sur la compréhension des engagements RSE, "
+                "l'accessibilité ou la perception d'inclusion sont en-dessous "
+                "du seuil attendu pour une opération structurée."
+            )
+            action = (
+                "Prioriser la sous-dimension la plus faible, nommer un référent "
+                "et ajuster le format (accessibilité, représentativité, pédagogie "
+                "des engagements) sur la prochaine opération."
+            )
+            impact = (
+                "Vous réduisez le risque réputationnel interne et vous améliorez "
+                "la valeur perçue de vos engagements RSE auprès des collaborateurs."
+            )
+
+    else:  # governance
+        if not has_data:
+            title = "Formaliser des objectifs RSE mesurables et tracés"
+            why = (
+                "Vous ne disposez pas aujourd'hui d'objectifs RSE formalisés, "
+                "ni d'un dispositif structuré de suivi et de traçabilité sur vos opérations."
+            )
+            action = (
+                "Utiliser la grille de pilotage pour définir, en amont de chaque "
+                "opération, 3 à 5 objectifs RSE chiffrés avec un référent nommé et "
+                "un point de suivi à J+30."
+            )
+            impact = (
+                "Vous sécurisez la traçabilité attendue en audit CSRD et vous "
+                "transformez vos engagements RSE en trajectoire opposable."
+            )
+        else:
+            title = "Consolider le pilotage des objectifs RSE"
+            why = (
+                "Des objectifs RSE existent mais leur suivi et leur traçabilité "
+                "restent partiels, ce qui fragilise leur valeur en audit comme en "
+                "communication externe."
+            )
+            action = (
+                "Systématiser la revue à J+30, archiver les résultats dans un "
+                "espace commun et documenter les écarts avec un plan d'action daté."
+            )
+            impact = (
+                "Vous transformez un pilotage fragile en dispositif auditable et "
+                "vous ancrez la démarche RSE dans la discipline de gestion de l'entreprise."
+            )
+
+    return RSERecommendation(
+        title=title,
+        priority=priority,  # type: ignore[arg-type]
+        dimension=dimension,  # type: ignore[arg-type]
+        why=why,
+        action=action,
+        when=when,
+        impact=impact,
+        tool=tool,
+    )
+
+
+# Messages de gap au ton business : phrase d'état puis phrase d'impact,
+# phrasées à la deuxième personne pour interpeller le décideur.
+_RSE_MISSING_MESSAGES: Dict[str, Dict[str, str]] = {
+    "environment": {
+        "message": (
+            "Vous ne mesurez pas actuellement l'impact environnemental de vos "
+            "opérations (déplacements, restauration, déchets)."
+        ),
+        "impact": (
+            "Vous ne pouvez pas piloter ni améliorer vos pratiques, et vous "
+            "restez exposé à un risque de greenwashing en l'absence de données factuelles."
+        ),
+    },
+    "social": {
+        "message": (
+            "Vous ne mesurez pas actuellement la perception RSE, la compréhension "
+            "des engagements ni l'inclusion ressentie par vos participants."
+        ),
+        "impact": (
+            "Vous ne pouvez pas objectiver la qualité sociale de vos opérations "
+            "ni prévenir les angles morts d'exclusion avant qu'ils ne deviennent "
+            "un enjeu réputationnel."
+        ),
+    },
+    "governance": {
+        "message": (
+            "Vous ne disposez pas aujourd'hui d'objectifs RSE formalisés ni d'un "
+            "suivi structuré de leur atteinte."
+        ),
+        "impact": (
+            "Vous ne pouvez pas démontrer la réalité de vos engagements en audit "
+            "ou en reporting extra-financier, et vous perdez la capacité de piloter "
+            "leur progression dans le temps."
+        ),
+    },
+}
+
+
+def _rse_gap_missing(dimension: str) -> RSEGap:
+    content = _RSE_MISSING_MESSAGES[dimension]
+    return RSEGap(
+        dimension=dimension,  # type: ignore[arg-type]
+        message=content["message"],
+        impact=content["impact"],
+    )
+
+
+def _rse_gap_fragile(dimension: str, count: int, avg_conf: float) -> RSEGap:
+    label = RSE_DIMENSION_LABEL_FR[dimension]
+    if count == 1:
+        issue = "la mesure ne repose que sur un seul indicateur"
+    elif avg_conf < 0.5:
+        issue = (
+            f"la fiabilité des mesures collectées reste faible "
+            f"({int(round(avg_conf * 100))} %)"
+        )
+    else:
+        issue = f"la mesure reste partielle ({count} indicateurs seulement)"
+    return RSEGap(
+        dimension=dimension,  # type: ignore[arg-type]
+        message=f"Mesure {label} encore fragile — {issue}.",
+        impact=(
+            f"Le score {label} existe mais repose sur une base trop étroite pour "
+            "servir de socle de décision ou de communication externe."
+        ),
+    )
+
+
+def _rse_headline(overall: float, reliability: str) -> str:
+    if reliability == "low":
+        return "Diagnostic RSE non concluant — données insuffisantes"
+    if overall >= 70:
+        return "Performance RSE solide"
+    if overall >= 50:
+        return "Performance RSE en construction"
+    return "Performance RSE fragile"
+
+
+def _rse_key_insight(
+    pillar_scores: Dict[str, float],
+    missing: List[str],
+    reliability: str,
+) -> str:
+    if reliability == "low":
+        if missing:
+            label = RSE_DIMENSION_LABEL_FR[missing[0]]
+            return (
+                f"Priorité : amorcer la mesure {label} pour sortir de l'angle mort "
+                "et construire une base de pilotage crédible."
+            )
+        return (
+            "Priorité : élargir la collecte RSE pour sécuriser la fiabilité du "
+            "diagnostic avant d'engager toute décision stratégique."
+        )
+
+    if not pillar_scores:
+        return "Aucun pilier RSE mesuré — le diagnostic reste à amorcer."
+
+    weakest_dim, weakest_score = min(pillar_scores.items(), key=lambda kv: kv[1])
+    label = RSE_DIMENSION_LABEL_FR[weakest_dim]
+    return (
+        f"Le principal levier RSE à activer est la dimension {label} "
+        f"({int(round(weakest_score))}/100)."
+    )
+
+
+def interpret_rse(signals: Any) -> dict:
+    """
+    Interprétation RSE (ESG) à partir de la liste de signaux KPI.
+
+    Produit :
+    - summary : scores E/S/G + score global + headline/key_insight + reliability
+    - recommendations : 1 recommandation maximum par pilier ESG faible ou non
+      mesuré (au-dessus du seuil de vigilance, on s'abstient), plafonné à 3.
+      Chaque recommandation embarque un outil statique prêt à l'emploi
+      (questionnaire, grille, baromètre) couvrant les sous-dimensions clés
+      du pilier.
+    - gaps : dimensions absentes (message business "Vous ne mesurez pas…"
+      + impact "Vous ne pouvez pas…") ou mesurées de façon fragile.
+
+    Ne modifie pas `score_momentum` et ne dépend pas de `interpret_score`.
+    `signals` est une list de DimensionSignal (ou dicts équivalents).
+    """
+    # Normalisation d'entrée — supporte list[DimensionSignal] ou list[dict].
+    raw_signals: Iterable[Any]
+    if signals is None:
+        raw_signals = []
+    elif isinstance(signals, Iterable):
+        raw_signals = signals
+    else:
+        raw_signals = []
+
+    # On ne garde que les signaux identifiés comme RSE (via kpi_id connu).
+    rse_signals: Dict[str, List[Dict[str, Any]]] = {
+        "environment": [],
+        "social": [],
+        "governance": [],
+    }
+    for sig in raw_signals:
+        data = _rse_signal_to_dict(sig)
+        kpi_id = data.get("kpi_id")
+        if not kpi_id:
+            continue
+        dim = RSE_KPI_DIMENSION.get(kpi_id)
+        if dim is None:
+            continue
+        rse_signals[dim].append(data)
+
+    # Score par pilier.
+    pillar_stats: Dict[str, Dict[str, float]] = {}
+    for dim, items in rse_signals.items():
+        score, avg_conf, count = _rse_bucket_score(items)
+        pillar_stats[dim] = {"score": score, "avg_confidence": avg_conf, "count": count}
+
+    present_pillars = {d: s for d, s in pillar_stats.items() if s["count"] > 0}
+    missing_pillars = [d for d, s in pillar_stats.items() if s["count"] == 0]
+
+    # Score RSE global : moyenne simple des piliers présents (les piliers ESG
+    # étant pairs, on évite toute pondération arbitraire en V1).
+    if present_pillars:
+        overall = round(
+            sum(s["score"] for s in present_pillars.values()) / len(present_pillars),
+            2,
+        )
+    else:
+        overall = 0.0
+
+    total_signals = sum(s["count"] for s in pillar_stats.values())
+    avg_confidence = (
+        sum(s["avg_confidence"] * s["count"] for s in present_pillars.values())
+        / max(1, total_signals)
+    )
+
+    reliability = _rse_reliability(
+        total_signals=total_signals,
+        missing_pillars=len(missing_pillars),
+        avg_confidence=avg_confidence,
+    )
+
+    # Gaps : piliers absents + piliers fragiles (1 seul indicateur ou confiance < 50 %).
+    gaps: List[RSEGap] = []
+    for dim in missing_pillars:
+        gaps.append(_rse_gap_missing(dim))
+    for dim, stats in present_pillars.items():
+        if stats["count"] == 1 or stats["avg_confidence"] < 0.5:
+            gaps.append(_rse_gap_fragile(dim, int(stats["count"]), stats["avg_confidence"]))
+
+    # Recommandations : uniquement sur les piliers faibles ou non mesurés,
+    # une recommandation maximum par pilier, triée par priorité et plafonnée à 3.
+    recommendations: List[RSERecommendation] = []
+    for dim in ("environment", "social", "governance"):
+        has_data = dim in present_pillars
+        score = present_pillars.get(dim, {}).get("score", 0.0)
+        reco = _build_rse_recommendation(dim, score, has_data)
+        if reco is not None:
+            recommendations.append(reco)
+
+    priority_rank = {"haute": 0, "moyenne": 1, "basse": 2}
+    recommendations.sort(key=lambda r: priority_rank.get(r.priority, 9))
+    recommendations = recommendations[:3]
+
+    pillar_scores_only = {d: s["score"] for d, s in present_pillars.items()}
+    summary = RSESummary(
+        headline=_rse_headline(overall, reliability),
+        key_insight=_rse_key_insight(pillar_scores_only, missing_pillars, reliability),
+        environment_score=pillar_stats["environment"]["score"],
+        social_score=pillar_stats["social"]["score"],
+        governance_score=pillar_stats["governance"]["score"],
+        overall_rse_score=overall,
+        reliability=reliability,  # type: ignore[arg-type]
+    )
+
+    interpretation = RSEInterpretation(
+        summary=summary,
+        recommendations=recommendations,
+        gaps=gaps,
+    )
+
+    # Le contrat d'API retourne un dict : on s'appuie sur pydantic pour
+    # produire une structure JSON-safe.
+    return interpretation.model_dump()

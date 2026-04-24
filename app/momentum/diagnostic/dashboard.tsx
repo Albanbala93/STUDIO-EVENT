@@ -20,10 +20,15 @@ import type {
   KPIAnswer,
   KPIQuestion,
   RecommendationItem,
+  RSEDimension,
+  RSEGap,
+  RSEInterpretation,
+  RSERecommendation,
 } from "../../../lib/momentum/types";
 import {
   DIMENSION_LABELS,
   INITIATIVE_LABELS,
+  RSE_DIMENSION_LABELS,
 } from "../../../lib/momentum/types";
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -83,7 +88,7 @@ export function ResultDashboard(props: {
   fromCampaignId?: string;
 }) {
   const router = useRouter();
-  const { score, interpretation } = props.diagnostic;
+  const { score, interpretation, rse } = props.diagnostic;
   const [toast, setToast] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -368,6 +373,9 @@ export function ResultDashboard(props: {
           )}
         </DashCard>
       </div>
+
+      {/* BLOC 4bis — Volet RSE (ESG) */}
+      {rse && <RseSection rse={rse} />}
 
       {/* BLOC 5 — Barre d'actions */}
       <div className="no-print" style={{
@@ -955,5 +963,298 @@ function RadarChart({ dimensions }: { dimensions: { label: string; value: number
         </text>
       )}
     </svg>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VOLET RSE (ESG) — E / S / G + recommandations + gaps
+   ═══════════════════════════════════════════════════════════════════ */
+
+const RSE_PILLAR_ACCENT: Record<RSEDimension, string> = {
+  environment: "#22c55e",
+  social: "#60a5fa",
+  governance: "#a78bfa",
+};
+
+function rseReliabilityBadge(
+  reliability: RSEInterpretation["summary"]["reliability"]
+): { label: string; color: string } {
+  if (reliability === "high") return { label: "Fiabilité RSE élevée", color: "#22c55e" };
+  if (reliability === "partial") return { label: "Fiabilité RSE partielle", color: "#fbbf24" };
+  return { label: "Fiabilité RSE insuffisante", color: "#ef4444" };
+}
+
+function rsePriorityColor(priority: RSERecommendation["priority"]): string {
+  if (priority === "haute") return "#f87171";
+  if (priority === "moyenne") return "#fbbf24";
+  return "#60a5fa";
+}
+
+function RseSection({ rse }: { rse: RSEInterpretation }) {
+  const { summary, recommendations, gaps } = rse;
+  const reliability = rseReliabilityBadge(summary.reliability);
+  const overall = Math.round(summary.overall_rse_score);
+
+  const pillarRows: Array<{ key: RSEDimension; value: number }> = [
+    { key: "environment", value: summary.environment_score },
+    { key: "social", value: summary.social_score },
+    { key: "governance", value: summary.governance_score },
+  ];
+
+  return (
+    <>
+      <DashCard accent="#22c55e">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#22c55e", marginBottom: 8 }}>
+              Volet RSE · ESG
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#f8fafc", lineHeight: 1.25, marginBottom: 8 }}>
+              {summary.headline}
+            </div>
+            <p style={{ fontSize: 14, color: "#cbd5e1", lineHeight: 1.6, margin: 0 }}>
+              {summary.key_insight}
+            </p>
+          </div>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "6px 12px", borderRadius: 999,
+            background: reliability.color + "1f", border: `1px solid ${reliability.color}55`,
+            fontSize: 12, fontWeight: 700, color: reliability.color, whiteSpace: "nowrap",
+          }}>
+            ● {reliability.label}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 18, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+          {pillarRows.map((p) => {
+            const v = Math.max(0, Math.min(100, Math.round(p.value)));
+            const accent = RSE_PILLAR_ACCENT[p.key];
+            const active = summary.reliability !== "low" && p.value > 0;
+            return (
+              <div key={p.key} style={{
+                padding: 14, borderRadius: 12,
+                background: "rgba(255,255,255,0.035)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderLeft: `3px solid ${active ? accent : "#475569"}`,
+              }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+                  textTransform: "uppercase", color: active ? accent : "#64748b", marginBottom: 6,
+                }}>
+                  {RSE_DIMENSION_LABELS[p.key]}
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: active ? "#f1f5f9" : "#64748b", lineHeight: 1 }}>
+                  {active ? `${v}` : "—"}
+                  {active && <span style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", marginLeft: 4 }}>/100</span>}
+                </div>
+                <div style={{ marginTop: 8, height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 999, overflow: "hidden" }}>
+                  <div style={{
+                    width: `${active ? v : 0}%`, height: "100%", background: accent,
+                    borderRadius: 999, transition: "width 0.6s cubic-bezier(0.16,1,0.3,1)",
+                  }} />
+                </div>
+              </div>
+            );
+          })}
+          <div style={{
+            padding: 14, borderRadius: 12,
+            background: "rgba(34,197,94,0.07)",
+            border: "1px solid rgba(34,197,94,0.22)",
+          }}>
+            <div style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+              textTransform: "uppercase", color: "#86efac", marginBottom: 6,
+            }}>
+              Score RSE global
+            </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", lineHeight: 1 }}>
+              {summary.reliability !== "low" ? `${overall}` : "—"}
+              {summary.reliability !== "low" && (
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#94a3b8", marginLeft: 4 }}>/100</span>
+              )}
+            </div>
+            <div style={{ marginTop: 8, fontSize: 11, color: "#a3b4c9", lineHeight: 1.5 }}>
+              Moyenne simple des piliers mesurés — à interpréter avec la fiabilité affichée.
+            </div>
+          </div>
+        </div>
+      </DashCard>
+
+      {recommendations.length > 0 && (
+        <DashCard accent="#818cf8">
+          <CardTitle>
+            <span style={{ color: "#818cf8", marginRight: 8 }}>→</span> Recommandations RSE prioritaires
+          </CardTitle>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {recommendations.map((r) => (
+              <RseRecommendationCard key={`${r.dimension}-${r.title}`} reco={r} />
+            ))}
+          </div>
+        </DashCard>
+      )}
+
+      {gaps.length > 0 && (
+        <DashCard accent="#94a3b8">
+          <CardTitle>
+            <span style={{ color: "#94a3b8", marginRight: 8 }}>◌</span> Angles morts RSE
+          </CardTitle>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {gaps.map((g, i) => (
+              <RseGapRow key={`${g.dimension}-${i}`} gap={g} />
+            ))}
+          </div>
+        </DashCard>
+      )}
+    </>
+  );
+}
+
+function RseRecommendationCard({ reco }: { reco: RSERecommendation }) {
+  const [toolOpen, setToolOpen] = useState(false);
+  const prioColor = rsePriorityColor(reco.priority);
+  const dimAccent = RSE_PILLAR_ACCENT[reco.dimension];
+  const dimLabel = RSE_DIMENSION_LABELS[reco.dimension];
+
+  return (
+    <div style={{
+      padding: 16, borderRadius: 12,
+      background: "rgba(255,255,255,0.045)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      borderLeft: `3px solid ${prioColor}`,
+    }}>
+      <div style={{
+        display: "flex", justifyContent: "space-between", gap: 10,
+        alignItems: "flex-start", flexWrap: "wrap", marginBottom: 10,
+      }}>
+        <div style={{ fontWeight: 700, fontSize: 14, color: "#f8fafc", flex: 1, minWidth: 200, lineHeight: 1.35 }}>
+          {reco.title}
+        </div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <span style={{
+            fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase",
+            fontWeight: 700, color: dimAccent,
+            padding: "2px 8px", borderRadius: 4,
+            background: dimAccent + "20",
+            border: `1px solid ${dimAccent}55`,
+          }}>
+            {dimLabel}
+          </span>
+          <span style={{
+            fontSize: 10, letterSpacing: "0.06em", textTransform: "uppercase",
+            fontWeight: 800, color: prioColor,
+            padding: "2px 8px", borderRadius: 4,
+            background: prioColor + "20",
+            border: `1px solid ${prioColor}55`,
+          }}>
+            Priorité {reco.priority}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <RecoLine label="Pourquoi" value={reco.why} accent="#fbbf24" />
+        <RecoLine label="Action" value={reco.action} accent="#818cf8" strong />
+        <RecoLine label="Quand" value={reco.when} accent="#60a5fa" />
+        <RecoLine label="Impact attendu" value={reco.impact} accent="#22c55e" />
+      </div>
+
+      <div style={{
+        marginTop: 12, padding: 12, borderRadius: 10,
+        background: "rgba(99,102,241,0.08)",
+        border: "1px solid rgba(129,140,248,0.25)",
+      }}>
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          alignItems: "center", gap: 10, flexWrap: "wrap",
+        }}>
+          <div>
+            <div style={{
+              fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+              textTransform: "uppercase", color: "#a5b4fc", marginBottom: 2,
+            }}>
+              Outil livré
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>
+              {reco.tool.name}
+            </div>
+          </div>
+          <button
+            onClick={() => setToolOpen((o) => !o)}
+            style={{
+              padding: "6px 12px", borderRadius: 8,
+              background: "#4f46e5", color: "#fff",
+              fontSize: 12, fontWeight: 700, border: "none",
+              cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            {toolOpen ? "Masquer" : "Utiliser ce template"}
+          </button>
+        </div>
+
+        {toolOpen && (
+          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ fontSize: 12.5, color: "#e2e8f0", lineHeight: 1.6 }}>
+              {reco.tool.usage}
+            </div>
+            <div>
+              <div style={reCaptionStyle}>Timing</div>
+              <div style={{ fontSize: 12.5, color: "#cbd5e1", lineHeight: 1.55 }}>
+                {reco.tool.timing}
+              </div>
+            </div>
+            {reco.tool.questions.length > 0 && (
+              <div>
+                <div style={reCaptionStyle}>Questions clés</div>
+                <ol style={{
+                  margin: 0, padding: "0 0 0 20px",
+                  color: "#cbd5e1", fontSize: 13, lineHeight: 1.6,
+                  display: "flex", flexDirection: "column", gap: 4,
+                }}>
+                  {reco.tool.questions.slice(0, 5).map((q) => <li key={q}>{q}</li>)}
+                </ol>
+              </div>
+            )}
+            {reco.tool.tips.length > 0 && (
+              <div>
+                <div style={reCaptionStyle}>Bonnes pratiques</div>
+                <ul style={{
+                  margin: 0, padding: "0 0 0 20px",
+                  color: "#cbd5e1", fontSize: 12.5, lineHeight: 1.55,
+                  display: "flex", flexDirection: "column", gap: 3,
+                }}>
+                  {reco.tool.tips.map((t) => <li key={t}>{t}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RseGapRow({ gap }: { gap: RSEGap }) {
+  const accent = RSE_PILLAR_ACCENT[gap.dimension];
+  return (
+    <div style={{
+      padding: 12, borderRadius: 10,
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(255,255,255,0.07)",
+      borderLeft: `3px solid ${accent}`,
+    }}>
+      <div style={{
+        fontSize: 10, fontWeight: 800, letterSpacing: "0.12em",
+        textTransform: "uppercase", color: accent, marginBottom: 6,
+      }}>
+        {RSE_DIMENSION_LABELS[gap.dimension]}
+      </div>
+      <div style={{ fontSize: 13, color: "#e2e8f0", lineHeight: 1.55, marginBottom: 4 }}>
+        {gap.message}
+      </div>
+      <div style={{ fontSize: 12, color: "#a3b4c9", lineHeight: 1.55 }}>
+        Impact : {gap.impact}
+      </div>
+    </div>
   );
 }
