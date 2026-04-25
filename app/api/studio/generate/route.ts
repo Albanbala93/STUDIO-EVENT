@@ -67,6 +67,18 @@ RÈGLES OBLIGATOIRES :
 
 Le bloc "eventCopilot" est obligatoire.
 Le bloc "dircomView" est obligatoire.
+Le bloc "timeline" est obligatoire et NE DOIT JAMAIS être vide.
+
+RÈGLES POUR "timeline" (plan de déploiement) :
+- Produis 6 à 10 étapes ordonnées chronologiquement, du lancement à la post-évaluation
+- Chaque étape doit être une action concrète, opérationnelle, ancrée dans le brief — jamais une généralité
+- Le champ "when" doit être un repère temporel parlant : "S-2", "J-7", "Jour J", "S+1", "S+2", "M+1", "M+3", "M+6", etc.
+- Le champ "action" doit décrire UNE seule action (verbe d'action en tête), 1 phrase max
+- Le champ "impact" reflète l'effet attendu sur l'audience/objectif : "élevé" | "moyen" | "faible"
+- Le champ "complexity" reflète l'effort de mise en œuvre : "élevé" | "moyen" | "faible"
+- Le champ "delay" qualifie l'horizon : "court terme" | "moyen terme" | "long terme"
+- Le champ "dependencies" liste les prérequis explicites (rôles, livrables, validations) — peut être [] si aucun
+- Couvre les 3 phases : amorçage (avant), activation (pendant), ancrage (après)
 
 Retourne un JSON valide avec cette structure exacte :
 
@@ -79,6 +91,17 @@ Retourne un JSON valide avec cette structure exacte :
   "keyMessages": ["string", "string", "string"],
   "recommendedFormats": ["string", "string"],
   "quickWins": ["string", "string", "string"],
+
+  "timeline": [
+    {
+      "when": "string",
+      "action": "string",
+      "impact": "élevé",
+      "complexity": "moyen",
+      "delay": "court terme",
+      "dependencies": ["string"]
+    }
+  ],
 
   "generatedContent": {
     "executiveEmail": "string",
