@@ -252,6 +252,306 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Livrables / preuves concrètes ──────────────── */}
+      <section
+        className="landing-deliverables"
+        id="livrables"
+        aria-label="Ce que vous obtenez"
+      >
+        <div className="landing-deliverables-inner">
+          <div className="landing-deliverables-head">
+            <p className="landing-deliverables-overline">
+              Concrètement, vous repartez avec
+            </p>
+            <h2 className="landing-deliverables-title">
+              Des livrables exploitables{" "}
+              <span className="landing-deliverables-title-soft">
+                — pas des slides théoriques.
+              </span>
+            </h2>
+            <p className="landing-deliverables-lead">
+              Chaque module produit des sorties tangibles, exportables et
+              défendables face à un COMEX.
+            </p>
+          </div>
+
+          <div className="landing-deliverables-grid">
+            {/* 01 — Plan stratégique */}
+            <article className="landing-deliverable">
+              <div className="landing-deliverable-preview">
+                <svg
+                  viewBox="0 0 240 160"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="landing-deliverable-mockup"
+                >
+                  <rect
+                    x="32"
+                    y="14"
+                    width="176"
+                    height="146"
+                    rx="10"
+                    fill="#fff"
+                    stroke="#E2EAF4"
+                  />
+                  <rect x="46" y="28" width="60" height="6" rx="3" fill="#6366F1" />
+                  <rect x="46" y="40" width="40" height="4" rx="2" fill="#CBD5E1" />
+                  <rect x="46" y="56" width="148" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="46" y="63" width="124" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="46" y="70" width="138" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="46" y="84" width="44" height="14" rx="3" fill="#EEF2FF" />
+                  <rect x="94" y="84" width="44" height="14" rx="3" fill="#EEF2FF" />
+                  <rect x="46" y="106" width="148" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="46" y="113" width="116" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="46" y="120" width="138" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="46" y="138" width="60" height="10" rx="3" fill="#6366F1" />
+                </svg>
+              </div>
+              <div className="landing-deliverable-body">
+                <span className="landing-deliverable-tag">
+                  Document · Multi-section
+                </span>
+                <h3 className="landing-deliverable-title">
+                  Plan stratégique complet
+                </h3>
+                <p className="landing-deliverable-desc">
+                  Angle éditorial, messages, dispositif, planning — un dossier
+                  structuré, prêt à défendre en interne.
+                </p>
+                <span className="landing-deliverable-source">
+                  via Campaign Studio
+                </span>
+              </div>
+            </article>
+
+            {/* 02 — Contenus calibrés */}
+            <article className="landing-deliverable">
+              <div className="landing-deliverable-preview">
+                <svg
+                  viewBox="0 0 240 160"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="landing-deliverable-mockup"
+                >
+                  <rect
+                    x="22"
+                    y="22"
+                    width="140"
+                    height="58"
+                    rx="10"
+                    fill="#fff"
+                    stroke="#E2EAF4"
+                  />
+                  <rect x="34" y="34" width="44" height="10" rx="3" fill="#EEF2FF" />
+                  <rect x="34" y="52" width="116" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="34" y="59" width="92" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="34" y="66" width="104" height="3" rx="1.5" fill="#E2EAF4" />
+
+                  <rect
+                    x="78"
+                    y="86"
+                    width="140"
+                    height="58"
+                    rx="10"
+                    fill="#fff"
+                    stroke="#E2EAF4"
+                  />
+                  <rect x="90" y="98" width="52" height="10" rx="3" fill="#E0E7FF" />
+                  <rect x="90" y="116" width="116" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="90" y="123" width="92" height="3" rx="1.5" fill="#E2EAF4" />
+                  <rect x="90" y="130" width="80" height="3" rx="1.5" fill="#E2EAF4" />
+                </svg>
+              </div>
+              <div className="landing-deliverable-body">
+                <span className="landing-deliverable-tag">
+                  Activable · Par audience
+                </span>
+                <h3 className="landing-deliverable-title">
+                  Contenus rédigés, calibrés
+                </h3>
+                <p className="landing-deliverable-desc">
+                  Messages clés et formats prêts à pousser sur vos canaux —
+                  ajustés à chaque audience cible.
+                </p>
+                <span className="landing-deliverable-source">
+                  via Campaign Studio
+                </span>
+              </div>
+            </article>
+
+            {/* 03 — Diagnostic radar */}
+            <article className="landing-deliverable">
+              <div className="landing-deliverable-preview">
+                <svg
+                  viewBox="0 0 240 160"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="landing-deliverable-mockup"
+                >
+                  {/* Radar grid */}
+                  <g transform="translate(86 80)">
+                    <polygon
+                      points="0,-58 50,-29 50,29 0,58 -50,29 -50,-29"
+                      fill="none"
+                      stroke="#E2EAF4"
+                      strokeWidth="1"
+                    />
+                    <polygon
+                      points="0,-39 33,-19 33,19 0,39 -33,19 -33,-19"
+                      fill="none"
+                      stroke="#E2EAF4"
+                      strokeWidth="1"
+                    />
+                    <polygon
+                      points="0,-20 17,-10 17,10 0,20 -17,10 -17,-10"
+                      fill="none"
+                      stroke="#E2EAF4"
+                      strokeWidth="1"
+                    />
+                    <line x1="0" y1="-58" x2="0" y2="58" stroke="#E2EAF4" />
+                    <line x1="-50" y1="-29" x2="50" y2="29" stroke="#E2EAF4" />
+                    <line x1="-50" y1="29" x2="50" y2="-29" stroke="#E2EAF4" />
+                    {/* Filled radar */}
+                    <polygon
+                      points="0,-46 42,-22 38,18 0,40 -34,16 -40,-22"
+                      fill="rgba(99,102,241,0.18)"
+                      stroke="#6366F1"
+                      strokeWidth="1.5"
+                    />
+                    <circle cx="0" cy="-46" r="3" fill="#6366F1" />
+                    <circle cx="42" cy="-22" r="3" fill="#6366F1" />
+                    <circle cx="38" cy="18" r="3" fill="#6366F1" />
+                    <circle cx="0" cy="40" r="3" fill="#6366F1" />
+                    <circle cx="-34" cy="16" r="3" fill="#6366F1" />
+                    <circle cx="-40" cy="-22" r="3" fill="#6366F1" />
+                  </g>
+                  {/* Score panel */}
+                  <rect
+                    x="166"
+                    y="42"
+                    width="58"
+                    height="76"
+                    rx="10"
+                    fill="#fff"
+                    stroke="#E2EAF4"
+                  />
+                  <rect x="176" y="54" width="30" height="4" rx="2" fill="#CBD5E1" />
+                  <text
+                    x="195"
+                    y="86"
+                    textAnchor="middle"
+                    fontSize="22"
+                    fontWeight="700"
+                    fill="#4F46E5"
+                    fontFamily="DM Sans, sans-serif"
+                  >
+                    78
+                  </text>
+                  <rect x="176" y="100" width="38" height="3" rx="1.5" fill="#EEF2FF" />
+                  <rect x="176" y="106" width="26" height="3" rx="1.5" fill="#EEF2FF" />
+                </svg>
+              </div>
+              <div className="landing-deliverable-body">
+                <span className="landing-deliverable-tag">
+                  Mesure · 4 dimensions
+                </span>
+                <h3 className="landing-deliverable-title">
+                  Diagnostic + score consolidé
+                </h3>
+                <p className="landing-deliverable-desc">
+                  Une lecture objective de la performance, avec indicateurs de
+                  fiabilité par mesure et actions correctives priorisées.
+                </p>
+                <span className="landing-deliverable-source">via Momentum</span>
+              </div>
+            </article>
+
+            {/* 04 — Rapport COMEX */}
+            <article className="landing-deliverable">
+              <div className="landing-deliverable-preview">
+                <svg
+                  viewBox="0 0 240 160"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                  className="landing-deliverable-mockup"
+                >
+                  <rect
+                    x="32"
+                    y="14"
+                    width="176"
+                    height="146"
+                    rx="10"
+                    fill="#fff"
+                    stroke="#E2EAF4"
+                  />
+                  <rect x="46" y="28" width="80" height="6" rx="3" fill="#0F172A" />
+                  <rect x="46" y="40" width="44" height="4" rx="2" fill="#CBD5E1" />
+                  {/* KPI tiles */}
+                  <rect x="46" y="56" width="68" height="40" rx="6" fill="#F6F7FB" />
+                  <rect x="56" y="64" width="28" height="3" rx="1.5" fill="#CBD5E1" />
+                  <text
+                    x="56"
+                    y="86"
+                    fontSize="14"
+                    fontWeight="700"
+                    fill="#4F46E5"
+                    fontFamily="DM Sans, sans-serif"
+                  >
+                    +24%
+                  </text>
+                  <rect x="122" y="56" width="72" height="40" rx="6" fill="#F6F7FB" />
+                  <rect x="132" y="64" width="32" height="3" rx="1.5" fill="#CBD5E1" />
+                  <text
+                    x="132"
+                    y="86"
+                    fontSize="14"
+                    fontWeight="700"
+                    fill="#0F172A"
+                    fontFamily="DM Sans, sans-serif"
+                  >
+                    78/100
+                  </text>
+                  {/* Mini bar chart */}
+                  <rect x="46" y="106" width="148" height="44" rx="6" fill="#F6F7FB" />
+                  <rect x="58" y="138" width="10" height="6" rx="2" fill="#C7D2FE" />
+                  <rect x="74" y="130" width="10" height="14" rx="2" fill="#C7D2FE" />
+                  <rect x="90" y="120" width="10" height="24" rx="2" fill="#A5B4FC" />
+                  <rect x="106" y="124" width="10" height="20" rx="2" fill="#A5B4FC" />
+                  <rect x="122" y="116" width="10" height="28" rx="2" fill="#818CF8" />
+                  <rect x="138" y="112" width="10" height="32" rx="2" fill="#6366F1" />
+                  <rect x="154" y="120" width="10" height="24" rx="2" fill="#6366F1" />
+                  <rect x="170" y="118" width="10" height="26" rx="2" fill="#4F46E5" />
+                </svg>
+              </div>
+              <div className="landing-deliverable-body">
+                <span className="landing-deliverable-tag">
+                  Export · PDF prêt COMEX
+                </span>
+                <h3 className="landing-deliverable-title">
+                  Rapport consolidé exportable
+                </h3>
+                <p className="landing-deliverable-desc">
+                  Un dossier final qui agrège design, performance et impact
+                  RSE — projetable en réunion sans retraitement.
+                </p>
+                <span className="landing-deliverable-source">
+                  via Momentum + RSE
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <p className="landing-deliverables-foot">
+            Tous les livrables sont versionnés, exportables et signés — vous
+            restez propriétaire des contenus produits.
+          </p>
+        </div>
+      </section>
+
       {/* ── Social proof ───────────────────────────────── */}
       <section className="landing-proof" aria-label="Chiffres clés">
         <div className="landing-proof-inner">

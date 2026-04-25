@@ -4435,6 +4435,202 @@ body:has([data-landing-page]) {
   }
 }
 
+/* ── Deliverables — preuves concrètes ───────────── */
+.landing-deliverables {
+  background: linear-gradient(180deg, #fff 0%, #FAFBFE 100%);
+  padding: 112px 32px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.landing-deliverables-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.landing-deliverables-head {
+  text-align: center;
+  margin-bottom: 56px;
+  animation: landing-fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.landing-deliverables-overline {
+  margin: 0 0 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #4F46E5;
+}
+
+.landing-deliverables-title {
+  margin: 0;
+  font-size: clamp(28px, 3.4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+  color: #0F172A;
+}
+
+.landing-deliverables-title-soft {
+  color: #94A3B8;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.landing-deliverables-lead {
+  margin: 18px auto 0;
+  max-width: 620px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #475569;
+}
+
+.landing-deliverables-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+  animation: landing-fade-in-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+@media (max-width: 868px) {
+  .landing-deliverables-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+.landing-deliverable {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #E2EAF4;
+  border-radius: 18px;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s, border-color 0.22s;
+}
+
+.landing-deliverable:hover {
+  transform: translateY(-4px);
+  border-color: transparent;
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.14),
+    0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.landing-deliverable-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 24px;
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(99, 102, 241, 0.07) 0%,
+      transparent 65%
+    ),
+    #F6F7FB;
+  border-bottom: 1px solid #E2EAF4;
+  min-height: 200px;
+}
+
+.landing-deliverable-preview::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.025) 1px, transparent 1px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 35%, transparent 80%);
+  opacity: 0.7;
+}
+
+.landing-deliverable-mockup {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  filter: drop-shadow(0 8px 24px rgba(15, 23, 42, 0.08));
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-deliverable:hover .landing-deliverable-mockup {
+  transform: translateY(-2px) scale(1.015);
+}
+
+.landing-deliverable-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 26px 26px;
+}
+
+.landing-deliverable-tag {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 4px 10px;
+  background: #EEF2FF;
+  color: #4F46E5;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-deliverable-title {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+  color: #0F172A;
+}
+
+.landing-deliverable-desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.landing-deliverable-source {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #F1F5F9;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: #94A3B8;
+}
+
+.landing-deliverables-foot {
+  margin: 36px auto 0;
+  max-width: 640px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #64748B;
+}
+
+@media (max-width: 640px) {
+  .landing-deliverables {
+    padding: 80px 20px;
+  }
+  .landing-deliverable-preview {
+    min-height: 170px;
+    padding: 22px 18px;
+  }
+  .landing-deliverable-body {
+    padding: 20px 22px 22px;
+  }
+}
+
 /* ── Social proof ───────────────────────────────── */
 .landing-proof {
   background: #F6F7FB;
