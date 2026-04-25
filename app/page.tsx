@@ -2,14 +2,37 @@ import Link from "next/link";
 import {
   ArrowRight,
   BarChart3,
+  CalendarCheck,
   Check,
   FileCheck2,
   Leaf,
+  Lock,
+  PlayCircle,
   Sparkles,
+  Timer,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { LandingHeaderNav } from "./_components/landing-header-nav";
+
+const FAQ: { q: string; a: string }[] = [
+  {
+    q: "Combien de temps pour un premier livrable ?",
+    a: "Moins de 5 minutes pour un brief Campaign Studio. Un diagnostic Momentum se construit en 15 à 20 minutes avec vos chiffres en main.",
+  },
+  {
+    q: "Le volet RSE est-il défendable face à un COMEX ?",
+    a: "Oui — la grille suit la logique CSRD : Environnement, Social, Gouvernance. Chaque mesure expose son indicateur de fiabilité, donc rien n'est mis sous le tapis.",
+  },
+  {
+    q: "Mes briefs et données sont-ils protégés ?",
+    a: "Vos contenus restent votre propriété. Stockage chiffré, hébergement Europe, et aucune donnée client n'alimente l'entraînement de modèles tiers.",
+  },
+  {
+    q: "À partir de quel volume Stratly devient rentable ?",
+    a: "Dès le premier dispositif. Là où un cabinet livre en quelques jours, Stratly produit un dossier exploitable en quelques minutes — la différence se voit immédiatement.",
+  },
+];
 
 type PipelineStep = {
   step: string;
@@ -564,18 +587,176 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Final CTA ──────────────────────────────────── */}
-      <section id="cta-final" className="landing-cta-final">
-        <div className="landing-cta-final-inner">
-          <h2>Prêt à transformer votre communication&nbsp;?</h2>
-          <p>Commencez gratuitement. Résultat en 5 minutes.</p>
-          <Link
-            href="/studio/new"
-            className="landing-cta-primary landing-cta-primary-lg"
-          >
-            Essayer gratuitement
-            <ArrowRight size={16} strokeWidth={2} />
-          </Link>
+      {/* ── FAQ courte ─────────────────────────────────── */}
+      <section className="landing-faq" aria-label="Questions fréquentes">
+        <div className="landing-faq-inner">
+          <div className="landing-faq-head">
+            <p className="landing-faq-overline">Questions fréquentes</p>
+            <h2 className="landing-faq-title">
+              Les réponses{" "}
+              <span className="landing-faq-title-soft">avant de commencer.</span>
+            </h2>
+          </div>
+          <div className="landing-faq-grid">
+            {FAQ.map((item) => (
+              <div key={item.q} className="landing-faq-item">
+                <h3 className="landing-faq-q">{item.q}</h3>
+                <p className="landing-faq-a">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA — 2 parcours selon maturité ──────── */}
+      <section
+        id="cta-final"
+        className="landing-final-paths"
+        aria-label="Comment démarrer"
+      >
+        <div className="landing-final-paths-inner">
+          <div className="landing-final-paths-head">
+            <p className="landing-final-paths-overline">Comment démarrer</p>
+            <h2 className="landing-final-paths-title">
+              Deux parcours,{" "}
+              <span className="landing-final-paths-title-soft">
+                selon votre maturité.
+              </span>
+            </h2>
+            <p className="landing-final-paths-lead">
+              Tester par vous-même, ou cadrer votre cas avec un consultant
+              Stratly. Vous restez maître du tempo.
+            </p>
+          </div>
+
+          <div className="landing-final-paths-grid">
+            {/* Parcours 1 — Self-serve */}
+            <article className="landing-final-path landing-final-path-primary">
+              <div className="landing-final-path-head">
+                <span className="landing-final-path-tag">
+                  <PlayCircle size={13} strokeWidth={1.8} />
+                  Self-serve · Sans engagement
+                </span>
+                <h3 className="landing-final-path-title">
+                  Testez par vous-même
+                </h3>
+                <p className="landing-final-path-desc">
+                  Vous explorez la plateforme à votre rythme. Lancez un brief
+                  test ou un diagnostic réel, gardez la main sur vos contenus.
+                </p>
+              </div>
+
+              <ul className="landing-final-path-bullets">
+                <li>
+                  <span className="landing-final-path-check" aria-hidden="true">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  Accès complet aux 3 modules
+                </li>
+                <li>
+                  <span className="landing-final-path-check" aria-hidden="true">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  Premier livrable en moins de 5 minutes
+                </li>
+                <li>
+                  <span className="landing-final-path-check" aria-hidden="true">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  Aucune carte bancaire requise
+                </li>
+              </ul>
+
+              <Link
+                href="/studio/new"
+                className="landing-cta-primary landing-final-path-cta"
+              >
+                Démarrer gratuitement
+                <ArrowRight size={16} strokeWidth={2} />
+              </Link>
+              <p className="landing-final-path-foot">Mise en route immédiate.</p>
+            </article>
+
+            {/* Parcours 2 — Avec un expert */}
+            <article className="landing-final-path landing-final-path-secondary">
+              <div className="landing-final-path-head">
+                <span className="landing-final-path-tag landing-final-path-tag-alt">
+                  <CalendarCheck size={13} strokeWidth={1.8} />
+                  Avec un expert · 20 min
+                </span>
+                <h3 className="landing-final-path-title">
+                  Cadrons votre cas avec un consultant
+                </h3>
+                <p className="landing-final-path-desc">
+                  20 minutes pour comprendre votre contexte, démontrer la
+                  valeur sur un de vos cas, et proposer un cadrage adapté.
+                </p>
+              </div>
+
+              <ul className="landing-final-path-bullets">
+                <li>
+                  <span className="landing-final-path-check" aria-hidden="true">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  Démo personnalisée sur votre périmètre
+                </li>
+                <li>
+                  <span className="landing-final-path-check" aria-hidden="true">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  Réponses aux questions COMEX, RSE, sécurité
+                </li>
+                <li>
+                  <span className="landing-final-path-check" aria-hidden="true">
+                    <Check size={11} strokeWidth={2.5} />
+                  </span>
+                  Cadrage et devis sur mesure
+                </li>
+              </ul>
+
+              <Link
+                href="mailto:contact@stratly.io?subject=Demande%20de%20d%C3%A9mo%20Stratly"
+                className="landing-cta-secondary-dark landing-final-path-cta"
+              >
+                Réserver une démo
+                <ArrowRight size={16} strokeWidth={2} />
+              </Link>
+              <p className="landing-final-path-foot">
+                Réponse sous 24 h ouvrées.
+              </p>
+            </article>
+          </div>
+
+          <p className="landing-final-paths-tertiary">
+            Vous cherchez un cadre tarifaire entreprise ?{" "}
+            <Link href="mailto:contact@stratly.io?subject=Tarifs%20entreprise%20Stratly">
+              Demander une grille de tarifs
+              <ArrowRight size={12} strokeWidth={2} />
+            </Link>
+          </p>
+
+          <ul className="landing-final-trust" aria-label="Engagements Stratly">
+            <li>
+              <span className="landing-final-trust-icon" aria-hidden="true">
+                <Lock size={12} strokeWidth={2} />
+              </span>
+              Données chiffrées · Hébergement Europe
+            </li>
+            <li className="landing-final-trust-divider" aria-hidden="true" />
+            <li>
+              <span className="landing-final-trust-icon" aria-hidden="true">
+                <Timer size={12} strokeWidth={2} />
+              </span>
+              Mise en route en moins de 5 minutes
+            </li>
+            <li className="landing-final-trust-divider" aria-hidden="true" />
+            <li>
+              <span className="landing-final-trust-icon" aria-hidden="true">
+                <FileCheck2 size={12} strokeWidth={2} />
+              </span>
+              Conforme RGPD · Vos contenus restent votre propriété
+            </li>
+          </ul>
         </div>
       </section>
 
