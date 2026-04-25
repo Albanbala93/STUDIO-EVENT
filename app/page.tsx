@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ArrowRight, BarChart3, Leaf, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { LandingHeaderNav } from "./_components/landing-header-nav";
+
 type ModuleCardProps = {
   icon: ReactNode;
   title: string;
@@ -14,7 +16,7 @@ const MODULES: ModuleCardProps[] = [
   {
     icon: <Sparkles size={22} strokeWidth={1.6} />,
     title: "Campaign Studio",
-    subtitle: "Planifiez et produisez",
+    subtitle: "Planifier et produire",
     description:
       "Générez en minutes un plan stratégique complet, vos messages par audience et tous vos contenus.",
     href: "/studio",
@@ -22,15 +24,15 @@ const MODULES: ModuleCardProps[] = [
   {
     icon: <BarChart3 size={22} strokeWidth={1.6} />,
     title: "Momentum",
-    subtitle: "Mesurez et prouvez",
+    subtitle: "Mesurer et prouver",
     description:
       "Calculez votre score de performance, obtenez un diagnostic complet et exportez votre rapport COMEX en un clic.",
     href: "/momentum",
   },
   {
     icon: <Leaf size={22} strokeWidth={1.6} />,
-    title: "Module RSE",
-    subtitle: "Pilotez vos engagements",
+    title: "RSE",
+    subtitle: "Piloter et valoriser",
     description:
       "Mesurez et valorisez vos actions RSE avec un diagnostic structuré et des recommandations actionnables.",
     href: "/momentum",
@@ -63,16 +65,7 @@ export default function HomePage() {
             <span className="landing-logo-text">Stratly</span>
           </Link>
 
-          <nav className="landing-nav" aria-label="Navigation principale">
-            <Link href="/studio">Campaign Studio</Link>
-            <Link href="/momentum">Momentum</Link>
-            <Link href="/momentum">RSE</Link>
-            <Link href="#cta-final">Tarifs</Link>
-          </nav>
-
-          <Link href="/studio/new" className="landing-header-cta">
-            Essayer gratuitement
-          </Link>
+          <LandingHeaderNav />
         </div>
       </header>
 
@@ -82,15 +75,18 @@ export default function HomePage() {
         <div className="landing-hero-inner">
           <span className="landing-hero-overline">
             <span className="landing-hero-overline-dot" aria-hidden="true" />
-            La plateforme de communication mesurable
+            Stratly · Plateforme communication
           </span>
           <h1>
-            La plateforme qui transforme votre communication{" "}
-            <span className="landing-hero-accent">en impact mesurable.</span>
+            Une plateforme. Trois modules.{" "}
+            <span className="landing-hero-accent">
+              Une communication enfin mesurable.
+            </span>
           </h1>
           <p className="landing-hero-sub">
-            Planifiez des campagnes au niveau d&apos;un cabinet de conseil.
-            Mesurez ce qui compte vraiment. Prouvez votre valeur au COMEX.
+            Stratly réunit Campaign Studio, Momentum et RSE pour planifier vos
+            campagnes, mesurer leur performance et piloter vos engagements —
+            tout au même endroit.
           </p>
           <div className="landing-hero-ctas">
             <Link href="/studio/new" className="landing-cta-primary">
@@ -98,8 +94,23 @@ export default function HomePage() {
               <ArrowRight size={16} strokeWidth={2} />
             </Link>
             <Link href="#modules" className="landing-cta-secondary">
-              Voir la démo
+              Voir les modules
             </Link>
+          </div>
+
+          <div className="landing-hero-lockup" aria-label="Modules inclus">
+            <span className="landing-hero-lockup-label">Inclus</span>
+            <span className="landing-hero-lockup-divider" aria-hidden="true" />
+            <div className="landing-hero-lockup-items">
+              {MODULES.map((m) => (
+                <span key={m.title} className="landing-hero-lockup-chip">
+                  <span className="landing-hero-lockup-chip-icon">
+                    {m.icon}
+                  </span>
+                  {m.title}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -108,9 +119,11 @@ export default function HomePage() {
       <section className="landing-modules" id="modules">
         <div className="landing-modules-inner">
           <div className="landing-modules-head">
-            <p className="landing-modules-overline">3 modules · 1 plateforme</p>
+            <p className="landing-modules-overline">
+              Trois modules · Une plateforme
+            </p>
             <h2 className="landing-modules-title">
-              Trois leviers pour piloter votre communication.
+              Tout Stratly, en trois modules.
             </h2>
           </div>
 
