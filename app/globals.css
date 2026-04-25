@@ -4031,70 +4031,54 @@ body:has([data-landing-page]) {
   justify-content: center;
 }
 
-/* ── Hero lockup (modules inclus) ──────────────── */
-.landing-hero-lockup {
+/* ── Hero trust row (réassurance) ──────────────── */
+.landing-hero-trust {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  margin-top: 56px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 18px;
+  margin: 56px 0 0;
+  padding: 0;
+  list-style: none;
   flex-wrap: wrap;
   justify-content: center;
 }
 
-.landing-hero-lockup-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.landing-hero-lockup-divider {
-  width: 1px;
-  height: 14px;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.landing-hero-lockup-items {
+.landing-hero-trust-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.landing-hero-lockup-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.12);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 12px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
   letter-spacing: -0.005em;
 }
 
-.landing-hero-lockup-chip-icon {
+.landing-hero-trust-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.18);
   color: #C7D2FE;
+  flex-shrink: 0;
 }
 
-@media (max-width: 540px) {
-  .landing-hero-lockup {
+.landing-hero-trust-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  list-style: none;
+}
+
+@media (max-width: 720px) {
+  .landing-hero-trust {
     flex-direction: column;
-    gap: 10px;
-    border-radius: 18px;
-    padding: 14px 18px;
+    gap: 12px;
+    margin-top: 44px;
   }
-  .landing-hero-lockup-divider {
+  .landing-hero-trust-divider {
     display: none;
   }
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, Leaf, Sparkles } from "lucide-react";
+import { ArrowRight, BarChart3, Check, Leaf, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { LandingHeaderNav } from "./_components/landing-header-nav";
@@ -78,40 +78,46 @@ export default function HomePage() {
             Stratly · Plateforme communication
           </span>
           <h1>
-            Une plateforme. Trois modules.{" "}
-            <span className="landing-hero-accent">
-              Une communication enfin mesurable.
-            </span>
+            Du brief à la{" "}
+            <span className="landing-hero-accent">preuve d&apos;impact.</span>
           </h1>
           <p className="landing-hero-sub">
-            Stratly réunit Campaign Studio, Momentum et RSE pour planifier vos
-            campagnes, mesurer leur performance et piloter vos engagements —
-            tout au même endroit.
+            Concevez vos dispositifs, mesurez leur performance et démontrez
+            leur impact stratégique et RSE — avec la rigueur d&apos;un cabinet
+            de conseil.
           </p>
           <div className="landing-hero-ctas">
             <Link href="/studio/new" className="landing-cta-primary">
               Essayer gratuitement
               <ArrowRight size={16} strokeWidth={2} />
             </Link>
-            <Link href="#modules" className="landing-cta-secondary">
-              Voir les modules
+            <Link href="/momentum" className="landing-cta-secondary">
+              Voir un exemple de diagnostic
             </Link>
           </div>
 
-          <div className="landing-hero-lockup" aria-label="Modules inclus">
-            <span className="landing-hero-lockup-label">Inclus</span>
-            <span className="landing-hero-lockup-divider" aria-hidden="true" />
-            <div className="landing-hero-lockup-items">
-              {MODULES.map((m) => (
-                <span key={m.title} className="landing-hero-lockup-chip">
-                  <span className="landing-hero-lockup-chip-icon">
-                    {m.icon}
-                  </span>
-                  {m.title}
-                </span>
-              ))}
-            </div>
-          </div>
+          <ul className="landing-hero-trust" aria-label="Points de réassurance">
+            <li className="landing-hero-trust-item">
+              <span className="landing-hero-trust-icon" aria-hidden="true">
+                <Check size={12} strokeWidth={2.5} />
+              </span>
+              Sans carte bancaire
+            </li>
+            <li className="landing-hero-trust-divider" aria-hidden="true" />
+            <li className="landing-hero-trust-item">
+              <span className="landing-hero-trust-icon" aria-hidden="true">
+                <Check size={12} strokeWidth={2.5} />
+              </span>
+              Diagnostic en moins de 5 minutes
+            </li>
+            <li className="landing-hero-trust-divider" aria-hidden="true" />
+            <li className="landing-hero-trust-item">
+              <span className="landing-hero-trust-icon" aria-hidden="true">
+                <Check size={12} strokeWidth={2.5} />
+              </span>
+              Rapports prêts COMEX
+            </li>
+          </ul>
         </div>
       </section>
 
