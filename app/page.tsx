@@ -1,40 +1,64 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, Check, Leaf, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BarChart3,
+  Check,
+  FileCheck2,
+  Leaf,
+  Sparkles,
+} from "lucide-react";
 import type { ReactNode } from "react";
 
 import { LandingHeaderNav } from "./_components/landing-header-nav";
 
-type ModuleCardProps = {
+type PipelineStep = {
+  step: string;
+  verb: string;
+  module: string;
   icon: ReactNode;
-  title: string;
-  subtitle: string;
-  description: string;
+  tagline: string;
+  deliverables: string[];
   href: string;
 };
 
-const MODULES: ModuleCardProps[] = [
+const PIPELINE: PipelineStep[] = [
   {
-    icon: <Sparkles size={22} strokeWidth={1.6} />,
-    title: "Campaign Studio",
-    subtitle: "Planifier et produire",
-    description:
-      "Générez en minutes un plan stratégique complet, vos messages par audience et tous vos contenus.",
+    step: "01",
+    verb: "Concevez",
+    module: "Campaign Studio",
+    icon: <Sparkles size={20} strokeWidth={1.6} />,
+    tagline: "Du brief au plan stratégique en quelques minutes.",
+    deliverables: [
+      "Plan stratégique complet, prêt à défendre",
+      "Messages calibrés par audience",
+      "Contenus rédigés et activables",
+    ],
     href: "/studio",
   },
   {
-    icon: <BarChart3 size={22} strokeWidth={1.6} />,
-    title: "Momentum",
-    subtitle: "Mesurer et prouver",
-    description:
-      "Calculez votre score de performance, obtenez un diagnostic complet et exportez votre rapport COMEX en un clic.",
+    step: "02",
+    verb: "Mesurez",
+    module: "Momentum",
+    icon: <BarChart3 size={20} strokeWidth={1.6} />,
+    tagline: "La performance de chaque dispositif, objectivée.",
+    deliverables: [
+      "Diagnostic 4 dimensions + score consolidé",
+      "Indicateurs de fiabilité par mesure",
+      "Actions correctives priorisées",
+    ],
     href: "/momentum",
   },
   {
-    icon: <Leaf size={22} strokeWidth={1.6} />,
-    title: "RSE",
-    subtitle: "Piloter et valoriser",
-    description:
-      "Mesurez et valorisez vos actions RSE avec un diagnostic structuré et des recommandations actionnables.",
+    step: "03",
+    verb: "Démontrez",
+    module: "RSE",
+    icon: <Leaf size={20} strokeWidth={1.6} />,
+    tagline: "L'impact extra-financier de votre communication.",
+    deliverables: [
+      "Piliers Environnement · Social · Gouvernance",
+      "Indicateurs alignés CSRD",
+      "Reporting COMEX exportable",
+    ],
     href: "/momentum",
   },
 ];
@@ -121,39 +145,109 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Modules ────────────────────────────────────── */}
+      {/* ── Modules — pipeline ─────────────────────────── */}
       <section className="landing-modules" id="modules">
         <div className="landing-modules-inner">
           <div className="landing-modules-head">
-            <p className="landing-modules-overline">
-              Trois modules · Une plateforme
-            </p>
+            <p className="landing-modules-overline">Le système Stratly</p>
             <h2 className="landing-modules-title">
-              Tout Stratly, en trois modules.
+              Concevoir, mesurer, démontrer{" "}
+              <span className="landing-modules-title-soft">— sans rupture.</span>
             </h2>
+            <p className="landing-modules-lead">
+              Trois modules pensés pour s&apos;enchaîner. La sortie de chaque
+              étape devient la matière de la suivante.
+            </p>
           </div>
 
-          <div className="landing-modules-grid">
-            {MODULES.map((m) => (
-              <Link key={m.title} href={m.href} className="landing-module-card">
-                <span className="landing-module-icon" aria-hidden="true">
-                  {m.icon}
-                </span>
-                <div>
-                  <p className="landing-module-subtitle">{m.subtitle}</p>
-                  <h3 className="landing-module-title">{m.title}</h3>
-                </div>
-                <p className="landing-module-desc">{m.description}</p>
-                <span className="landing-module-cta">
-                  Accéder
-                  <ArrowRight
-                    className="landing-module-cta-arrow"
-                    size={14}
-                    strokeWidth={2}
-                  />
-                </span>
-              </Link>
+          <ol
+            className="landing-pipeline"
+            aria-label="Les trois étapes du système Stratly"
+          >
+            {PIPELINE.map((p, i) => (
+              <li key={p.step} className="landing-pipeline-item">
+                <Link href={p.href} className="landing-pipeline-card">
+                  <div className="landing-pipeline-card-head">
+                    <span className="landing-pipeline-step" aria-hidden="true">
+                      {p.step}
+                    </span>
+                    <span
+                      className="landing-pipeline-icon"
+                      aria-hidden="true"
+                    >
+                      {p.icon}
+                    </span>
+                  </div>
+
+                  <div className="landing-pipeline-card-body">
+                    <p className="landing-pipeline-verb">{p.verb}</p>
+                    <h3 className="landing-pipeline-module">{p.module}</h3>
+                    <p className="landing-pipeline-tagline">{p.tagline}</p>
+                  </div>
+
+                  <ul className="landing-pipeline-deliverables">
+                    {p.deliverables.map((d) => (
+                      <li key={d}>
+                        <span
+                          className="landing-pipeline-check"
+                          aria-hidden="true"
+                        >
+                          <Check size={11} strokeWidth={2.5} />
+                        </span>
+                        {d}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <span className="landing-pipeline-cta">
+                    Accéder à {p.module}
+                    <ArrowRight
+                      className="landing-module-cta-arrow"
+                      size={14}
+                      strokeWidth={2}
+                    />
+                  </span>
+                </Link>
+
+                {i < PIPELINE.length - 1 && (
+                  <span
+                    className="landing-pipeline-connector"
+                    aria-hidden="true"
+                  >
+                    <svg
+                      viewBox="0 0 36 14"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M0 7h30M24 1l6 6-6 6"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                )}
+              </li>
             ))}
+          </ol>
+
+          <div
+            className="landing-pipeline-converge"
+            role="note"
+            aria-label="Sortie unifiée"
+          >
+            <span
+              className="landing-pipeline-converge-icon"
+              aria-hidden="true"
+            >
+              <FileCheck2 size={16} strokeWidth={1.8} />
+            </span>
+            <p>
+              <strong>Sortie unifiée :</strong> un seul dossier consolidant
+              design, performance et impact RSE — exportable au format COMEX.
+            </p>
           </div>
         </div>
       </section>
