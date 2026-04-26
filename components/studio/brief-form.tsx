@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { getUserContext, learnFromProject, saveProject } from "../../lib/studio/storage";
 import type { BriefInput, StudioOutput, StudioProject } from "../../lib/studio/types";
+
+type UploadStatus = "idle" | "uploading" | "success" | "error";
+const ACCEPTED_FILES = ".pdf,.doc,.docx,.txt";
 
 const initialState: BriefInput = {
     companyContext: "",
@@ -70,22 +73,33 @@ export function BriefForm() {
     const [error, setError] = useState<string | null>(null);
     const [brief, setBrief] = useState<BriefInput>(initialState);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [dragOver, setDragOver] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
+    const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-        const formData = new FormData();
-        formData.append("file", file);
+    async function processBriefFile(file: File) {
+        setUploadStatus("uploading");
+        setUploadedFileName(file.name);
+        setError(null);
 
-        const res = await fetch("/api/studio/upload-brief", {
-            method: "POST",
-            body: formData,
-        });
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
 
-        const data = await res.json();
-        console.log("UPLOAD RESULT:", data);
+            const res = await fetch("/api/studio/upload-brief", {
+                method: "POST",
+                body: formData,
+            });
 
-        if (data.success) {
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                setUploadStatus("error");
+                setError(data?.error || "Impossible de lire le fichier — réessayez ou remplissez le brief manuellement.");
+                return;
+            }
+
             setBrief((prev) => ({
                 ...prev,
                 companyContext: data.brief.companyContext || "",
@@ -95,7 +109,37 @@ export function BriefForm() {
                 tone: data.brief.tone || "",
                 constraints: data.brief.constraints || "",
             }));
+            setUploadStatus("success");
+        } catch (err) {
+            setUploadStatus("error");
+            setError(err instanceof Error ? err.message : "Échec de l'import du brief.");
         }
+    }
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) void processBriefFile(file);
+        // reset pour permettre de redéposer le même fichier
+        e.target.value = "";
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) void processBriefFile(file);
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        if (!dragOver) setDragOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        // Évite le flicker quand on survole un enfant : on quitte uniquement
+        // si on sort vraiment du conteneur.
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+        setDragOver(false);
     };
 
     const filledCount = Object.values(brief).filter((v) => v.trim().length > 0).length;
@@ -142,8 +186,171 @@ export function BriefForm() {
         }
     }
 
+    const dropzoneBorder = dragOver
+        ? "var(--navy)"
+        : uploadStatus === "success"
+        ? "var(--blue-conseil, #6366F1)"
+        : "var(--border)";
+    const dropzoneBg = dragOver
+        ? "rgba(99,102,241,0.06)"
+        : uploadStatus === "success"
+        ? "rgba(99,102,241,0.03)"
+        : "var(--white)";
+
     return (
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
+
+            {/* ── Dropzone : import brief — gros, visible, drag & drop ── */}
+            <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                style={{
+                    marginBottom: 18,
+                    padding: "22px 24px",
+                    border: `2px dashed ${dropzoneBorder}`,
+                    borderRadius: "var(--radius-lg)",
+                    background: dropzoneBg,
+                    transition: "border-color 0.18s, background 0.18s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 18,
+                    cursor: uploadStatus === "uploading" ? "wait" : "default",
+                }}
+                aria-label="Zone d'import de brief — glissez un fichier ou cliquez sur le bouton"
+            >
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_FILES}
+                    onChange={handleFileInputChange}
+                    style={{ display: "none" }}
+                />
+
+                {/* Icône */}
+                <div
+                    aria-hidden="true"
+                    style={{
+                        flexShrink: 0,
+                        width: 52,
+                        height: 52,
+                        borderRadius: 14,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: uploadStatus === "success"
+                            ? "rgba(99,102,241,0.12)"
+                            : "var(--surface)",
+                        color: uploadStatus === "success" ? "#4F46E5" : "var(--navy)",
+                        transition: "background 0.18s, color 0.18s",
+                    }}
+                >
+                    {uploadStatus === "uploading" ? (
+                        <span className="loading-dots" aria-hidden>
+                            <span className="loading-dot" />
+                            <span className="loading-dot" />
+                            <span className="loading-dot" />
+                        </span>
+                    ) : (
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                            {uploadStatus === "success" ? (
+                                <path
+                                    d="M5 12.5l4 4 10-10"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            ) : (
+                                <>
+                                    <path
+                                        d="M12 16V4M7 9l5-5 5 5"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                    <path
+                                        d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+                                </>
+                            )}
+                        </svg>
+                    )}
+                </div>
+
+                {/* Texte principal */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <p
+                        style={{
+                            margin: "0 0 3px",
+                            fontSize: 15,
+                            fontWeight: 600,
+                            color: "var(--text)",
+                            letterSpacing: "-0.005em",
+                        }}
+                    >
+                        {uploadStatus === "uploading"
+                            ? "Lecture du brief en cours…"
+                            : uploadStatus === "success"
+                            ? "Brief importé — vérifiez les 6 champs ci-dessous"
+                            : dragOver
+                            ? "Déposez ici pour importer"
+                            : "Importer un brief existant"}
+                    </p>
+                    <p
+                        style={{
+                            margin: 0,
+                            fontSize: 12.5,
+                            color: "var(--slate-light)",
+                            lineHeight: 1.5,
+                        }}
+                    >
+                        {uploadStatus === "success" && uploadedFileName
+                            ? `${uploadedFileName} — les champs ont été pré-remplis automatiquement.`
+                            : uploadStatus === "uploading" && uploadedFileName
+                            ? `Analyse de ${uploadedFileName}…`
+                            : "Glissez un PDF, Word ou TXT — les 6 champs sont pré-remplis automatiquement. Sinon, remplissez le formulaire ci-dessous."}
+                    </p>
+                </div>
+
+                {/* CTA principal */}
+                <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadStatus === "uploading"}
+                    style={{
+                        flexShrink: 0,
+                        padding: "11px 20px",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        fontFamily: "inherit",
+                        letterSpacing: "0.01em",
+                        background: uploadStatus === "uploading" ? "var(--border)" : "var(--navy)",
+                        color: uploadStatus === "uploading" ? "var(--slate-light)" : "var(--white)",
+                        border: "none",
+                        borderRadius: "var(--radius-sm)",
+                        cursor: uploadStatus === "uploading" ? "wait" : "pointer",
+                        transition: "background 0.18s, transform 0.1s",
+                    }}
+                    onMouseDown={(e) => {
+                        if (uploadStatus !== "uploading") {
+                            e.currentTarget.style.transform = "translateY(1px)";
+                        }
+                    }}
+                    onMouseUp={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                >
+                    {uploadStatus === "success" ? "Réimporter" : "Choisir un fichier"}
+                </button>
+            </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} style={{
@@ -316,33 +523,6 @@ export function BriefForm() {
                             <p style={{ margin: 0, fontSize: 11.5, color: "var(--slate-light)" }}>
                                 Génération en ~25s · Résultat exportable
                             </p>
-                        )}
-
-                        {/* File upload — discreet */}
-                        {!loading && (
-                            <label style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 5,
-                                fontSize: 11,
-                                fontWeight: 500,
-                                color: "var(--slate-light)",
-                                cursor: "pointer",
-                                transition: "color 0.15s",
-                                flexShrink: 0,
-                                textDecoration: "none",
-                            }}
-                            onMouseEnter={(e) => { e.currentTarget.style.color = "var(--slate)"; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.color = "var(--slate-light)"; }}
-                            >
-                                <span>↑</span> Importer un brief
-                                <input
-                                    type="file"
-                                    accept=".pdf,.doc,.docx,.txt"
-                                    onChange={handleFileUpload}
-                                    style={{ display: "none" }}
-                                />
-                            </label>
                         )}
                     </div>
 
