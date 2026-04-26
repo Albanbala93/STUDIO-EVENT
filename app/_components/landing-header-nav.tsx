@@ -127,6 +127,10 @@ export function LandingHeaderNav() {
           </div>
         </div>
 
+        <Link href="/pricing" className="landing-nav-link">
+          Tarifs
+        </Link>
+
         <Link href="#cta-final" className="landing-nav-link">
           Démarrer
         </Link>
@@ -192,6 +196,13 @@ export function LandingHeaderNav() {
               <p className="landing-mobile-section-label landing-mobile-section-label-alt">
                 Plateforme
               </p>
+              <Link
+                href="/pricing"
+                className="landing-mobile-link landing-mobile-link-simple"
+                onClick={() => setMobileOpen(false)}
+              >
+                Tarifs
+              </Link>
               <Link
                 href="#cta-final"
                 className="landing-mobile-link landing-mobile-link-simple"
