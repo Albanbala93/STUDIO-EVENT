@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { consumeServerRateLimit } from "../../../../lib/rate-limit-server";
 
 // Config Vercel : l'enrichissement Anthropic peut prendre 5-10s, on laisse
 // 30s de marge. Sur plan Hobby, la limite dure est à 10s — si besoin, passer
@@ -697,8 +698,9 @@ Règles strictes :
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
+        // Cap absolu : 2000 tokens — interprétation longue tolérée.
         model: "claude-sonnet-4-5",
-        max_tokens: 2048,
+        max_tokens: 2000,
         system,
         messages: [{ role: "user", content: user }],
       }),
@@ -809,6 +811,27 @@ Règles strictes :
    ═══════════════════════════════════════════════════════════════════ */
 
 export async function POST(req: NextRequest) {
+  // Rate limiting Anthropic (100/jour/IP, reset minuit UTC).
+  // Si bloqué → on coupe AVANT le scoring déterministe pour signaler clairement
+  // au client qu'il doit attendre le reset (côté UI : afficher la card warning).
+  const rl = consumeServerRateLimit(req);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      {
+        detail: rl.message,
+        rateLimit: { limit: rl.limit, resetsAt: rl.resetsAt },
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": rl.resetsAt,
+        },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

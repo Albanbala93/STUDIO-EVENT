@@ -45,11 +45,13 @@ async function openAICall<T>(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        // Étapes intermédiaires du pipeline (analyse, sélection, etc.) → cap par défaut 1500.
         model,
         input: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        max_output_tokens: 1500,
         text: {
           format: {
             type: "json_schema",
@@ -427,6 +429,7 @@ export async function runFinalGeneration(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        // Étape finale : recommandation stratégique complète (long JSON) → cap absolu 2000.
         model,
         input: [
           {
@@ -436,6 +439,7 @@ export async function runFinalGeneration(
           },
           { role: "user", content: prompt },
         ],
+        max_output_tokens: 2000,
         text: {
           format: {
             type: "json_schema",

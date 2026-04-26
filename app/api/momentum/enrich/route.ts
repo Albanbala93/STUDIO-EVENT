@@ -24,6 +24,7 @@ import type {
   RecommendationItem,
   ScoreResult,
 } from "../../../../lib/momentum/types";
+import { consumeServerRateLimit } from "../../../../lib/rate-limit/server";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
@@ -199,8 +200,9 @@ Retourne uniquement l'objet JSON correspondant à \`baseline\` (executive_summar
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
+        // Cap absolu : 2000 tokens pour les enrichissements longs (diagnostic complet).
         model: "claude-sonnet-4-5",
-        max_tokens: 2048,
+        max_tokens: 2000,
         system,
         messages: [{ role: "user", content: user }],
       }),
@@ -268,6 +270,27 @@ Retourne uniquement l'objet JSON correspondant à \`baseline\` (executive_summar
 /* ─── Handler ─── */
 
 export async function POST(req: NextRequest) {
+  // Rate limiting : 100 appels Anthropic/IP/jour, reset minuit UTC.
+  // Sans cet appel Anthropic ne sera pas déclenché et le client recevra
+  // le baseline déterministe + un 429 lisible.
+  const rl = consumeServerRateLimit(req);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      {
+        detail: rl.message,
+        rateLimit: { limit: rl.limit, resetsAt: rl.resetsAt },
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": rl.resetsAt,
+        },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -290,5 +313,14 @@ export async function POST(req: NextRequest) {
   }
 
   const interpretation = await enrichWithAnthropic(b as unknown as EnrichBody);
-  return NextResponse.json({ interpretation });
+  return NextResponse.json(
+    { interpretation },
+    {
+      headers: {
+        "X-RateLimit-Limit": String(rl.allowed ? 100 : 0),
+        "X-RateLimit-Remaining": String(rl.allowed ? rl.remaining : 0),
+        "X-RateLimit-Reset": rl.resetsAt,
+      },
+    },
+  );
 }

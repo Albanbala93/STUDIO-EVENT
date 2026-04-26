@@ -33,6 +33,7 @@ import {
   INTENT_OPTIONS,
   RSE_KPIS,
 } from "../../../lib/momentum/kpi-catalog";
+import { RateLimitBanner } from "../../../components/ui/rate-limit-banner";
 import { scoreMomentum, type DimensionSignal } from "../../../lib/momentum/scoring";
 import { interpretScore } from "../../../lib/momentum/interpretation";
 import { interpretRse } from "../../../lib/momentum/rse";
@@ -156,6 +157,7 @@ export default function DiagnosticPage() {
 function DiagnosticPageInner() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [submitting, setSubmitting] = useState(false);
+  const [rateLimit, setRateLimit] = useState<{ message?: string; resetsAt?: string } | null>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -258,7 +260,16 @@ function DiagnosticPageInner() {
           signal: controller.signal,
         });
         clearTimeout(tid);
-        if (res.ok) {
+        if (res.status === 429) {
+          // Quota Anthropic atteint — on conserve le baseline déterministe et
+          // on lève le drapeau pour afficher la card warning sobre.
+          const data = await res.json().catch(() => ({}));
+          setRateLimit({
+            message: data?.detail ?? undefined,
+            resetsAt: data?.rateLimit?.resetsAt,
+          });
+        } else if (res.ok) {
+          setRateLimit(null);
           const data = await res.json();
           if (data && data.interpretation) {
             interpretation = data.interpretation;
@@ -373,6 +384,7 @@ function DiagnosticPageInner() {
             rseKpis={RSE_KPIS}
             answers={state.answers}
             submitting={submitting}
+            rateLimit={rateLimit}
             onAnswer={(kpiId, patch) =>
               dispatch({ type: "SET_ANSWER", kpiId, patch })
             }
@@ -545,6 +557,7 @@ function KPIStep(props: {
   rseKpis: RSEKPIQuestion[];
   answers: Record<string, KPIAnswer>;
   submitting: boolean;
+  rateLimit: { message?: string; resetsAt?: string } | null;
   onAnswer: (kpiId: string, patch: Partial<KPIAnswer>) => void;
   onBack: () => void;
   onSubmit: () => void;
@@ -555,6 +568,7 @@ function KPIStep(props: {
     rseKpis,
     answers,
     submitting,
+    rateLimit,
     onAnswer,
     onBack,
     onSubmit,
@@ -681,6 +695,15 @@ function KPIStep(props: {
                 })}
               </div>
             </>
+          )}
+
+          {rateLimit && (
+            <div className="mt-6">
+              <RateLimitBanner
+                message={rateLimit.message}
+                resetsAt={rateLimit.resetsAt}
+              />
+            </div>
           )}
 
           {error && <ErrorBanner>{error}</ErrorBanner>}

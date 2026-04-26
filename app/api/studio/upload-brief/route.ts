@@ -75,6 +75,7 @@ Retourne exactement cette structure JSON :
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        // Brief structuré court (6 champs) → cap par défaut 1500.
         model: process.env.OPENAI_MODEL || "gpt-4.1",
         input: [
           {
@@ -87,6 +88,7 @@ Retourne exactement cette structure JSON :
             content: prompt,
           },
         ],
+        max_output_tokens: 1500,
         text: {
           format: {
             type: "json_object",

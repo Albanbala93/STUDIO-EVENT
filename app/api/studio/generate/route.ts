@@ -182,8 +182,10 @@ Retourne un JSON valide avec cette structure exacte :
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        // Sortie volumineuse (recommandation stratégique complète) → cap absolu 2000.
         model: process.env.OPENAI_MODEL || "gpt-4.1",
         input: prompt,
+        max_output_tokens: 2000,
         text: {
           format: { type: "json_object" },
         },
