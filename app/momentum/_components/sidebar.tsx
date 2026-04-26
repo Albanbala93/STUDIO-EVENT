@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "../../../lib/utils";
+import { Logo } from "../../../components/brand/logo";
 
 type NavItem = {
   label: string;
@@ -32,10 +33,8 @@ export function Sidebar() {
       data-momentum-sidebar
       className="fixed inset-y-0 left-0 z-40 flex w-[240px] flex-col border-r border-border bg-white"
     >
-      <div className="flex h-16 items-center gap-2 px-5 border-b border-border">
-        <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-navy text-white font-bold text-sm shadow-card">
-          S
-        </div>
+      <div className="flex h-16 items-center gap-2.5 px-5 border-b border-border">
+        <Logo variant="mark" size={32} href="/" ariaLabel="Stratly — accueil" />
         <div className="flex flex-col leading-tight">
           <span className="text-[15px] font-semibold text-navy">Stratly</span>
           <span className="text-[10px] uppercase tracking-[0.14em] text-ink-muted">

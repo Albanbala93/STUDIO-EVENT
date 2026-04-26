@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { promises as fs } from "fs";
+import path from "path";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import {
   AlignmentType,
@@ -13,6 +15,16 @@ import {
 } from "docx";
 
 import type { EventFormatRecommendation, RiskItem, StudioProject } from "../../../../lib/studio/types";
+
+async function loadStratlyMark(): Promise<Uint8Array | null> {
+  try {
+    const filePath = path.join(process.cwd(), "public", "brand", "stratly-mark.png");
+    const buffer = await fs.readFile(filePath);
+    return new Uint8Array(buffer);
+  } catch {
+    return null;
+  }
+}
 
 // Allow up to 10MB body and 60s execution for large exports
 export const maxDuration = 60;
@@ -109,6 +121,10 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
+  // Marque Stratly — embarquée une seule fois et réutilisée (cover + footer).
+  const markBytes = await loadStratlyMark();
+  const markImage = markBytes ? await pdfDoc.embedPng(markBytes) : null;
+
   const colors = {
     navy: rgb(0.059, 0.086, 0.161),
     blue: rgb(0.118, 0.251, 0.686),
@@ -149,8 +165,19 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
       thickness: 0.5,
       color: colors.border,
     });
+    let textX = marginX;
+    if (markImage) {
+      const markSize = 12;
+      page.drawImage(markImage, {
+        x: marginX,
+        y: footerY - 2,
+        width: markSize,
+        height: markSize,
+      });
+      textX = marginX + markSize + 6;
+    }
     page.drawText("Stratly · Campaign — Confidentiel", {
-      x: marginX,
+      x: textX,
       y: footerY,
       size: 8,
       font: fontRegular,
@@ -567,7 +594,18 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
   // Blue accent line
   page.drawRectangle({ x: 0, y: height - 202, width, height: 3, color: colors.indigo });
 
-  page.drawText("CAMPAIGN STUDIO", {
+  // Marque Stratly en haut à droite (sur fond navy → la marque a son propre fond foncé, fonctionne).
+  if (markImage) {
+    const coverMarkSize = 44;
+    page.drawImage(markImage, {
+      x: width - marginX - coverMarkSize,
+      y: height - 80 - coverMarkSize / 2 + 6,
+      width: coverMarkSize,
+      height: coverMarkSize,
+    });
+  }
+
+  page.drawText("STRATLY · CAMPAIGN", {
     x: marginX,
     y: height - 80,
     size: 11,

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import type { ReactNode } from "react";
+import { Logo } from "../../components/brand/logo";
 
 type ModuleItem = {
   icon: ReactNode;
@@ -165,7 +166,7 @@ export function LandingHeaderNav() {
           />
           <div className="landing-mobile-panel">
             <div className="landing-mobile-panel-head">
-              <span className="landing-logo-text">Stratly</span>
+              <Logo variant="full" size={26} />
               <button
                 type="button"
                 className="landing-mobile-close"

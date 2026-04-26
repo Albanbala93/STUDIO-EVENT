@@ -938,6 +938,40 @@ textarea {
   color: var(--navy);
 }
 
+/* ============================================================
+   <Logo /> — composant marque centralisé
+   Voir components/brand/logo.tsx
+   ============================================================ */
+.logo-root {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+.logo-root:hover {
+  text-decoration: none;
+  opacity: 0.78;
+}
+.logo-mark {
+  display: block;
+  border-radius: 6px;
+  /* Le PNG a un fond navy embarqué — pas besoin de wrapper coloré */
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.logo-wordmark {
+  font-family: var(--font-body, "DM Sans", system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: inherit;
+  line-height: 1;
+}
+/* Variante mark seule : pas de gap inutile */
+.logo-mark-only,
+.logo-root.logo-mark { gap: 0; }
+
 .topnav-wordmark-studio {
   font-weight: 400;
   color: var(--slate);

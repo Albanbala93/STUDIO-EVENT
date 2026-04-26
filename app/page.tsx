@@ -14,6 +14,7 @@ import {
 import type { ReactNode } from "react";
 
 import { LandingHeaderNav } from "./_components/landing-header-nav";
+import { Logo } from "../components/brand/logo";
 
 const FAQ: { q: string; a: string }[] = [
   {
@@ -98,19 +99,7 @@ export default function HomePage() {
       {/* ── Sticky header ──────────────────────────────── */}
       <header className="landing-header">
         <div className="landing-header-inner">
-          <Link href="/" className="landing-logo">
-            <span className="landing-logo-mark">
-              <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
-                <path
-                  d="M2.5 3.5h5M2.5 6.5h8M2.5 9.5h6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-            <span className="landing-logo-text">Stratly</span>
-          </Link>
+          <Logo variant="full" size={32} href="/" priority />
 
           <LandingHeaderNav />
         </div>
@@ -763,10 +752,7 @@ export default function HomePage() {
       {/* ── Footer ─────────────────────────────────────── */}
       <footer className="landing-footer">
         <div className="landing-footer-inner">
-          <span className="landing-footer-brand">
-            <span className="landing-footer-mark" aria-hidden="true" />
-            Stratly
-          </span>
+          <Logo variant="full" size={28} href="/" />
           <div className="landing-footer-links">
             <Link href="/studio">Campaign</Link>
             <Link href="/momentum">Pilot</Link>

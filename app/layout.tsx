@@ -1,9 +1,25 @@
 import "./globals.css";
 import Link from "next/link";
+import { Logo } from "../components/brand/logo";
 
 export const metadata = {
   title: "Stratly",
   description: "Plateforme de recommandation stratégique en communication interne",
+  applicationName: "Stratly",
+  openGraph: {
+    title: "Stratly",
+    description:
+      "Concevez vos dispositifs, mesurez leur performance et démontrez leur impact.",
+    siteName: "Stratly",
+    images: [{ url: "/brand/stratly-logo.png", width: 1254, height: 1254, alt: "Stratly" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stratly",
+    description: "Plateforme stratégique de communication interne",
+    images: ["/brand/stratly-logo.png"],
+  },
 };
 
 export default function RootLayout({
@@ -25,16 +41,10 @@ export default function RootLayout({
         <nav className="topnav">
           <div className="topnav-inner">
             {/* Logo */}
-            <Link href="/studio" className="topnav-logo">
-              <span className="topnav-logo-mark">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <path d="M2.5 3.5h5M2.5 6.5h8M2.5 9.5h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </span>
-              <span className="topnav-wordmark">
-                Campaign
-              </span>
-            </Link>
+            <Logo variant="full" size={26} href="/" priority />
+            <span className="topnav-wordmark-studio" style={{ marginLeft: 8, fontSize: 12.5 }}>
+              · Campaign
+            </span>
 
             {/* Visual separator */}
             <span className="topnav-divider" />

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check, ShieldCheck, Sparkles, X } from "lucide-react";
 
 import { LandingHeaderNav } from "../_components/landing-header-nav";
+import { Logo } from "../../components/brand/logo";
 
 type Cycle = "monthly" | "annual";
 
@@ -94,19 +95,7 @@ export default function PricingPage() {
       {/* ── Header marketing — masque la topnav studio via :has() ── */}
       <header className="landing-header">
         <div className="landing-header-inner">
-          <Link href="/" className="landing-logo">
-            <span className="landing-logo-mark">
-              <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
-                <path
-                  d="M2.5 3.5h5M2.5 6.5h8M2.5 9.5h6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-            <span className="landing-logo-text">Stratly</span>
-          </Link>
+          <Logo variant="full" size={32} href="/" priority />
           <LandingHeaderNav />
         </div>
       </header>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "../../../components/brand/logo";
 
 type NavItem = {
   label: string;
@@ -63,16 +64,7 @@ export function StudioSidebar() {
   return (
     <aside className="studio-sidebar" data-studio-sidebar>
       <div className="studio-sidebar-header">
-        <div className="studio-sidebar-logo">
-          <svg width="14" height="14" viewBox="0 0 13 13" fill="none">
-            <path
-              d="M2.5 3.5h5M2.5 6.5h8M2.5 9.5h6"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
+        <Logo variant="mark" size={28} href="/" ariaLabel="Stratly — accueil" />
         <div className="studio-sidebar-wordmark">
           <span className="studio-sidebar-brand">Stratly</span>
           <span className="studio-sidebar-product">Campaign</span>
