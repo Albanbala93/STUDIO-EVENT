@@ -18,7 +18,7 @@ import { LandingHeaderNav } from "./_components/landing-header-nav";
 const FAQ: { q: string; a: string }[] = [
   {
     q: "Combien de temps pour un premier livrable ?",
-    a: "Moins de 5 minutes pour un brief Campaign Studio. Un diagnostic Momentum se construit en 15 à 20 minutes avec vos chiffres en main.",
+    a: "Moins de 5 minutes pour un brief Campaign. Un diagnostic Pilot se construit en 15 à 20 minutes avec vos chiffres en main.",
   },
   {
     q: "Le volet RSE est-il défendable face à un COMEX ?",
@@ -48,7 +48,7 @@ const PIPELINE: PipelineStep[] = [
   {
     step: "01",
     verb: "Concevez",
-    module: "Campaign Studio",
+    module: "Campaign",
     icon: <Sparkles size={20} strokeWidth={1.6} />,
     tagline: "Du brief au plan stratégique en quelques minutes.",
     deliverables: [
@@ -61,7 +61,7 @@ const PIPELINE: PipelineStep[] = [
   {
     step: "02",
     verb: "Mesurez",
-    module: "Momentum",
+    module: "Pilot",
     icon: <BarChart3 size={20} strokeWidth={1.6} />,
     tagline: "La performance de chaque dispositif, objectivée.",
     deliverables: [
@@ -74,7 +74,7 @@ const PIPELINE: PipelineStep[] = [
   {
     step: "03",
     verb: "Démontrez",
-    module: "RSE",
+    module: "Impact",
     icon: <Leaf size={20} strokeWidth={1.6} />,
     tagline: "L'impact extra-financier de votre communication.",
     deliverables: [
@@ -343,7 +343,7 @@ export default function HomePage() {
                   structuré, prêt à défendre en interne.
                 </p>
                 <span className="landing-deliverable-source">
-                  via Campaign Studio
+                  via Campaign
                 </span>
               </div>
             </article>
@@ -399,7 +399,7 @@ export default function HomePage() {
                   ajustés à chaque audience cible.
                 </p>
                 <span className="landing-deliverable-source">
-                  via Campaign Studio
+                  via Campaign
                 </span>
               </div>
             </article>
@@ -488,7 +488,7 @@ export default function HomePage() {
                   Une lecture objective de la performance, avec indicateurs de
                   fiabilité par mesure et actions correctives priorisées.
                 </p>
-                <span className="landing-deliverable-source">via Momentum</span>
+                <span className="landing-deliverable-source">via Pilot</span>
               </div>
             </article>
 
@@ -562,7 +562,7 @@ export default function HomePage() {
                   RSE — projetable en réunion sans retraitement.
                 </p>
                 <span className="landing-deliverable-source">
-                  via Momentum + RSE
+                  via Pilot + Impact
                 </span>
               </div>
             </article>
@@ -768,9 +768,9 @@ export default function HomePage() {
             Stratly
           </span>
           <div className="landing-footer-links">
-            <Link href="/studio">Campaign Studio</Link>
-            <Link href="/momentum">Momentum</Link>
-            <Link href="/momentum">RSE</Link>
+            <Link href="/studio">Campaign</Link>
+            <Link href="/momentum">Pilot</Link>
+            <Link href="/momentum">Impact</Link>
           </div>
           <span>© {new Date().getFullYear()} Stratly</span>
         </div>

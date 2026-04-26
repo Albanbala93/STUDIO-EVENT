@@ -21,7 +21,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { label: "Diagnostics", href: "/momentum", icon: LayoutDashboard },
   { label: "Nouveau diagnostic", href: "/momentum/diagnostic", icon: PlusCircle },
-  { label: "Campaign Studio", href: "/studio", icon: Rocket },
+  { label: "Campaign", href: "/studio", icon: Rocket },
 ];
 
 export function Sidebar() {
@@ -39,7 +39,7 @@ export function Sidebar() {
         <div className="flex flex-col leading-tight">
           <span className="text-[15px] font-semibold text-navy">Stratly</span>
           <span className="text-[10px] uppercase tracking-[0.14em] text-ink-muted">
-            Momentum
+            Pilot
           </span>
         </div>
       </div>

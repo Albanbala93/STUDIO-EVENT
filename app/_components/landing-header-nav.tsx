@@ -24,20 +24,20 @@ type ModuleItem = {
 const MODULES: ModuleItem[] = [
   {
     icon: <Sparkles size={16} strokeWidth={1.7} />,
-    title: "Campaign Studio",
-    subtitle: "Planifier et produire",
+    title: "Campaign",
+    subtitle: "Concevez vos campagnes et dispositifs",
     href: "/studio",
   },
   {
     icon: <BarChart3 size={16} strokeWidth={1.7} />,
-    title: "Momentum",
-    subtitle: "Mesurer et prouver",
+    title: "Pilot",
+    subtitle: "Mesurez, analysez et pilotez vos performances",
     href: "/momentum",
   },
   {
     icon: <Leaf size={16} strokeWidth={1.7} />,
-    title: "RSE",
-    subtitle: "Piloter et valoriser",
+    title: "Impact",
+    subtitle: "Évaluez et structurez votre impact RSE",
     href: "/momentum",
   },
 ];

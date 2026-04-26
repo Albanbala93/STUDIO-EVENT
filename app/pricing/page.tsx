@@ -15,18 +15,18 @@ const ENT_FROM = 490;
 
 const STARTER_BULLETS = [
   "1 projet/mois par module",
-  "Campaign Studio",
-  "Momentum",
-  "Module RSE",
+  "Campaign",
+  "Pilot",
+  "Module Impact",
   "Export PDF",
   "Support communauté",
 ];
 
 const PRO_BULLETS = [
   "Projets illimités sur les 3 modules",
-  "Campaign Studio illimité",
-  "Momentum illimité",
-  "Module RSE illimité",
+  "Campaign illimité",
+  "Pilot illimité",
+  "Module Impact illimité",
   "Historique multi-projets",
   "Rapport COMEX auto-généré",
   "Export PDF brandé Stratly",
@@ -54,7 +54,7 @@ type Row = {
 
 const COMPARE_ROWS: Row[] = [
   { label: "Projets / mois", starter: "1", pro: "∞", ent: "∞" },
-  { label: "3 modules (Studio · Momentum · RSE)", starter: true, pro: true, ent: true },
+  { label: "3 modules (Campaign · Pilot · Impact)", starter: true, pro: true, ent: true },
   { label: "Historique multi-projets", starter: false, pro: true, ent: true },
   { label: "Rapport COMEX auto-généré", starter: false, pro: true, ent: true },
   { label: "Export PDF brandé Stratly", starter: false, pro: true, ent: true },
@@ -123,9 +123,9 @@ export default function PricingPage() {
             Une plateforme unique. Trois modules. Un tarif clair.
           </h1>
           <p className="pricing-lead">
-            Campaign Studio, Momentum, Module RSE — accès aux trois modules,
-            quel que soit votre plan. Vous payez la profondeur d&rsquo;usage,
-            pas la fonctionnalité.
+            Campaign, Pilot, Impact — accès aux trois modules, quel que soit
+            votre plan. Vous payez la profondeur d&rsquo;usage, pas la
+            fonctionnalité.
           </p>
 
           {/* Toggle */}

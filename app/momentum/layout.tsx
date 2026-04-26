@@ -2,7 +2,7 @@ import "./momentum.css";
 import { Sidebar } from "./_components/sidebar";
 
 export const metadata = {
-  title: "Momentum · Stratly",
+  title: "Pilot · Stratly",
   description: "Performance de communication — restitution exécutive",
 };
 

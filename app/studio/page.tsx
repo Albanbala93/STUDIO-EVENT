@@ -59,7 +59,7 @@ export default function StudioDashboardPage() {
                     <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
                         <div>
                             <p className="studio-page-hero-label">Espace de travail</p>
-                            <h1 className="studio-page-hero-title">Campaign Studio</h1>
+                            <h1 className="studio-page-hero-title">Campaign</h1>
                             <p className="studio-page-hero-sub">
                                 Vos dispositifs de communication interne, générés et centralisés.
                             </p>
@@ -137,7 +137,7 @@ export default function StudioDashboardPage() {
                             Aucun dispositif créé
                         </h3>
                         <p style={{ margin: "0 0 24px", fontSize: 13.5, color: "var(--text-muted)", maxWidth: 340, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }}>
-                            Décrivez votre contexte en 6 champs. Campaign Studio produit un plan stratégique complet en quelques secondes.
+                            Décrivez votre contexte en 6 champs. Campaign produit un plan stratégique complet en quelques secondes.
                         </p>
                         <Link href="/studio/new" className="btn btn-dark">
                             Créer mon premier dispositif
@@ -273,7 +273,7 @@ function MomentumMemoryBanner({ memory }: { memory: MomentumMemory }) {
             <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
                 <div>
                     <p style={{ margin: "0 0 2px", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--slate-light)" }}>
-                        Mémoire Momentum
+                        Mémoire Pilot
                     </p>
                     <p style={{ margin: 0, fontSize: 13, color: "var(--text)", fontWeight: 600 }}>
                         {memory.unlocked
@@ -301,7 +301,7 @@ function MomentumMemoryBanner({ memory }: { memory: MomentumMemory }) {
                 className="btn btn-ghost"
                 style={{ fontSize: 11.5, padding: "5px 13px", textDecoration: "none", whiteSpace: "nowrap" }}
             >
-                Ouvrir Momentum →
+                Ouvrir Pilot →
             </Link>
         </div>
     );

@@ -49,7 +49,7 @@ export default function MomentumLanding() {
         <div className="mx-auto max-w-6xl px-8 h-16 flex items-center justify-between">
           <div className="flex flex-col leading-tight">
             <span className="text-[11px] uppercase tracking-[0.14em] text-ink-muted">
-              Momentum · Impact Intelligence
+              Stratly · Pilot
             </span>
             <h1 className="text-[18px] font-semibold text-ink">
               Pilotage de la performance & de l&apos;impact
@@ -451,7 +451,7 @@ function ProjectCard({
               )}
               {project.fromCampaignId && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-canvas border border-border text-ink-muted text-[10px] font-semibold">
-                  ↔ Campaign Studio
+                  ↔ Campaign
                 </span>
               )}
             </div>
@@ -557,7 +557,7 @@ function RseStrategicBand({ stats }: { stats: Stats }) {
             <p className="mt-1.5 text-[13px] leading-relaxed text-ink-muted max-w-2xl">
               {hasRse
                 ? `Score consolidé Environnement · Social · Gouvernance, aligné CSRD, calculé sur les ${stats.rseCovered} dispositif${stats.rseCovered > 1 ? "s" : ""} couvert${stats.rseCovered > 1 ? "s" : ""}. Exportable directement en rapport COMEX.`
-                : "Les diagnostics Momentum ouvrent automatiquement le volet ESG — Environnement, Social, Gouvernance — pour articuler performance communicationnelle et impact extra-financier dans un même reporting."}
+                : "Les diagnostics Pilot ouvrent automatiquement le volet Impact — Environnement, Social, Gouvernance — pour articuler performance communicationnelle et impact extra-financier dans un même reporting."}
             </p>
           </div>
         </div>
@@ -591,7 +591,7 @@ function RseStrategicBand({ stats }: { stats: Stats }) {
             ) : (
               <>
                 <ArrowUpRight className="h-3.5 w-3.5" />
-                Activer le volet RSE
+                Activer le module Impact
               </>
             )}
           </Link>

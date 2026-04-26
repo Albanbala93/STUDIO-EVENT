@@ -74,7 +74,7 @@ export default function ProjectPage() {
               className={buttonVariants({ variant: "primary", size: "md" })}
             >
               <ArrowLeft className="h-4 w-4" />
-              Retour à Momentum
+              Retour à Pilot
             </Link>
           </CardContent>
         </Card>
@@ -122,7 +122,7 @@ export default function ProjectPage() {
       onReset={() => {
         if (
           typeof window !== "undefined" &&
-          window.confirm("Supprimer ce projet Momentum ?")
+          window.confirm("Supprimer ce projet Pilot ?")
         ) {
           deleteProject(project.id);
           router.push("/momentum");

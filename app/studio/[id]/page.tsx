@@ -119,9 +119,9 @@ export default function ProjectPage() {
                                 textDecoration: "none",
                                 whiteSpace: "nowrap",
                             }}
-                            title="Ouvrir le wizard Momentum avec les métadonnées de ce projet pré-remplies"
+                            title="Ouvrir le wizard Pilot avec les métadonnées de ce projet pré-remplies"
                         >
-                            📊 Mesurer avec Momentum
+                            📊 Mesurer avec Pilot
                         </a>
 
                         {/* Share button */}

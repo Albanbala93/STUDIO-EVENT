@@ -149,7 +149,7 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
       thickness: 0.5,
       color: colors.border,
     });
-    page.drawText("Campaign Studio — Confidentiel", {
+    page.drawText("Stratly · Campaign — Confidentiel", {
       x: marginX,
       y: footerY,
       size: 8,
@@ -1283,7 +1283,7 @@ function buildPremiumDocx(project: StudioProject) {
   ];
 
   return new Document({
-    creator: "Campaign Studio",
+    creator: "Stratly · Campaign",
     title,
     description: "Dossier de communication interne",
     sections: [{ properties: {}, children }],

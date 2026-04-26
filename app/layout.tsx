@@ -2,7 +2,7 @@ import "./globals.css";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Campaign Studio",
+  title: "Stratly",
   description: "Plateforme de recommandation stratégique en communication interne",
 };
 
@@ -32,7 +32,7 @@ export default function RootLayout({
                 </svg>
               </span>
               <span className="topnav-wordmark">
-                Campaign<span className="topnav-wordmark-studio"> Studio</span>
+                Campaign
               </span>
             </Link>
 

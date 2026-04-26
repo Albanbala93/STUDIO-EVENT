@@ -75,7 +75,7 @@ export function StudioSidebar() {
         </div>
         <div className="studio-sidebar-wordmark">
           <span className="studio-sidebar-brand">Stratly</span>
-          <span className="studio-sidebar-product">Campaign Studio</span>
+          <span className="studio-sidebar-product">Campaign</span>
         </div>
       </div>
 
