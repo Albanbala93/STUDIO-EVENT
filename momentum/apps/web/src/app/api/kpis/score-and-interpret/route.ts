@@ -815,7 +815,7 @@ export async function POST(req: NextRequest) {
   // Si bloqué → on coupe AVANT le scoring déterministe pour signaler clairement
   // au client qu'il doit attendre le reset (côté UI : afficher la card warning).
   const rl = consumeServerRateLimit(req);
-  if (!rl.allowed) {
+  if (rl.allowed === false) {
     return NextResponse.json(
       {
         detail: rl.message,

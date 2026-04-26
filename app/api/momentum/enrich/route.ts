@@ -274,7 +274,7 @@ export async function POST(req: NextRequest) {
   // Sans cet appel Anthropic ne sera pas déclenché et le client recevra
   // le baseline déterministe + un 429 lisible.
   const rl = consumeServerRateLimit(req);
-  if (!rl.allowed) {
+  if (rl.allowed === false) {
     return NextResponse.json(
       {
         detail: rl.message,
@@ -313,13 +313,17 @@ export async function POST(req: NextRequest) {
   }
 
   const interpretation = await enrichWithAnthropic(b as unknown as EnrichBody);
+  // À ce point rl.allowed est forcément true (early-return ci-dessus).
+  // On lit les champs via une assertion plutôt que via narrowing pour
+  // rester robuste avec tsconfig "strict": false.
+  const ok = rl as { allowed: true; remaining: number; resetsAt: string };
   return NextResponse.json(
     { interpretation },
     {
       headers: {
-        "X-RateLimit-Limit": String(rl.allowed ? 100 : 0),
-        "X-RateLimit-Remaining": String(rl.allowed ? rl.remaining : 0),
-        "X-RateLimit-Reset": rl.resetsAt,
+        "X-RateLimit-Limit": "100",
+        "X-RateLimit-Remaining": String(ok.remaining),
+        "X-RateLimit-Reset": ok.resetsAt,
       },
     },
   );
