@@ -182,10 +182,12 @@ Retourne un JSON valide avec cette structure exacte :
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // Sortie volumineuse (recommandation stratégique complète) → cap absolu 2000.
+        // Recommandation stratégique complète : JSON volumineux (timeline 6-10 + eventCopilot
+        // avec 3 arrays de formats + generatedContent 4 longues sections + dircomView).
+        // Cap à 8000 — un cap inférieur tronque la sortie et casse JSON.parse ("JSON invalide").
         model: process.env.OPENAI_MODEL || "gpt-4.1",
         input: prompt,
-        max_output_tokens: 2000,
+        max_output_tokens: 8000,
         text: {
           format: { type: "json_object" },
         },
@@ -204,6 +206,23 @@ Retourne un JSON valide avec cette structure exacte :
 
     const payload = await response.json();
 
+    // Détection de troncature : la Responses API renvoie status="incomplete"
+    // avec incomplete_details.reason="max_output_tokens" si la sortie est coupée.
+    if (payload.status === "incomplete") {
+      const reason = payload.incomplete_details?.reason || "inconnu";
+      console.error("❌ OPENAI INCOMPLETE:", reason);
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            reason === "max_output_tokens"
+              ? "Sortie OpenAI tronquée (max_output_tokens trop bas)"
+              : `Sortie OpenAI incomplète (${reason})`,
+        },
+        { status: 500 }
+      );
+    }
+
     const rawText =
       payload.output_text ??
       payload.output?.[0]?.content?.[0]?.text ??
@@ -219,13 +238,30 @@ Retourne un JSON valide avec cette structure exacte :
 
     console.log("🧠 RAW OUTPUT:", rawText);
 
+    // Défense : certains modèles enveloppent le JSON dans ```json … ``` malgré le format json_object.
+    const cleaned = rawText
+      .trim()
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/i, "")
+      .trim();
+
     let parsedOutput;
 
     try {
-      parsedOutput = JSON.parse(rawText);
+      parsedOutput = JSON.parse(cleaned);
     } catch (e) {
+      const parseMessage = e instanceof Error ? e.message : String(e);
+      console.error("❌ JSON PARSE FAIL:", parseMessage);
+      console.error("❌ RAW LENGTH:", cleaned.length);
+      console.error("❌ RAW TAIL:", cleaned.slice(-200));
       return NextResponse.json(
-        { success: false, error: "JSON invalide", raw: rawText },
+        {
+          success: false,
+          error: "JSON invalide",
+          parseError: parseMessage,
+          rawLength: cleaned.length,
+          rawTail: cleaned.slice(-200),
+        },
         { status: 500 }
       );
     }

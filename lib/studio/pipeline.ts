@@ -45,13 +45,14 @@ async function openAICall<T>(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // Étapes intermédiaires du pipeline (analyse, sélection, etc.) → cap par défaut 1500.
+        // Étapes intermédiaires du pipeline (analyse, sélection, etc.) — schémas modérés.
+        // 4000 laisse une marge confortable sans risquer la troncature.
         model,
         input: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        max_output_tokens: 1500,
+        max_output_tokens: 4000,
         text: {
           format: {
             type: "json_schema",
@@ -439,7 +440,7 @@ export async function runFinalGeneration(
           },
           { role: "user", content: prompt },
         ],
-        max_output_tokens: 2000,
+        max_output_tokens: 8000,
         text: {
           format: {
             type: "json_schema",
