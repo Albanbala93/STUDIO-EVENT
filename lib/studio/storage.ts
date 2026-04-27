@@ -7,6 +7,7 @@ import type {
   StudioProject,
   UserContext,
 } from "./types";
+import { recordAnalysis } from "./memory";
 
 const STORAGE_KEY = "campaign_studio_projects";
 const USER_CONTEXT_KEY = "campaign_studio_user_context";
@@ -81,6 +82,15 @@ export function learnFromProject(project: StudioProject): void {
     recentTopics: Array.from(new Set([topic, ...recentTopics])).slice(0, 5),
   };
   saveUserContext(updated);
+
+  // Couche mémoire stratégique : enregistre la signature du projet pour
+  // alimenter l'historique, les comparaisons et les tendances.
+  // Idempotent par projectId — une régénération remplace l'analyse précédente.
+  try {
+    recordAnalysis(project);
+  } catch {
+    // Fail-safe : la mémoire est un bonus, jamais bloquant pour la sauvegarde.
+  }
 }
 
 /* ============================================================

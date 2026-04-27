@@ -392,3 +392,97 @@ export type StudioProject = {
   output: StudioOutput;
   collaboration?: ProjectCollaboration;        // optional — new field
 };
+
+/* ============================================================
+   STRATEGIC MEMORY LAYER
+   Lightweight project signature stored after each generation.
+   Enables history, comparison, trends and insights — without
+   re-reading the full project payload on every aggregation.
+============================================================ */
+
+/**
+ * Compact, comparable signature of a generated project.
+ * Stored separately from StudioProject so the analysis layer
+ * stays cheap even with many projects in localStorage.
+ */
+export type ProjectAnalysis = {
+  id: string;             // analysis id (uuid)
+  projectId: string;      // → StudioProject.id
+  clientKey: string;      // workspace key — "default" until auth lands
+  recordedAt: string;     // ISO
+
+  // Core signature
+  title: string;
+  projectType?: ProjectType;
+  audience: string;
+  tone: string;
+  dominantRegister?: string;
+  primaryObjective?: string;
+
+  // Structural fingerprint (cheap, directly comparable)
+  signals: {
+    keyMessages: number;
+    timelineSteps: number;
+    eventFormats: number;       // primary + secondary
+    risksFlagged: number;
+    audiencesCovered: number;
+    hasEventCopilot: boolean;
+    hasDircomView: boolean;
+  };
+
+  // Topical fingerprint (truncated to keep storage light)
+  briefHash: {
+    challenge: string;          // ≤ 80 chars
+    constraints: string;        // ≤ 80 chars
+  };
+};
+
+/** Distribution row used to surface dominant values across history. */
+export type Distribution<T = string> = {
+  value: T;
+  count: number;
+  share: number;            // 0..1
+};
+
+/** UI-ready trends panel. All fields are derived (no LLM call). */
+export type ProjectTrends = {
+  totalAnalyses: number;
+  windowDays: number;
+  dominantProjectType?: Distribution<ProjectType>;
+  dominantAudience?: Distribution;
+  dominantTone?: Distribution;
+  velocity: { lastWeek: number; previousWeek: number; deltaPct: number };
+  averageTimelineSteps: number;
+  averageRisks: number;
+  averageKeyMessages: number;
+  eventCopilotAdoption: { count: number; share: number };
+};
+
+export type InsightKind = "frequency" | "pattern" | "shift" | "gap";
+
+/** Short narrative observation derived from trends. UI-ready. */
+export type ProjectInsight = {
+  id: string;
+  kind: InsightKind;
+  title: string;            // 1 line
+  description: string;      // 1–2 lines
+  severity: "info" | "highlight" | "warning";
+};
+
+/** Comparative snapshot across the last N analyses. */
+export type ProjectComparison = {
+  count: number;
+  analyses: ProjectAnalysis[];
+  shared: {
+    projectTypes: ProjectType[];
+    audiences: string[];
+    tones: string[];
+  };
+  averageSignals: {
+    keyMessages: number;
+    timelineSteps: number;
+    risks: number;
+    eventFormats: number;
+  };
+  observation: string;      // single sentence summary, ready to display
+};
