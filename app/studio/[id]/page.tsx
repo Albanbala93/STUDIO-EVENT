@@ -10,7 +10,11 @@ import { EventCopilotView } from "../../../components/studio/event-copilot";
 import { ShareModal } from "../../../components/studio/section-collab";
 import type { StudioProject } from "../../../lib/studio/types";
 import { buildMomentumDiagnosticUrl } from "../../../lib/momentum-bridge";
-import { buildEnrichedModuleInput } from "../../../lib/modules/enrichment-engine";
+import {
+    buildEnrichedModuleInput,
+    type EnrichmentItem,
+} from "../../../lib/modules/enrichment-engine";
+import { EnrichmentInsightPanel } from "../../../components/modules/enrichment-insight";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -43,6 +47,8 @@ export default function ProjectPage() {
         available: number;
         selected: number;
     } | null>(null);
+    // Bloc 5 — items complets pour le panneau de traçabilité (mode compact).
+    const [enrichmentItems, setEnrichmentItems] = useState<EnrichmentItem[]>([]);
 
     useEffect(() => {
         if (!projectId) return;
@@ -55,8 +61,10 @@ export default function ProjectPage() {
                 available: enriched.availableEnrichments.length,
                 selected: enriched.selectedEnrichments.length,
             });
+            setEnrichmentItems(enriched.selectedEnrichments);
         } else {
             setEnrichmentCounts(null);
+            setEnrichmentItems([]);
         }
     }, [projectId]);
 
@@ -203,16 +211,13 @@ export default function ProjectPage() {
                 </div>
             </details>
 
-            {/* Wiring Bloc 4 — état de l'enrichissement inter-modules */}
-            {enrichmentCounts ? (
-                <p className="text-xs text-sky-700">
-                    Enrichissement inter-modules actif — {enrichmentCounts.available} éléments disponibles, {enrichmentCounts.selected} utilisés.
-                </p>
-            ) : (
-                <p className="text-xs text-neutral-500">
-                    Ce module utilise actuellement le brief projet seul.
-                </p>
-            )}
+            {/* Bloc 5 — panneau compact de traçabilité inter-modules.
+                Affiche les éléments hérités/repris depuis le brief et les autres
+                modules ; dépliable pour voir le détail par famille (objectifs,
+                audiences, KPIs…) avec source et statut. Reste sobre par défaut. */}
+            <div style={{ marginTop: 16, marginBottom: 8 }}>
+                <EnrichmentInsightPanel items={enrichmentItems} compact />
+            </div>
 
             {/* Tab navigation */}
             <div className="project-tabs">
