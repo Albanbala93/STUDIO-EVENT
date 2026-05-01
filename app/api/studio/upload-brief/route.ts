@@ -25,11 +25,12 @@ async function extractBriefText(file: File): Promise<{ text: string; error?: str
 
   if (fileName.endsWith(".pdf") || file.type === "application/pdf") {
     try {
-      // Import dynamique : pdf-parse a un check de fichier de test au load,
-      // l'import lazy évite de l'évaluer si la route n'est jamais appelée.
-      const pdfParse = (await import("pdf-parse")).default;
-      const data = await pdfParse(buffer);
-      const text = (data.text ?? "").trim();
+      // pdf-parse@2 expose une classe PDFParse (l'API v1 callable a été retirée).
+      const { PDFParse } = await import("pdf-parse");
+      const parser = new PDFParse({ data: new Uint8Array(buffer) });
+      const result = await parser.getText();
+      await parser.destroy();
+      const text = (result.text ?? "").trim();
       if (!text) {
         return {
           text: "",
