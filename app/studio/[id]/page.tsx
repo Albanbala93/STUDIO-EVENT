@@ -21,6 +21,11 @@ import {
     type StaleModuleView,
 } from "../../../lib/modules/staleness";
 import { StalenessBanner } from "../../../components/modules/staleness-banner";
+import {
+    getNextSteps,
+    type NextStep,
+} from "../../../lib/modules/next-step-engine";
+import { NextStepRecommendations } from "../../../components/modules/next-step-card";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -57,6 +62,8 @@ export default function ProjectPage() {
     const [enrichmentItems, setEnrichmentItems] = useState<EnrichmentItem[]>([]);
     // Bloc 6 — modules marqués obsolètes filtrés par les dismiss session.
     const [staleModules, setStaleModules] = useState<StaleModuleView[]>([]);
+    // Bloc 7 — recommandations "prochaine étape" calculées sur le projet.
+    const [nextSteps, setNextSteps] = useState<NextStep[]>([]);
 
     useEffect(() => {
         if (!projectId) return;
@@ -76,10 +83,13 @@ export default function ProjectPage() {
                     (s) => !isBannerDismissed(existing.id, s.module),
                 ),
             );
+            // Bloc 7 — recommandations contextuelles pour la page projet.
+            setNextSteps(getNextSteps(existing, "studio_project"));
         } else {
             setEnrichmentCounts(null);
             setEnrichmentItems([]);
             setStaleModules([]);
+            setNextSteps([]);
         }
     }, [projectId]);
 
@@ -239,6 +249,19 @@ export default function ProjectPage() {
                     <StalenessBanner
                         projectId={project.id}
                         staleModules={staleModules}
+                    />
+                </div>
+            )}
+
+            {/* Bloc 7 — ponts intelligents : recommandations contextuelles
+                pour guider vers le module suivant. Max 2 cartes, sobres,
+                URLs pré-remplies via l'enrichissement Bloc 4. */}
+            {nextSteps.length > 0 && (
+                <div style={{ marginTop: 8, marginBottom: 16 }}>
+                    <NextStepRecommendations
+                        steps={nextSteps}
+                        eyebrow="Prochaine étape"
+                        heading="Tirer parti de ce dossier"
                     />
                 </div>
             )}

@@ -49,6 +49,9 @@ import {
 import { cn } from "../../../lib/utils";
 import { buttonVariants } from "../../../components/ui/button";
 import { Card, CardContent } from "../../../components/ui/card";
+import { getProject as getStudioProject } from "../../../lib/studio/storage";
+import { getNextSteps } from "../../../lib/modules/next-step-engine";
+import { NextStepRecommendations } from "../../../components/modules/next-step-card";
 
 /* ═══════════════════════════════════════════════════════════════════
    HELPERS
@@ -541,6 +544,30 @@ export function ResultDashboard(props: {
 
         {/* BLOC 4bis — Volet RSE (ESG) */}
         {rse && <RseSection rse={rse} />}
+
+        {/* Bloc 7 — Ponts intelligents : recommandations contextuelles
+            après la lecture du diagnostic. Liens vers le projet Campaign
+            d'origine + partage de la restitution. Calcul léger côté client
+            depuis le projet Campaign si fromCampaignId disponible. */}
+        {(() => {
+          const sourceProject = props.fromCampaignId
+            ? getStudioProject(props.fromCampaignId) ?? null
+            : null;
+          const steps = getNextSteps(sourceProject, "pilot_result", {
+            fromCampaignId: props.fromCampaignId,
+            pilotProjectId: props.projectId,
+          });
+          if (steps.length === 0) return null;
+          return (
+            <div className="no-print">
+              <NextStepRecommendations
+                steps={steps}
+                eyebrow="Et après ?"
+                heading="Capitaliser sur ce diagnostic"
+              />
+            </div>
+          );
+        })()}
 
         {/* BLOC 5 — Barre d'actions */}
         <div className="no-print flex flex-wrap items-center gap-3 rounded-lg border border-border bg-white p-4 shadow-card">
