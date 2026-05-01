@@ -37,8 +37,12 @@ import { RateLimitBanner } from "../../../components/ui/rate-limit-banner";
 import { scoreMomentum, type DimensionSignal } from "../../../lib/momentum/scoring";
 import { interpretScore } from "../../../lib/momentum/interpretation";
 import { interpretRse } from "../../../lib/momentum/rse";
-import { buildEnrichedModuleInput } from "../../../lib/modules/enrichment-engine";
+import {
+  buildEnrichedModuleInput,
+  type EnrichmentItem,
+} from "../../../lib/modules/enrichment-engine";
 import { getProject, saveProject } from "../../../lib/studio/storage";
+import { EnrichmentInsightPanel } from "../../../components/modules/enrichment-insight";
 import {
   CONFIDENCE_MAP,
   DIMENSION_LABELS,
@@ -165,6 +169,8 @@ function DiagnosticPageInner() {
   selected: number;
   families: string[];
 } | null>(null);
+  // Bloc 5 — items complets pour le panneau de traçabilité.
+  const [enrichmentItems, setEnrichmentItems] = useState<EnrichmentItem[] | null>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -209,9 +215,13 @@ function DiagnosticPageInner() {
           selected: enriched.selectedEnrichments.length,
           families: [...new Set(enriched.selectedEnrichments.map((i) => i.family))].slice(0, 4),
         });
+        setEnrichmentItems(enriched.selectedEnrichments);
       } else {
         setEnrichmentMeta(null);
+        setEnrichmentItems(null);
       }
+    } else {
+      setEnrichmentItems(null);
     }
   }, [searchParams]);
 
@@ -401,19 +411,13 @@ function DiagnosticPageInner() {
         </div>
 
         <StepNav step={state.step} />
-        {enrichmentMeta ? (
-          <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
-            <p className="font-semibold">Enrichissement inter-modules actif</p>
-            <p>
-              {enrichmentMeta.available} éléments disponibles · {enrichmentMeta.selected} utilisés · familles:{" "}
-              {enrichmentMeta.families.join(", ") || "n/a"}.
-            </p>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
-            Ce module utilise actuellement le brief projet seul.
-          </div>
-        )}
+        {/* Bloc 5 — traçabilité visible des informations héritées des autres modules.
+            Ne s'affiche que lorsque le wizard est lancé depuis un projet
+            (via ?from_campaign=...). Sinon : message neutre "brief projet seul". */}
+        <EnrichmentInsightPanel
+          items={enrichmentItems ?? []}
+          editHint="Vous pouvez ajuster ces éléments dans les étapes suivantes du wizard."
+        />
 
         {state.step === "identification" && (
           <IdentificationStep
