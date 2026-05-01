@@ -1,4 +1,4 @@
-type string =
+type FoundationStatus =
   | "validated"
   | "user_entered"
   | "inherited"
@@ -67,7 +67,7 @@ function toItem(family: EnrichmentFamily, key: string, value: unknown, source: E
   return { id: `${sourceModule ?? "foundation"}:${family}:${key}`, family, key, value, source, sourceModule, updatedAt };
 }
 
-function mapFoundationStatus(status: string): EnrichmentSource {
+function mapFoundationStatus(status: FoundationStatus | string): EnrichmentSource {
   if (status === "validated") return "validated";
   if (status === "user_entered") return "user_entered";
   if (status === "inherited") return "inherited";
@@ -75,37 +75,38 @@ function mapFoundationStatus(status: string): EnrichmentSource {
 }
 
 export function buildEnrichedModuleInput(project: StudioProject, targetModule: ModuleName): EnrichedModuleInput {
+  const projectAny = project as any;
   const available: EnrichmentItem[] = [];
   const warnings: string[] = [];
-  const campaign = project.modules?.campaign?.output as any;
-  const pilot = project.modules?.pilot?.output as any;
-  const impact = project.modules?.impact?.output as any;
+  const campaign = projectAny.modules?.campaign?.output as any;
+  const pilot = projectAny.modules?.pilot?.output as any;
+  const impact = projectAny.modules?.impact?.output as any;
 
   const hints = campaign?.measurementHints;
-  hints?.communicationObjectives?.forEach((v: string, i: number) => available.push(toItem("objectives", `campaign-objective-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
-  hints?.targetAudiences?.forEach((v: string, i: number) => available.push(toItem("audiences", `campaign-audience-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
-  hints?.expectedBehaviorChanges?.forEach((v: string, i: number) => available.push(toItem("expectedBehaviorChanges", `campaign-behavior-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
-  hints?.keyMessagesToValidate?.forEach((v: string, i: number) => available.push(toItem("keyMessages", `campaign-message-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
-  hints?.risksToMonitor?.forEach((v: string, i: number) => available.push(toItem("risks", `campaign-risk-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
-  hints?.momentsToMeasure?.forEach((v: string, i: number) => available.push(toItem("momentsToMeasure", `campaign-moment-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
-  hints?.suggestedKpis?.forEach((v: any, i: number) => available.push(toItem("kpis", `campaign-kpi-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
-  hints?.suggestedSurveyQuestions?.forEach((v: any, i: number) => available.push(toItem("surveyQuestions", `campaign-question-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
+  hints?.communicationObjectives?.forEach((v: string, i: number) => available.push(toItem("objectives", `campaign-objective-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
+  hints?.targetAudiences?.forEach((v: string, i: number) => available.push(toItem("audiences", `campaign-audience-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
+  hints?.expectedBehaviorChanges?.forEach((v: string, i: number) => available.push(toItem("expectedBehaviorChanges", `campaign-behavior-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
+  hints?.keyMessagesToValidate?.forEach((v: string, i: number) => available.push(toItem("keyMessages", `campaign-message-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
+  hints?.risksToMonitor?.forEach((v: string, i: number) => available.push(toItem("risks", `campaign-risk-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
+  hints?.momentsToMeasure?.forEach((v: string, i: number) => available.push(toItem("momentsToMeasure", `campaign-moment-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
+  hints?.suggestedKpis?.forEach((v: any, i: number) => available.push(toItem("kpis", `campaign-kpi-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
+  hints?.suggestedSurveyQuestions?.forEach((v: any, i: number) => available.push(toItem("surveyQuestions", `campaign-question-${i}`, v, "suggested", "campaign", projectAny.modules?.campaign?.updatedAt)));
 
-  pilot?.kpis?.forEach((v: any, i: number) => available.push(toItem("kpis", `pilot-kpi-${i}`, v, "validated", "pilot", project.modules?.pilot?.updatedAt)));
-  pilot?.barometerQuestions?.forEach((v: string, i: number) => available.push(toItem("surveyQuestions", `pilot-question-${i}`, v, "validated", "pilot", project.modules?.pilot?.updatedAt)));
-  pilot?.weakSignals?.forEach((v: string, i: number) => available.push(toItem("risks", `pilot-risk-${i}`, v, "inherited", "pilot", project.modules?.pilot?.updatedAt)));
-  pilot?.steeringRecommendations?.forEach((v: string, i: number) => available.push(toItem("recommendations", `pilot-rec-${i}`, v, "validated", "pilot", project.modules?.pilot?.updatedAt)));
-  if (pilot?.measurementPlan) available.push(toItem("measurementPlan", "pilot-measurement-plan", pilot.measurementPlan, "validated", "pilot", project.modules?.pilot?.updatedAt));
-  if (pilot?.actionPlan) available.push(toItem("actionPlan", "pilot-action-plan", pilot.actionPlan, "validated", "pilot", project.modules?.pilot?.updatedAt));
+  pilot?.kpis?.forEach((v: any, i: number) => available.push(toItem("kpis", `pilot-kpi-${i}`, v, "validated", "pilot", projectAny.modules?.pilot?.updatedAt)));
+  pilot?.barometerQuestions?.forEach((v: string, i: number) => available.push(toItem("surveyQuestions", `pilot-question-${i}`, v, "validated", "pilot", projectAny.modules?.pilot?.updatedAt)));
+  pilot?.weakSignals?.forEach((v: string, i: number) => available.push(toItem("risks", `pilot-risk-${i}`, v, "inherited", "pilot", projectAny.modules?.pilot?.updatedAt)));
+  pilot?.steeringRecommendations?.forEach((v: string, i: number) => available.push(toItem("recommendations", `pilot-rec-${i}`, v, "validated", "pilot", projectAny.modules?.pilot?.updatedAt)));
+  if (pilot?.measurementPlan) available.push(toItem("measurementPlan", "pilot-measurement-plan", pilot.measurementPlan, "validated", "pilot", projectAny.modules?.pilot?.updatedAt));
+  if (pilot?.actionPlan) available.push(toItem("actionPlan", "pilot-action-plan", pilot.actionPlan, "validated", "pilot", projectAny.modules?.pilot?.updatedAt));
 
-  impact?.comexInsights?.forEach((v, i) => available.push(toItem("comexInsights", `impact-comex-${i}`, v, "validated", "impact", project.modules?.impact?.updatedAt)));
-  impact?.impactTopics?.forEach((v, i) => available.push(toItem("impactTopics", `impact-topic-${i}`, v, "validated", "impact", project.modules?.impact?.updatedAt)));
-  impact?.rseRisks?.forEach((v, i) => available.push(toItem("rseRisks", `impact-rse-risk-${i}`, v, "validated", "impact", project.modules?.impact?.updatedAt)));
-  impact?.strategicRisks?.forEach((v, i) => available.push(toItem("risks", `impact-strategic-risk-${i}`, v, "validated", "impact", project.modules?.impact?.updatedAt)));
-  impact?.recommendations?.forEach((v, i) => available.push(toItem("recommendations", `impact-rec-${i}`, v, "validated", "impact", project.modules?.impact?.updatedAt)));
-  impact?.nextActions?.forEach((v, i) => available.push(toItem("actionPlan", `impact-action-${i}`, v, "validated", "impact", project.modules?.impact?.updatedAt)));
+  impact?.comexInsights?.forEach((v, i) => available.push(toItem("comexInsights", `impact-comex-${i}`, v, "validated", "impact", projectAny.modules?.impact?.updatedAt)));
+  impact?.impactTopics?.forEach((v, i) => available.push(toItem("impactTopics", `impact-topic-${i}`, v, "validated", "impact", projectAny.modules?.impact?.updatedAt)));
+  impact?.rseRisks?.forEach((v, i) => available.push(toItem("rseRisks", `impact-rse-risk-${i}`, v, "validated", "impact", projectAny.modules?.impact?.updatedAt)));
+  impact?.strategicRisks?.forEach((v, i) => available.push(toItem("risks", `impact-strategic-risk-${i}`, v, "validated", "impact", projectAny.modules?.impact?.updatedAt)));
+  impact?.recommendations?.forEach((v, i) => available.push(toItem("recommendations", `impact-rec-${i}`, v, "validated", "impact", projectAny.modules?.impact?.updatedAt)));
+  impact?.nextActions?.forEach((v, i) => available.push(toItem("actionPlan", `impact-action-${i}`, v, "validated", "impact", projectAny.modules?.impact?.updatedAt)));
 
-  const foundation = project.sharedFoundation?.data;
+  const foundation = projectAny.sharedFoundation?.data;
   if (foundation) {
     available.push(toItem("objectives", "foundation-objective", foundation.objective.value, mapFoundationStatus(foundation.objective.status)));
     foundation.audiences.value.forEach((v, i) => available.push(toItem("audiences", `foundation-audience-${i}`, v, mapFoundationStatus(foundation.audiences.status))));
@@ -144,8 +145,8 @@ export function buildEnrichedModuleInput(project: StudioProject, targetModule: M
   return {
     projectId: project.id,
     targetModule,
-    baseBrief: `${project.brief.companyContext}\n${project.brief.challenge}\n${project.brief.objective}`,
-    sharedFoundation: project.sharedFoundation,
+    baseBrief: `${projectAny.brief.companyContext}\n${projectAny.brief.challenge}\n${projectAny.brief.objective}`,
+    sharedFoundation: projectAny.sharedFoundation,
     moduleOutputs: { campaign, pilot, impact },
     availableEnrichments: available,
     selectedEnrichments: selected,
