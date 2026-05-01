@@ -8,6 +8,7 @@ import type {
   UserContext,
 } from "./types";
 import { recordAnalysis } from "./memory";
+import { detectAndApplyStaleness } from "../modules/staleness";
 
 const STORAGE_KEY = "campaign_studio_projects";
 const USER_CONTEXT_KEY = "campaign_studio_user_context";
@@ -29,6 +30,18 @@ export function listProjects(): StudioProject[] {
 export function saveProject(project: StudioProject): void {
   const projects = listProjects();
   const index = projects.findIndex((item) => item.id === project.id);
+
+  // Bloc 6 — détection passive d'obsolescence : si la version précédente
+  // existe et que des champs sensibles changent, on marque les modules
+  // déjà générés comme à rafraîchir. Aucun recalcul automatique — la
+  // bannière UX laisse l'utilisateur trancher. Fail-safe : la save ne doit
+  // jamais être bloquée par la détection de staleness.
+  try {
+    const previous = index >= 0 ? projects[index] : undefined;
+    detectAndApplyStaleness(previous, project);
+  } catch {
+    /* noop : la détection est un bonus, pas une condition de sauvegarde */
+  }
 
   if (index >= 0) {
     projects[index] = project;
