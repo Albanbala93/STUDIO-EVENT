@@ -1,4 +1,4 @@
-type FoundationFieldStatus =
+type string =
   | "validated"
   | "user_entered"
   | "inherited"
@@ -67,7 +67,7 @@ function toItem(family: EnrichmentFamily, key: string, value: unknown, source: E
   return { id: `${sourceModule ?? "foundation"}:${family}:${key}`, family, key, value, source, sourceModule, updatedAt };
 }
 
-function mapFoundationStatus(status: FoundationFieldStatus): EnrichmentSource {
+function mapFoundationStatus(status: string): EnrichmentSource {
   if (status === "validated") return "validated";
   if (status === "user_entered") return "user_entered";
   if (status === "inherited") return "inherited";
