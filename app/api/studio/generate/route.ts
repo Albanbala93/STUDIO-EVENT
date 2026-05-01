@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { GENERATE_OUTPUT_SCHEMA } from "../../../../lib/studio/generate-schema";
 
 export async function POST(req: Request) {
   try {
@@ -188,8 +189,16 @@ Retourne un JSON valide avec cette structure exacte :
         model: process.env.OPENAI_MODEL || "gpt-4.1",
         input: prompt,
         max_output_tokens: 8000,
+        // json_schema strict — l'API REFUSE de retourner si dircomView ou
+        // eventCopilot manquent. Indispensable avec gpt-4.1-mini / gpt-4o-mini
+        // qui sautent volontiers les blocs "obligatoires" du prompt.
         text: {
-          format: { type: "json_object" },
+          format: {
+            type: "json_schema",
+            name: "campaign_recommendation",
+            strict: true,
+            schema: GENERATE_OUTPUT_SCHEMA,
+          },
         },
       }),
     });
