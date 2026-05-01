@@ -196,10 +196,32 @@ Retourne un JSON valide avec cette structure exacte :
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("❌ OPENAI ERROR:", errorText);
+      console.error("❌ OPENAI ERROR:", response.status, errorText);
+
+      // Remonte le message lisible d'OpenAI directement à l'UI plutôt qu'un
+      // "Erreur OpenAI" générique — diagnostic immédiat sans DevTools.
+      let openAiMessage = "";
+      try {
+        const parsed = JSON.parse(errorText);
+        openAiMessage =
+          parsed?.error?.message || parsed?.message || parsed?.error || "";
+      } catch {
+        openAiMessage = errorText.slice(0, 300);
+      }
+
+      const modelUsed = process.env.OPENAI_MODEL || "gpt-4.1";
+      const userMessage = openAiMessage
+        ? `OpenAI a refusé la requête (${response.status}, modèle ${modelUsed}) : ${openAiMessage}`
+        : `OpenAI a refusé la requête (${response.status}, modèle ${modelUsed})`;
 
       return NextResponse.json(
-        { success: false, error: "Erreur OpenAI", details: errorText },
+        {
+          success: false,
+          error: userMessage,
+          status: response.status,
+          model: modelUsed,
+          details: errorText.slice(0, 500),
+        },
         { status: 500 }
       );
     }

@@ -196,11 +196,28 @@ Retourne exactement cette structure JSON :
       const errorText = await response.text();
       console.error("❌ UPLOAD BRIEF OPENAI ERROR:", response.status, errorText);
 
+      // Tente d'extraire le message lisible d'OpenAI (`error.message`)
+      // pour le remonter directement à l'utilisateur — pas de "Erreur OpenAI" générique.
+      let openAiMessage = "";
+      try {
+        const parsed = JSON.parse(errorText);
+        openAiMessage =
+          parsed?.error?.message || parsed?.message || parsed?.error || "";
+      } catch {
+        openAiMessage = errorText.slice(0, 300);
+      }
+
+      const modelUsed = process.env.OPENAI_MODEL || "gpt-4.1";
+      const userMessage = openAiMessage
+        ? `OpenAI a refusé la requête (${response.status}, modèle ${modelUsed}) : ${openAiMessage}`
+        : `OpenAI a refusé la requête (${response.status}, modèle ${modelUsed})`;
+
       return NextResponse.json(
         {
           success: false,
-          error: "Erreur OpenAI",
+          error: userMessage,
           status: response.status,
+          model: modelUsed,
           details: errorText.slice(0, 500),
         },
         { status: 500 }
