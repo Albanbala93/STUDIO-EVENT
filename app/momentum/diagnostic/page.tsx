@@ -37,6 +37,8 @@ import { RateLimitBanner } from "../../../components/ui/rate-limit-banner";
 import { scoreMomentum, type DimensionSignal } from "../../../lib/momentum/scoring";
 import { interpretScore } from "../../../lib/momentum/interpretation";
 import { interpretRse } from "../../../lib/momentum/rse";
+import { buildEnrichedModuleInput } from "../../../lib/modules/enrichment-engine";
+import { getProject, saveProject } from "../../../lib/studio/storage";
 import {
   CONFIDENCE_MAP,
   DIMENSION_LABELS,
@@ -158,6 +160,11 @@ function DiagnosticPageInner() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [submitting, setSubmitting] = useState(false);
   const [rateLimit, setRateLimit] = useState<{ message?: string; resetsAt?: string } | null>(null);
+  const [enrichmentMeta, setEnrichmentMeta] = useState<{
+  available: number;
+  selected: number;
+  families: string[];
+} | null>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -192,6 +199,19 @@ function DiagnosticPageInner() {
 
     if (Object.keys(idPatch).length > 0 || fromCampaign) {
       dispatch({ type: "HYDRATE", patch });
+    }
+    if (fromCampaign) {
+      const project = getProject(fromCampaign);
+      if (project) {
+        const enriched = buildEnrichedModuleInput(project, "pilot");
+        setEnrichmentMeta({
+          available: enriched.availableEnrichments.length,
+          selected: enriched.selectedEnrichments.length,
+          families: [...new Set(enriched.selectedEnrichments.map((i) => i.family))].slice(0, 4),
+        });
+      } else {
+        setEnrichmentMeta(null);
+      }
     }
   }, [searchParams]);
 
@@ -285,6 +305,35 @@ function DiagnosticPageInner() {
         type: "SUBMIT_SUCCESS",
         diagnostic: { score, interpretation, rse },
       });
+
+      // Wiring Bloc 4 — sauvegarde propre du résultat Pilot dans le projet
+      // Campaign d'origine (uniquement si la mesure provient d'un projet
+      // existant via ?from_campaign=...). updateProjectModuleOutput n'existe
+      // pas encore dans le repo, on utilise saveProject + structure modules.
+      if (state.fromCampaignId) {
+        try {
+          const project = getProject(state.fromCampaignId);
+          if (project) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const projectAny = project as any;
+            projectAny.modules = projectAny.modules ?? {};
+            projectAny.modules.pilot = {
+              ...(projectAny.modules.pilot ?? {}),
+              output: { score, interpretation, rse },
+              input: {
+                campaignInheritance: null,
+                enrichmentMeta,
+              },
+              mode: "deterministic",
+              updatedAt: new Date().toISOString(),
+            };
+            project.updatedAt = new Date().toISOString();
+            saveProject(project);
+          }
+        } catch {
+          /* la sauvegarde inter-modules est un bonus, ne bloque pas le flow */
+        }
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erreur de calcul";
       dispatch({ type: "SUBMIT_ERROR", error: msg });
@@ -352,6 +401,19 @@ function DiagnosticPageInner() {
         </div>
 
         <StepNav step={state.step} />
+        {enrichmentMeta ? (
+          <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+            <p className="font-semibold">Enrichissement inter-modules actif</p>
+            <p>
+              {enrichmentMeta.available} éléments disponibles · {enrichmentMeta.selected} utilisés · familles:{" "}
+              {enrichmentMeta.families.join(", ") || "n/a"}.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700">
+            Ce module utilise actuellement le brief projet seul.
+          </div>
+        )}
 
         {state.step === "identification" && (
           <IdentificationStep

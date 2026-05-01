@@ -10,6 +10,7 @@ import { EventCopilotView } from "../../../components/studio/event-copilot";
 import { ShareModal } from "../../../components/studio/section-collab";
 import type { StudioProject } from "../../../lib/studio/types";
 import { buildMomentumDiagnosticUrl } from "../../../lib/momentum-bridge";
+import { buildEnrichedModuleInput } from "../../../lib/modules/enrichment-engine";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -38,12 +39,25 @@ export default function ProjectPage() {
     const [editable, setEditable] = useState(true);
     const [showShare, setShowShare] = useState(false);
     const [activeTab, setActiveTab] = useState<Tab>("dossier");
+    const [enrichmentCounts, setEnrichmentCounts] = useState<{
+        available: number;
+        selected: number;
+    } | null>(null);
 
     useEffect(() => {
         if (!projectId) return;
         const existing = getProject(projectId);
         setProject(existing ?? null);
         setHydrated(true);
+        if (existing) {
+            const enriched = buildEnrichedModuleInput(existing, "pilot");
+            setEnrichmentCounts({
+                available: enriched.availableEnrichments.length,
+                selected: enriched.selectedEnrichments.length,
+            });
+        } else {
+            setEnrichmentCounts(null);
+        }
     }, [projectId]);
 
     if (!hydrated) {
@@ -188,6 +202,17 @@ export default function ProjectPage() {
                     ))}
                 </div>
             </details>
+
+            {/* Wiring Bloc 4 — état de l'enrichissement inter-modules */}
+            {enrichmentCounts ? (
+                <p className="text-xs text-sky-700">
+                    Enrichissement inter-modules actif — {enrichmentCounts.available} éléments disponibles, {enrichmentCounts.selected} utilisés.
+                </p>
+            ) : (
+                <p className="text-xs text-neutral-500">
+                    Ce module utilise actuellement le brief projet seul.
+                </p>
+            )}
 
             {/* Tab navigation */}
             <div className="project-tabs">
