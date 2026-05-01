@@ -15,6 +15,12 @@ import {
     type EnrichmentItem,
 } from "../../../lib/modules/enrichment-engine";
 import { EnrichmentInsightPanel } from "../../../components/modules/enrichment-insight";
+import {
+    getStaleModules,
+    isBannerDismissed,
+    type StaleModuleView,
+} from "../../../lib/modules/staleness";
+import { StalenessBanner } from "../../../components/modules/staleness-banner";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -49,6 +55,8 @@ export default function ProjectPage() {
     } | null>(null);
     // Bloc 5 — items complets pour le panneau de traçabilité (mode compact).
     const [enrichmentItems, setEnrichmentItems] = useState<EnrichmentItem[]>([]);
+    // Bloc 6 — modules marqués obsolètes filtrés par les dismiss session.
+    const [staleModules, setStaleModules] = useState<StaleModuleView[]>([]);
 
     useEffect(() => {
         if (!projectId) return;
@@ -62,9 +70,16 @@ export default function ProjectPage() {
                 selected: enriched.selectedEnrichments.length,
             });
             setEnrichmentItems(enriched.selectedEnrichments);
+            // Bloc 6 — lecture des modules stale, filtre dismiss session.
+            setStaleModules(
+                getStaleModules(existing).filter(
+                    (s) => !isBannerDismissed(existing.id, s.module),
+                ),
+            );
         } else {
             setEnrichmentCounts(null);
             setEnrichmentItems([]);
+            setStaleModules([]);
         }
     }, [projectId]);
 
@@ -211,13 +226,22 @@ export default function ProjectPage() {
                 </div>
             </details>
 
-            {/* Bloc 5 — panneau compact de traçabilité inter-modules.
-                Affiche les éléments hérités/repris depuis le brief et les autres
-                modules ; dépliable pour voir le détail par famille (objectifs,
-                audiences, KPIs…) avec source et statut. Reste sobre par défaut. */}
+            {/* Bloc 5 — panneau compact de traçabilité inter-modules. */}
             <div style={{ marginTop: 16, marginBottom: 8 }}>
                 <EnrichmentInsightPanel items={enrichmentItems} compact />
             </div>
+
+            {/* Bloc 6 — bannière d'obsolescence. Ne s'affiche que pour les
+                modules déjà générés ET non masqués pour la session courante.
+                Aucun recalcul automatique : la décision reste à l'utilisateur. */}
+            {project && staleModules.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                    <StalenessBanner
+                        projectId={project.id}
+                        staleModules={staleModules}
+                    />
+                </div>
+            )}
 
             {/* Tab navigation */}
             <div className="project-tabs">

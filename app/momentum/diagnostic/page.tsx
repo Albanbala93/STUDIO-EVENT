@@ -44,6 +44,10 @@ import {
 import { getProject, saveProject } from "../../../lib/studio/storage";
 import { EnrichmentInsightPanel } from "../../../components/modules/enrichment-insight";
 import {
+  clearAllDismissals,
+  clearModuleStaleness,
+} from "../../../lib/modules/staleness";
+import {
   CONFIDENCE_MAP,
   DIMENSION_LABELS,
   INITIATIVE_LABELS,
@@ -338,6 +342,11 @@ function DiagnosticPageInner() {
               updatedAt: new Date().toISOString(),
             };
             project.updatedAt = new Date().toISOString();
+            // Bloc 6 — Pilot vient d'être (re)généré : on lève le marqueur
+            // d'obsolescence et on nettoie les dismiss session pour que les
+            // futures détections repartent d'un état propre.
+            clearModuleStaleness(project, "pilot");
+            clearAllDismissals(project.id);
             saveProject(project);
           }
         } catch {
