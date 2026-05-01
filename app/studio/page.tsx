@@ -9,6 +9,7 @@ import {
     fetchMomentumMemory,
     type MomentumMemory,
 } from "../../lib/momentum-bridge";
+import { StrategicMemoryPanel } from "./_components/strategic-memory-panel";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -89,6 +90,10 @@ export default function StudioDashboardPage() {
             </div>
 
             <div className="container" style={{ paddingTop: 36, paddingBottom: 60 }}>
+
+                {/* Mémoire stratégique Studio — tendances + insights dérivés
+                    de la couche mémoire. Auto-hidden si 0 projet. */}
+                <StrategicMemoryPanel />
 
                 {/* Momentum memory — displayed only when API reachable */}
                 {memory && <MomentumMemoryBanner memory={memory} />}

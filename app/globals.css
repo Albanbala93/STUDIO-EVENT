@@ -972,6 +972,178 @@ textarea {
 .logo-mark-only,
 .logo-root.logo-mark { gap: 0; }
 
+/* ============================================================
+   Mémoire stratégique — panneau de tendances + insights
+   Voir app/studio/_components/strategic-memory-panel.tsx
+   ============================================================ */
+.strategic-memory-panel {
+  margin-bottom: 24px;
+  padding: 22px 26px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 3px solid #6366F1;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.strategic-memory-panel--compact {
+  padding: 16px 22px;
+  gap: 8px;
+}
+
+.strategic-memory-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.strategic-memory-eyebrow {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--slate-light);
+}
+
+.strategic-memory-window {
+  font-size: 11px;
+  color: var(--slate-light);
+  font-weight: 500;
+}
+
+.strategic-memory-compact-text {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-muted, #4B5563);
+  line-height: 1.55;
+}
+
+.strategic-memory-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  padding-bottom: 6px;
+}
+
+.strategic-memory-metric {
+  min-width: 0;
+}
+
+.strategic-memory-metric-label {
+  margin: 0 0 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--slate-light);
+}
+
+.strategic-memory-metric-value {
+  margin: 0 0 3px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+}
+
+.strategic-memory-metric-hint {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--slate-light);
+}
+
+.strategic-memory-insights {
+  border-top: 1px solid var(--border-light);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.strategic-memory-insights-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--slate-light);
+}
+
+.strategic-memory-insights-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.strategic-memory-insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: var(--radius-md, 8px);
+}
+
+.strategic-memory-insight-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.strategic-memory-insight-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.strategic-memory-insight-title {
+  margin: 0 0 3px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.4;
+}
+
+.strategic-memory-insight-kind {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slate-light);
+  background: var(--surface-mid, #F1F4FA);
+  border-radius: 3px;
+  vertical-align: 1px;
+}
+
+.strategic-memory-insight-description {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted, #4B5563);
+}
+
+@media (max-width: 640px) {
+  .strategic-memory-metrics {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
 .topnav-wordmark-studio {
   font-weight: 400;
   color: var(--slate);

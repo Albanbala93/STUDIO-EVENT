@@ -418,3 +418,39 @@ export function clearMemory(clientKey: string = DEFAULT_CLIENT): void {
   const remaining = readAll().filter((a) => a.clientKey !== clientKey);
   writeAll(remaining);
 }
+
+/**
+ * Reconstruit l'historique à partir d'une liste de StudioProject.
+ * À utiliser une seule fois au déblocage de la couche mémoire pour
+ * couvrir les projets créés avant son introduction. Idempotent :
+ * appelable à chaque mount sans risquer les doublons.
+ *
+ * Préserve l'ordre temporel en utilisant updatedAt comme recordedAt.
+ */
+export function backfillFromProjects(
+  projects: StudioProject[],
+  clientKey: string = DEFAULT_CLIENT,
+): number {
+  if (projects.length === 0) return 0;
+
+  const existing = readAll();
+  const existingIds = new Set(
+    existing
+      .filter((a) => a.clientKey === clientKey)
+      .map((a) => a.projectId),
+  );
+
+  const toAdd: ProjectAnalysis[] = [];
+  for (const project of projects) {
+    if (existingIds.has(project.id)) continue;
+    const analysis = buildAnalysis(project, clientKey);
+    // Aligne recordedAt sur updatedAt pour conserver l'ordre chronologique réel
+    analysis.recordedAt = project.updatedAt;
+    toAdd.push(analysis);
+  }
+
+  if (toAdd.length === 0) return 0;
+
+  writeAll([...toAdd, ...existing]);
+  return toAdd.length;
+}
