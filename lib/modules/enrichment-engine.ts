@@ -1,5 +1,10 @@
-import type { FoundationFieldStatus } from "../project-foundation/types";
-import type { ImpactOutput, StudioProject } from "../studio/types";
+type FoundationFieldStatus =
+  | "validated"
+  | "user_entered"
+  | "inherited"
+  | "suggested"
+  | "empty";
+import type { StudioProject } from "../studio/types";
 
 export type ModuleName = "campaign" | "pilot" | "impact";
 export type EnrichmentSource = "validated" | "user_entered" | "inherited" | "suggested";
@@ -74,7 +79,7 @@ export function buildEnrichedModuleInput(project: StudioProject, targetModule: M
   const warnings: string[] = [];
   const campaign = project.modules?.campaign?.output as any;
   const pilot = project.modules?.pilot?.output as any;
-  const impact = project.modules?.impact?.output as ImpactOutput | undefined;
+  const impact = project.modules?.impact?.output as any;
 
   const hints = campaign?.measurementHints;
   hints?.communicationObjectives?.forEach((v: string, i: number) => available.push(toItem("objectives", `campaign-objective-${i}`, v, "suggested", "campaign", project.modules?.campaign?.updatedAt)));
