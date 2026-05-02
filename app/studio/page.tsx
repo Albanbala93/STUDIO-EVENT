@@ -108,9 +108,19 @@ export default function StudioDashboardPage() {
                             Dispositifs de communication
                         </h2>
                     </div>
-                    <Link href="/studio/new" className="btn btn-dark" style={{ fontSize: 12 }}>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <Link
+                        href="/studio/clients"
+                        className="btn btn-ghost"
+                        style={{ fontSize: 12, textDecoration: "none" }}
+                      >
+                        Clients & projets
+                      </Link>
+
+                      <Link href="/studio/new" className="btn btn-dark" style={{ fontSize: 12 }}>
                         + Nouveau dispositif
-                    </Link>
+                      </Link>
+                    </div>
                 </div>
 
                 {!hydrated ? null : projects.length === 0 ? (

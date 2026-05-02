@@ -49,9 +49,19 @@ export default function StudioHistoryPage() {
                             {hydrated ? `${projects.length} dispositif${projects.length > 1 ? "s" : ""} au total` : "Chargement…"}
                         </p>
                     </div>
-                    <Link href="/studio/new" className="btn btn-primary" style={{ flexShrink: 0 }}>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flexShrink: 0 }}>
+                      <Link
+                        href="/studio/clients"
+                        className="btn btn-ghost"
+                        style={{ textDecoration: "none" }}
+                      >
+                        Clients & projets
+                      </Link>
+
+                      <Link href="/studio/new" className="btn btn-primary">
                         + Nouveau dispositif
-                    </Link>
+                      </Link>
+                    </div>
                 </div>
             </div>
 
