@@ -282,3 +282,130 @@ export function duplicateProject(id: string): StudioProject | undefined {
   saveProject(duplicated);
   return duplicated;
 }
+
+type ClientSummary = {
+  clientId: string;
+  clientName: string;
+  projectCount: number;
+  lastActivityAt: string;
+  modulesUsed: Array<"campaign" | "pilot" | "impact">;
+  projectIds: string[];
+};
+
+export function getAllProjects(): StudioProject[] {
+  return listProjects();
+}
+
+function slugifyClientName(value: string): string {
+  return (
+    value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "") || "client-non-renseigne"
+  );
+}
+
+function normalizeClientName(project: StudioProject): string {
+  const projectAny = project as any;
+
+  const candidates = [
+    projectAny.sharedFoundation?.data?.client_company?.value,
+    projectAny.brief?.companyName,
+    projectAny.brief?.companyContext,
+    projectAny.title,
+  ];
+
+  const raw =
+    candidates.find((v) => typeof v === "string" && v.trim().length > 0)?.trim() ??
+    "Client non renseigné";
+
+  return raw.slice(0, 80);
+}
+
+function getProjectModulesUsed(project: StudioProject): Array<"campaign" | "pilot" | "impact"> {
+  const projectAny = project as any;
+
+  return (["campaign", "pilot", "impact"] as const).filter((moduleName) =>
+    Boolean(projectAny.modules?.[moduleName]?.output),
+  );
+}
+
+export function getClientsFromProjects(): ClientSummary[] {
+  const projects = listProjects();
+  const map = new Map<string, ClientSummary>();
+
+  for (const project of projects) {
+    const clientName = normalizeClientName(project);
+    const clientId = slugifyClientName(clientName);
+    const existing = map.get(clientId);
+    const modulesUsed = getProjectModulesUsed(project);
+
+    if (!existing) {
+      map.set(clientId, {
+        clientId,
+        clientName,
+        projectCount: 1,
+        lastActivityAt: project.updatedAt,
+        modulesUsed,
+        projectIds: [project.id],
+      });
+      continue;
+    }
+
+    existing.projectCount += 1;
+    existing.lastActivityAt =
+      existing.lastActivityAt > project.updatedAt ? existing.lastActivityAt : project.updatedAt;
+    existing.modulesUsed = Array.from(new Set([...existing.modulesUsed, ...modulesUsed]));
+    existing.projectIds.push(project.id);
+  }
+
+  return Array.from(map.values()).sort((a, b) =>
+    a.lastActivityAt < b.lastActivityAt ? 1 : -1,
+  );
+}
+
+export function getProjectsByClient(clientIdOrName: string): StudioProject[] {
+  const needle = decodeURIComponent(clientIdOrName).toLowerCase();
+
+  return listProjects().filter((project) => {
+    const name = normalizeClientName(project).toLowerCase();
+    const slug = slugifyClientName(name);
+
+    return name === needle || slug === needle;
+  });
+}
+
+export function getProjectResumeData(projectId: string):
+  | {
+      projectId: string;
+      title: string;
+      updatedAt: string;
+      clientName: string;
+      modulesUsed: string[];
+      enrichmentsAvailable: number;
+    }
+  | undefined {
+  const project = getProject(projectId);
+  if (!project) return undefined;
+
+  const projectAny = project as any;
+  const modulesUsed = getProjectModulesUsed(project);
+
+  const measurementHints = projectAny.modules?.campaign?.output?.measurementHints;
+  const enrichmentsAvailable = measurementHints
+    ? Object.values(measurementHints).filter((value) =>
+        Array.isArray(value) ? value.length > 0 : Boolean(value),
+      ).length
+    : 0;
+
+  return {
+    projectId: project.id,
+    title: project.title,
+    updatedAt: project.updatedAt,
+    clientName: normalizeClientName(project),
+    modulesUsed,
+    enrichmentsAvailable,
+  };
+}
