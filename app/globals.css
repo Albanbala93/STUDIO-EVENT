@@ -6898,3 +6898,149 @@ body:has([data-landing-page]) {
   .hi-fi-hero-stats { gap: 24px; }
   .hi-fi-hero-stats strong { font-size: 22px; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Hi-Fi Project page (/studio/[id]) — header navy + halo teal
+   + breadcrumb-style overline + badges trio + stats row 4 colonnes.
+   Surcouche du .result-header existant : ne casse pas les contrôles
+   (mode-toggle, share, etc.) qui restent fonctionnels.
+   ════════════════════════════════════════════════════════════════ */
+
+.hi-fi-project-header {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+}
+
+.hi-fi-project-header-halo {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    ellipse at 85% 40%,
+    rgba(0, 180, 200, 0.18) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.hi-fi-project-header-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Overline — back chip + breadcrumb date */
+.hi-fi-project-overline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.hi-fi-project-back-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.hi-fi-project-back-chip:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+}
+
+.hi-fi-project-overline-text {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* Trio de badges (statut / module / enrichissements) */
+.hi-fi-project-badges {
+  display: flex;
+  gap: 7px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.hi-fi-project-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.hi-fi-project-badge-status {
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.hi-fi-project-badge-module {
+  background: rgba(0, 180, 200, 0.16);
+  color: var(--accent-teal);
+  border-color: rgba(0, 180, 200, 0.32);
+}
+.hi-fi-project-badge-enrich {
+  background: rgba(240, 180, 41, 0.16);
+  color: var(--accent-amber);
+  border-color: rgba(240, 180, 41, 0.32);
+}
+
+/* Stats row — 4 métriques colorées dérivées du payload réel */
+.hi-fi-project-stats {
+  position: relative;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  gap: 36px;
+  flex-wrap: wrap;
+}
+
+.hi-fi-project-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 90px;
+}
+
+.hi-fi-project-stat-value {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.hi-fi-project-stat-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+@media (max-width: 768px) {
+  .hi-fi-project-stats { gap: 22px; }
+  .hi-fi-project-stat-value { font-size: 22px; }
+  .hi-fi-project-overline { gap: 8px; }
+}
