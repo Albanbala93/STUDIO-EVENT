@@ -116,27 +116,58 @@ export default function ProjectPage() {
     const eventCopilot = project.output.eventCopilot;
     const hasDircom = !!project.output.dircomView;
 
+    // Hi-Fi project header — métriques dérivées du payload réel.
+    const sectionsCount =
+        (project.output?.keyMessages?.length ?? 0) +
+        (project.output?.timeline?.length ?? 0) +
+        (project.output?.audienceMessages?.length ?? 0) +
+        (project.output?.scenarios?.length ?? 0);
+    const quickWinsCount = project.output?.quickWins?.length ?? 0;
+    const risksCount = project.output?.risks?.length ?? 0;
+    const messagesCount = project.output?.keyMessages?.length ?? 0;
+    const enrichmentCount = enrichmentCounts?.available ?? 0;
+
     return (
         <main className="container" style={{ paddingTop: 28, paddingBottom: 60 }}>
 
-            {/* Header */}
-            <div className="result-header">
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
+            {/* Header — Hi-Fi : halo teal + overline contextuelle + badges + stats row */}
+            <div className="result-header hi-fi-project-header">
+                <span className="hi-fi-project-header-halo" aria-hidden="true" />
+
+                <div className="hi-fi-project-header-row">
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <p className="project-label">Dossier de communication interne</p>
+                        {/* Overline Hi-Fi : back chip + breadcrumb date */}
+                        <div className="hi-fi-project-overline">
+                            <Link href="/studio" className="hi-fi-project-back-chip">
+                                ← Retour
+                            </Link>
+                            <span className="hi-fi-project-overline-text">
+                                Campaign · Généré le {formatDate(project.createdAt)}
+                            </span>
+                        </div>
+
                         <h1 style={{ fontFamily: "var(--font-display)", fontWeight: 400, letterSpacing: "-0.01em" }}>
                             {project.title}
                         </h1>
-                        <div className="header-meta">
-                            <span className="badge badge-status">{statusLabel(project.status)}</span>
-                            <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-                            <span>{formatDate(project.createdAt)}</span>
+
+                        {/* Badges Hi-Fi : statut + module + enrichissements */}
+                        <div className="hi-fi-project-badges">
+                            <span className="hi-fi-project-badge hi-fi-project-badge-status">
+                                {statusLabel(project.status)}
+                            </span>
+                            <span className="hi-fi-project-badge hi-fi-project-badge-module">
+                                Campaign
+                            </span>
+                            {enrichmentCount > 0 && (
+                                <span className="hi-fi-project-badge hi-fi-project-badge-enrich">
+                                    {enrichmentCount} enrichissement{enrichmentCount > 1 ? "s" : ""} disponible{enrichmentCount > 1 ? "s" : ""}
+                                </span>
+                            )}
                         </div>
                     </div>
 
-                    {/* Right-side controls */}
+                    {/* Right-side controls (préservés tels quels) */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, paddingTop: 4 }}>
-                        {/* Edit / View toggle */}
                         <div className="project-mode-toggle">
                             <button
                                 type="button"
@@ -154,7 +185,6 @@ export default function ProjectPage() {
                             </button>
                         </div>
 
-                        {/* Measure with Momentum */}
                         <a
                             href={buildMomentumDiagnosticUrl(project)}
                             target="_blank"
@@ -171,7 +201,6 @@ export default function ProjectPage() {
                             📊 Mesurer avec Pilot
                         </a>
 
-                        {/* Share button */}
                         <button
                             type="button"
                             className={`btn btn-ghost${isShared ? " share-btn-active" : ""}`}
@@ -180,12 +209,38 @@ export default function ProjectPage() {
                         >
                             {isShared ? "↗ Partagé" : "Partager"}
                         </button>
-
-                        <Link href="/studio" style={{ color: "rgba(255,255,255,0.3)", fontSize: 11.5, fontWeight: 500 }}>
-                            ← Projets
-                        </Link>
                     </div>
                 </div>
+
+                {/* Stats row Hi-Fi — dérivées du vrai payload du projet */}
+                {(sectionsCount > 0 || quickWinsCount > 0 || risksCount > 0 || messagesCount > 0) && (
+                    <div className="hi-fi-project-stats">
+                        <div className="hi-fi-project-stat">
+                            <span className="hi-fi-project-stat-value" style={{ color: "var(--accent-teal)" }}>
+                                {sectionsCount}
+                            </span>
+                            <span className="hi-fi-project-stat-label">Sections produites</span>
+                        </div>
+                        <div className="hi-fi-project-stat">
+                            <span className="hi-fi-project-stat-value" style={{ color: "var(--accent-violet)" }}>
+                                {messagesCount}
+                            </span>
+                            <span className="hi-fi-project-stat-label">Messages clés</span>
+                        </div>
+                        <div className="hi-fi-project-stat">
+                            <span className="hi-fi-project-stat-value" style={{ color: "var(--accent-green)" }}>
+                                {quickWinsCount}
+                            </span>
+                            <span className="hi-fi-project-stat-label">Quick wins</span>
+                        </div>
+                        <div className="hi-fi-project-stat">
+                            <span className="hi-fi-project-stat-value" style={{ color: "var(--accent-orange)" }}>
+                                {risksCount}
+                            </span>
+                            <span className="hi-fi-project-stat-label">Risques identifiés</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Brief summary (collapsible) */}
