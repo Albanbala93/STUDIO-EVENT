@@ -44,24 +44,78 @@ export default function MomentumLanding() {
 
   return (
     <div>
-      {/* ── Sticky bar ──────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-canvas/85 backdrop-blur-sm border-b border-border">
-        <div className="mx-auto max-w-6xl px-8 h-16 flex items-center justify-between">
-          <div className="flex flex-col leading-tight">
-            <span className="text-[11px] uppercase tracking-[0.14em] text-ink-muted">
-              Stratly · Pilot
-            </span>
-            <h1 className="text-[18px] font-semibold text-ink">
-              Pilotage de la performance & de l&apos;impact
+      {/* ── Header Hi-Fi : navy gradient + halo violet + Pills + stats ── */}
+      <header className="hi-fi-pilot-header">
+        <span className="hi-fi-pilot-header-halo" aria-hidden="true" />
+
+        <div className="hi-fi-pilot-header-inner">
+          <div className="hi-fi-pilot-header-title-block">
+            <span className="hi-fi-pilot-header-overline">Pilot</span>
+            <h1 className="hi-fi-pilot-header-title">
+              Diagnostic stratégique & pilotage
             </h1>
+
+            {hydrated && stats.count > 0 && (
+              <div className="hi-fi-pilot-header-pills">
+                <span className="hi-fi-pilot-pill hi-fi-pilot-pill-violet">
+                  {stats.count} diagnostic{stats.count > 1 ? "s" : ""} actif{stats.count > 1 ? "s" : ""}
+                </span>
+                {stats.avgPerf !== null && (
+                  <span className="hi-fi-pilot-pill hi-fi-pilot-pill-teal">
+                    Performance moyenne {stats.avgPerf}/100
+                  </span>
+                )}
+              </div>
+            )}
           </div>
-          <Link
-            href="/momentum/diagnostic"
-            className={buttonVariants({ variant: "primary", size: "md" })}
-          >
-            <PlusCircle className="h-4 w-4" />
-            Nouveau diagnostic
-          </Link>
+
+          {hydrated && stats.count > 0 && (
+            <div className="hi-fi-pilot-header-stats">
+              <div className="hi-fi-pilot-header-stat">
+                <span
+                  className="hi-fi-pilot-header-stat-value"
+                  style={{ color: "var(--accent-teal)" }}
+                >
+                  {stats.avgPerf !== null ? `${stats.avgPerf}` : "—"}
+                </span>
+                <span className="hi-fi-pilot-header-stat-label">
+                  Score moyen
+                </span>
+              </div>
+              <div className="hi-fi-pilot-header-stat">
+                <span
+                  className="hi-fi-pilot-header-stat-value"
+                  style={{ color: "var(--accent-violet)" }}
+                >
+                  {stats.count}
+                </span>
+                <span className="hi-fi-pilot-header-stat-label">
+                  Diagnostics
+                </span>
+              </div>
+              <div className="hi-fi-pilot-header-stat">
+                <span
+                  className="hi-fi-pilot-header-stat-value"
+                  style={{ color: "var(--accent-green)" }}
+                >
+                  {stats.rseCovered}
+                </span>
+                <span className="hi-fi-pilot-header-stat-label">
+                  Volet RSE
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="hi-fi-pilot-header-cta">
+            <Link
+              href="/momentum/diagnostic"
+              className="hi-fi-pilot-cta-primary"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Nouveau diagnostic
+            </Link>
+          </div>
         </div>
       </header>
 

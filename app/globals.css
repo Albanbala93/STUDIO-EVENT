@@ -6898,3 +6898,181 @@ body:has([data-landing-page]) {
   .hi-fi-hero-stats { gap: 24px; }
   .hi-fi-hero-stats strong { font-size: 22px; }
 }
+/* ════════════════════════════════════════════════════════════════
+   Hi-Fi Pilot landing (/momentum) — header navy + halo violet
+   + Pills + 3 stats. Préserve ExecutiveHero, DecisionSignals,
+   Portefeuille et RseStrategicBand qui restent en dessous.
+   ════════════════════════════════════════════════════════════════ */
+
+.hi-fi-pilot-header {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  padding: 28px 0 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.hi-fi-pilot-header-halo {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    ellipse at 80% 50%,
+    rgba(124, 92, 191, 0.20) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.hi-fi-pilot-header-inner {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 44px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hi-fi-pilot-header-title-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.hi-fi-pilot-header-overline {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  margin: 0 0 6px;
+}
+
+.hi-fi-pilot-header-title {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 24px;
+  font-weight: 400;
+  color: #fff;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.hi-fi-pilot-header-pills {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.hi-fi-pilot-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.hi-fi-pilot-pill::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.hi-fi-pilot-pill-violet {
+  background: rgba(124, 92, 191, 0.16);
+  border-color: rgba(124, 92, 191, 0.32);
+  color: #c5b3eb;
+}
+
+.hi-fi-pilot-pill-teal {
+  background: rgba(0, 180, 200, 0.12);
+  border-color: rgba(0, 180, 200, 0.28);
+  color: #5fd8e6;
+}
+
+.hi-fi-pilot-header-stats {
+  display: flex;
+  gap: 32px;
+  padding-left: 32px;
+  border-left: 1px solid rgba(255, 255, 255, 0.10);
+  flex-wrap: nowrap;
+}
+
+.hi-fi-pilot-header-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 84px;
+}
+
+.hi-fi-pilot-header-stat-value {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.hi-fi-pilot-header-stat-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.hi-fi-pilot-header-cta {
+  flex-shrink: 0;
+}
+
+.hi-fi-pilot-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #fff;
+  color: var(--navy);
+  border: 1px solid #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, transform 0.12s;
+  white-space: nowrap;
+}
+.hi-fi-pilot-cta-primary:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--navy);
+  text-decoration: none;
+}
+.hi-fi-pilot-cta-primary:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 900px) {
+  .hi-fi-pilot-header-inner { gap: 16px; padding: 0 24px; }
+  .hi-fi-pilot-header-stats {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+    padding-top: 14px;
+    margin-top: 6px;
+    width: 100%;
+    gap: 24px;
+  }
+  .hi-fi-pilot-header-stat-value { font-size: 22px; }
+}
+
+@media (max-width: 600px) {
+  .hi-fi-pilot-header { padding: 22px 0 18px; }
+  .hi-fi-pilot-header-title { font-size: 20px; }
+}
