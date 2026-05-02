@@ -100,16 +100,23 @@ export default function PricingPage() {
         </div>
       </header>
 
-      <main className="pricing-page-v2">
+      <main className="pricing-page-v2 hi-fi-pricing-page">
+        {/* Halo teal centré top — Hi-Fi Direction A */}
+        <span className="hi-fi-pricing-halo" aria-hidden="true" />
+
         <div className="pricing-shell">
-        {/* Hero */}
-        <header className="pricing-hero">
-          <span className="pricing-eyebrow">
+        {/* Hero — Hi-Fi : titre DM Serif sur 2 lignes avec accent italique teal */}
+        <header className="pricing-hero hi-fi-pricing-hero">
+          <span className="pricing-eyebrow hi-fi-pricing-eyebrow">
             <Sparkles size={13} strokeWidth={2.2} />
-            Tarifs Stratly
+            Tarifs
           </span>
-          <h1 className="pricing-title">
-            Une plateforme unique. Trois modules. Un tarif clair.
+          <h1 className="pricing-title hi-fi-pricing-title">
+            Un modèle simple,
+            <br />
+            <em className="hi-fi-pricing-title-accent">
+              taillé pour les équipes stratégiques.
+            </em>
           </h1>
           <p className="pricing-lead">
             Campaign, Pilot, Impact — accès aux trois modules, quel que soit
@@ -174,9 +181,11 @@ export default function PricingPage() {
             </Link>
           </article>
 
-          {/* Pro — featured */}
-          <article className="pricing-card pricing-card-featured">
-            <span className="pricing-card-badge">Le plus populaire</span>
+          {/* Pro — featured (Hi-Fi : raised + badge amber "⭐ Recommandé") */}
+          <article className="pricing-card pricing-card-featured hi-fi-pricing-card-featured">
+            <span className="pricing-card-badge hi-fi-pricing-card-badge">
+              ⭐ Recommandé
+            </span>
             <h2 className="pricing-card-name">Pro</h2>
             <p className="pricing-card-tagline">Pour piloter en continu</p>
             <div className="pricing-card-price">

@@ -7362,3 +7362,120 @@ body:has([data-landing-page]) {
     gap: 10px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Hi-Fi Pricing (/pricing) — halo teal, titre DM Serif italique,
+   badge Pro "⭐ Recommandé" amber centré sur le bord supérieur de
+   la card featured, card raised. Surcouches modificateurs sur les
+   classes .pricing-* existantes pour ne casser personne.
+   ════════════════════════════════════════════════════════════════ */
+
+.hi-fi-pricing-page {
+  position: relative;
+  overflow: hidden;
+}
+
+.hi-fi-pricing-halo {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 720px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--accent-teal-l) 0%,
+    transparent 65%
+  );
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hi-fi-pricing-hero {
+  position: relative;
+  z-index: 1;
+}
+
+.hi-fi-pricing-eyebrow {
+  /* Override couleur : passe d'indigo à teal pour cohérence Hi-Fi */
+  background: rgba(0, 180, 200, 0.10) !important;
+  color: var(--accent-teal) !important;
+  border: 1px solid rgba(0, 180, 200, 0.22);
+}
+
+.hi-fi-pricing-title {
+  /* Override : DM Serif Display + weight 400 + accent italique teal */
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif) !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.12 !important;
+  font-size: clamp(32px, 4.4vw, 48px) !important;
+}
+
+.hi-fi-pricing-title-accent {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent-teal);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Card featured Pro — Hi-Fi : raised + shadow + decoration corner ─ */
+.hi-fi-pricing-card-featured {
+  position: relative;
+  margin-top: -12px !important;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.15), 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Decoration corner teal en haut à droite (Hi-Fi) */
+.hi-fi-pricing-card-featured::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  border-radius: 0 16px 0 200px;
+  background: rgba(0, 180, 200, 0.07);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hi-fi-pricing-card-featured > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Badge "⭐ Recommandé" amber centré sur le bord supérieur ─── */
+.hi-fi-pricing-card-badge {
+  /* Override complet du .pricing-card-badge existant */
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translate(-50%, -50%) !important;
+  background: var(--accent-amber) !important;
+  color: #5a3a00 !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em !important;
+  text-transform: uppercase !important;
+  padding: 5px 18px !important;
+  border-radius: 20px !important;
+  white-space: nowrap;
+  box-shadow: 0 2px 12px rgba(240, 180, 41, 0.45);
+  border: 0 !important;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .hi-fi-pricing-card-featured {
+    margin-top: 8px !important;
+  }
+  .hi-fi-pricing-halo {
+    width: 480px;
+    height: 320px;
+  }
+}
