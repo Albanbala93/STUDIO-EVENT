@@ -10,6 +10,12 @@ import {
     type MomentumMemory,
 } from "../../lib/momentum-bridge";
 import { StrategicMemoryPanel } from "./_components/strategic-memory-panel";
+import {
+    HI_FI_ACCENTS,
+    IlluBrief,
+    IlluDashboard,
+    IlluStrategy,
+} from "../_components/landing-illustrations";
 
 function statusLabel(status: string) {
     switch (status) {
@@ -52,18 +58,36 @@ export default function StudioDashboardPage() {
 
     const recent = projects.slice(0, 6);
 
+    // Hi-Fi — métriques affichées dans le header
+    const activeCount = projects.filter(p => p.status === "generated" || p.status === "approved").length;
+    const draftCount = projects.filter(p => p.status === "draft").length;
+
     return (
         <main>
-            {/* Hero header */}
-            <div className="studio-page-hero">
+            {/* Hero header — Hi-Fi : halo teal + Pills statut */}
+            <div className="studio-page-hero hi-fi-dashboard-hero">
                 <div className="studio-page-hero-inner">
                     <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
                         <div>
                             <p className="studio-page-hero-label">Espace de travail</p>
-                            <h1 className="studio-page-hero-title">Campaign</h1>
+                            <h1 className="studio-page-hero-title">Tableau de bord Stratly</h1>
                             <p className="studio-page-hero-sub">
                                 Vos dispositifs de communication interne, générés et centralisés.
                             </p>
+
+                            {/* Pills Hi-Fi : statut projets */}
+                            {hydrated && projects.length > 0 && (
+                                <div className="hi-fi-dashboard-pills">
+                                    <span className="hi-fi-dashboard-pill hi-fi-dashboard-pill-teal">
+                                        {activeCount} projet{activeCount > 1 ? "s" : ""} actif{activeCount > 1 ? "s" : ""}
+                                    </span>
+                                    {draftCount > 0 && (
+                                        <span className="hi-fi-dashboard-pill hi-fi-dashboard-pill-amber">
+                                            {draftCount} brouillon{draftCount > 1 ? "s" : ""}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Stats */}
@@ -71,7 +95,7 @@ export default function StudioDashboardPage() {
                             <div style={{ display: "flex", gap: 0, borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
                                 {[
                                     { value: String(projects.length), label: "Dispositifs" },
-                                    { value: String(projects.filter(p => p.status === "generated" || p.status === "approved").length), label: "Générés" },
+                                    { value: String(activeCount), label: "Générés" },
                                     { value: timeAgo(projects[0]?.updatedAt ?? new Date().toISOString()), label: "Dernière activité" },
                                 ].map(({ value, label }) => (
                                     <div key={label} style={{ padding: "0 24px", borderRight: "1px solid rgba(255,255,255,0.08)", textAlign: "center" }}>
@@ -90,6 +114,66 @@ export default function StudioDashboardPage() {
             </div>
 
             <div className="container" style={{ paddingTop: 36, paddingBottom: 60 }}>
+
+                {/* Hi-Fi — Modules disponibles : 3 mini-cards horizontales
+                    avec illustrations colorées. Donne accès rapide aux
+                    modules Campaign / Pilot / Impact depuis le dashboard. */}
+                <div className="hi-fi-modules-row">
+                    <p className="hi-fi-modules-row-label">Modules disponibles</p>
+                    <div className="hi-fi-modules-row-grid">
+                        {[
+                            {
+                                href: "/studio/new",
+                                name: "Campaign",
+                                sub: "Brief → dossier stratégique complet",
+                                accent: HI_FI_ACCENTS.teal,
+                                illu: <IlluBrief />,
+                            },
+                            {
+                                href: "/momentum",
+                                name: "Pilot",
+                                sub: "Diagnostic, KPIs, pilotage continu",
+                                accent: HI_FI_ACCENTS.violet,
+                                illu: <IlluDashboard />,
+                            },
+                            {
+                                href: "/momentum",
+                                name: "Impact",
+                                sub: "Empreinte carbone, impact RSE des actions com",
+                                accent: HI_FI_ACCENTS.green,
+                                illu: <IlluStrategy />,
+                            },
+                        ].map((m) => (
+                            <Link key={m.name} href={m.href} className="hi-fi-module-card">
+                                <span
+                                    className="hi-fi-module-card-illu"
+                                    style={{
+                                        background: `${m.accent.color}14`,
+                                        borderColor: `${m.accent.color}28`,
+                                    }}
+                                >
+                                    <span className="hi-fi-module-card-illu-inner">
+                                        {m.illu}
+                                    </span>
+                                </span>
+                                <span className="hi-fi-module-card-body">
+                                    <span className="hi-fi-module-card-name">{m.name}</span>
+                                    <span className="hi-fi-module-card-sub">{m.sub}</span>
+                                </span>
+                                <span
+                                    className="hi-fi-module-card-badge"
+                                    style={{
+                                        background: HI_FI_ACCENTS.green.bg,
+                                        color: HI_FI_ACCENTS.green.color,
+                                        borderColor: HI_FI_ACCENTS.green.ring,
+                                    }}
+                                >
+                                    Actif
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
 
                 {/* Mémoire stratégique Studio — tendances + insights dérivés
                     de la couche mémoire. Auto-hidden si 0 projet. */}
@@ -162,12 +246,22 @@ export default function StudioDashboardPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 14 }}>
                         {recent.map((project) => {
                             const sc = statusColor(project.status);
+                            // Hi-Fi : accent coloré sur le bord gauche par statut
+                            const accentColor =
+                                project.status === "approved"
+                                    ? HI_FI_ACCENTS.green.color
+                                    : project.status === "generated"
+                                      ? HI_FI_ACCENTS.teal.color
+                                      : "var(--border-strong)";
                             return (
                                 <Link
                                     key={project.id}
                                     href={`/studio/${project.id}`}
-                                    className="project-card"
-                                    style={{ textDecoration: "none" }}
+                                    className="project-card hi-fi-project-card"
+                                    style={{
+                                        textDecoration: "none",
+                                        ["--hi-fi-card-accent" as string]: accentColor,
+                                    }}
                                 >
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                                         <span style={{
@@ -188,13 +282,14 @@ export default function StudioDashboardPage() {
                                         </span>
                                     </div>
 
-                                    <h3 style={{
+                                    <h3 className="hi-fi-project-card-title" style={{
                                         margin: "0 0 6px",
-                                        fontSize: 14,
-                                        fontWeight: 700,
+                                        fontFamily: "var(--font-display, 'DM Serif Display', Georgia, serif)",
+                                        fontSize: 15,
+                                        fontWeight: 400,
                                         color: "var(--navy)",
-                                        lineHeight: 1.4,
-                                        letterSpacing: "-0.01em",
+                                        lineHeight: 1.35,
+                                        letterSpacing: "-0.005em",
                                         display: "-webkit-box",
                                         WebkitLineClamp: 2,
                                         WebkitBoxOrient: "vertical",
