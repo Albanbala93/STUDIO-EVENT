@@ -10,6 +10,29 @@
   --navy: #0F172A;            /* sidebar bg + texte principal */
   --navy-mid: #1E293B;
   --navy-light: #334155;
+
+  /* ───── Hi-Fi accent palette (Stratly Design — Direction A) ─────
+     Six accents colorés pour les illustrations marketing, modules
+     landing et bandeaux contextuels. Variantes L = light bg, M = mid bg.
+     ───────────────────────────────────────────────────────────────── */
+  --accent-teal:    #00b4c8;
+  --accent-teal-l:  #e0f7fa;
+  --accent-teal-m:  #b2ebf2;
+  --accent-violet:  #7c5cbf;
+  --accent-violet-l:#f0ebff;
+  --accent-violet-m:#d8ccf0;
+  --accent-orange:  #f05a28;
+  --accent-orange-l:#fff0eb;
+  --accent-orange-m:#ffd4c2;
+  --accent-green:   #2db87a;
+  --accent-green-l: #e8f9f1;
+  --accent-green-m: #a8e6cc;
+  --accent-amber:   #f0b429;
+  --accent-amber-l: #fffbeb;
+  --accent-amber-m: #fde68a;
+  --accent-blue:    #3b82f6;
+  --accent-blue-l:  #eff6ff;
+  --accent-blue-m:  #bfdbfe;
   --blue-conseil: #6366F1;    /* accent principal — indigo électrique */
   --blue-accent: #8B5CF6;     /* accent secondaire — violet (gradient end) */
   --blue-light: #EEF2FF;      /* accent tint 8 % */
@@ -6463,3 +6486,415 @@ body:has([data-landing-page]) {
   color: #475569;
 }
 
+
+/* ────────────────────────────────────────────────────────────────
+   Hi-Fi landing — keyframes & utilitaires d'animation
+   ──────────────────────────────────────────────────────────────── */
+@keyframes hiFiFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hiFiFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes hiFiFloat2 {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-5px) rotate(1deg); }
+}
+@keyframes hiFiPulse {
+  0%, 100% { transform: scale(1);    opacity: 1;    }
+  50%      { transform: scale(1.35); opacity: 0.65; }
+}
+
+.hi-fi-fade-up   { animation: hiFiFadeUp 0.55s ease both; }
+.hi-fi-fade-up-2 { animation: hiFiFadeUp 0.55s 0.12s ease both; }
+.hi-fi-fade-up-3 { animation: hiFiFadeUp 0.55s 0.22s ease both; }
+.hi-fi-float     { animation: hiFiFloat 3.8s ease-in-out infinite; transform-origin: center; }
+.hi-fi-float-2   { animation: hiFiFloat2 4.5s ease-in-out infinite 0.6s; transform-origin: center; }
+.hi-fi-pulse     { animation: hiFiPulse 2.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hi-fi-fade-up, .hi-fi-fade-up-2, .hi-fi-fade-up-3,
+  .hi-fi-float, .hi-fi-float-2, .hi-fi-pulse {
+    animation: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   Hi-Fi Direction A — Landing page sections
+   Implémentation du design Stratly Hi-Fi.html : hero + modules
+   colorés + workflow dark navy. Cohabite avec les classes
+   existantes (.landing-deliverables, .landing-cta-final, etc.).
+   ════════════════════════════════════════════════════════════════ */
+
+/* ─── Hero ─────────────────────────────────────────────────── */
+.hi-fi-hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--white);
+  padding: 80px 52px 72px;
+  border-bottom: 1px solid var(--border-light);
+}
+.hi-fi-hero-halo {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hi-fi-hero-halo-teal {
+  top: -100px; right: -100px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--accent-teal-l) 0%, transparent 65%);
+  opacity: 0.55;
+}
+.hi-fi-hero-halo-violet {
+  bottom: -60px; left: 35%;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, var(--accent-violet-l) 0%, transparent 68%);
+  opacity: 0.45;
+}
+.hi-fi-hero-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 480px;
+  gap: 72px; align-items: center;
+  position: relative;
+}
+.hi-fi-hero-text { min-width: 0; }
+.hi-fi-hero-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 24px;
+  background: rgba(0, 180, 200, 0.08);
+  border: 1px solid rgba(0, 180, 200, 0.2);
+  font-size: 12px; font-weight: 600;
+  color: var(--accent-teal);
+  margin-bottom: 30px;
+}
+.hi-fi-hero-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-teal);
+}
+.hi-fi-hero-title {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: clamp(38px, 4.4vw, 52px);
+  font-weight: 400;
+  color: var(--navy);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.hi-fi-hero-accent {
+  color: var(--accent-teal);
+  font-style: italic;
+}
+.hi-fi-hero-sub {
+  margin: 22px 0 36px;
+  font-size: 16px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  max-width: 520px;
+}
+.hi-fi-hero-ctas {
+  display: flex; gap: 12px;
+  margin-bottom: 44px;
+  flex-wrap: wrap;
+}
+.hi-fi-cta-primary,
+.hi-fi-cta-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 20px;
+  border-radius: 6px;
+  font-size: 13px; font-weight: 600;
+  text-decoration: none;
+  transition: background 0.18s, transform 0.12s, border-color 0.18s, color 0.18s;
+  white-space: nowrap;
+}
+.hi-fi-cta-primary {
+  background: var(--navy);
+  color: #fff;
+  border: 1px solid var(--navy);
+}
+.hi-fi-cta-primary:hover { background: var(--navy-mid); color: #fff; }
+.hi-fi-cta-primary:active { transform: translateY(1px); }
+.hi-fi-cta-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-strong, var(--border));
+}
+.hi-fi-cta-ghost:hover { background: var(--surface-mid); }
+
+.hi-fi-hero-stats {
+  list-style: none; padding: 30px 0 0; margin: 0;
+  border-top: 1px solid var(--border-light);
+  display: flex; gap: 40px; flex-wrap: wrap;
+}
+.hi-fi-hero-stats li {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.hi-fi-hero-stats strong {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 26px; font-weight: 400;
+  color: var(--navy);
+  line-height: 1;
+}
+.hi-fi-hero-stats span {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* Aperçu produit flottant à droite */
+.hi-fi-hero-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.05);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.hi-fi-hero-preview-bar {
+  background: var(--navy);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 8px;
+  color: #fff;
+}
+.hi-fi-hero-preview-bar > :first-child { flex: 0 0 auto; }
+.hi-fi-hero-preview-bar > :nth-child(2) { flex: 1; }
+.hi-fi-hero-preview-bar-dots {
+  display: flex; gap: 4px;
+}
+.hi-fi-hero-preview-bar-dots span {
+  display: block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  opacity: 0.7;
+}
+.hi-fi-hero-preview-row {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  position: relative; overflow: hidden;
+}
+.hi-fi-hero-preview-row-accent {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 10px 0 0 10px;
+}
+.hi-fi-hero-preview-row-body {
+  flex: 1; min-width: 0; padding-left: 6px;
+}
+.hi-fi-hero-preview-row-title {
+  font-size: 12.5px; font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hi-fi-hero-preview-row-meta {
+  font-size: 11px; color: var(--slate-light);
+}
+.hi-fi-hero-preview-row-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.hi-fi-hero-preview-nba {
+  background: var(--accent-amber-l);
+  border: 1px solid var(--accent-amber-m);
+  border-left: 3px solid var(--accent-amber);
+  border-radius: 9px;
+  padding: 9px 13px;
+  display: flex; gap: 9px; align-items: center;
+}
+.hi-fi-hero-preview-nba-icon {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.hi-fi-hero-preview-nba-overline {
+  display: block;
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase;
+  color: #a08020;
+  margin-bottom: 2px;
+}
+.hi-fi-hero-preview-nba-title {
+  display: block;
+  font-size: 13px; font-weight: 600;
+  color: var(--navy);
+  line-height: 1.35;
+}
+
+/* ─── Common section heading ───────────────────────────────── */
+.hi-fi-section-head {
+  text-align: center;
+  margin-bottom: 52px;
+}
+.hi-fi-overline {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--slate-light);
+  margin: 0 0 14px;
+}
+.hi-fi-section-title {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: clamp(24px, 2.6vw, 32px);
+  font-weight: 400;
+  color: var(--navy);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.hi-fi-section-title-light { color: #fff; }
+.hi-fi-section-lead {
+  margin: 14px auto 0;
+  max-width: 560px;
+  font-size: 15.5px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+.hi-fi-section-lead-light {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ─── Features (6 cards) ───────────────────────────────────── */
+.hi-fi-features { padding: 72px 52px; background: var(--surface); }
+.hi-fi-features-inner { max-width: 1200px; margin: 0 auto; }
+.hi-fi-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.hi-fi-feature-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex; flex-direction: column;
+}
+.hi-fi-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+.hi-fi-feature-illu {
+  padding: 24px 24px 12px;
+  display: flex; justify-content: center; align-items: center;
+  min-height: 140px;
+  border-bottom: 1px solid;
+}
+.hi-fi-feature-body { padding: 18px 22px 22px; }
+.hi-fi-feature-title {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--navy);
+  margin: 0 0 8px;
+  letter-spacing: -0.005em;
+}
+.hi-fi-feature-desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+/* ─── Workflow (dark navy, 4 steps) ────────────────────────── */
+.hi-fi-workflow {
+  position: relative;
+  background: var(--navy);
+  padding: 72px 52px;
+  overflow: hidden;
+}
+.hi-fi-workflow-bg {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(ellipse at 80% 20%, rgba(0, 180, 200, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, rgba(124, 92, 191, 0.10) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hi-fi-workflow-inner {
+  position: relative;
+  max-width: 1200px; margin: 0 auto;
+}
+.hi-fi-workflow-pill {
+  display: inline-flex;
+  padding: 4px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  font-size: 12px; font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+.hi-fi-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.hi-fi-workflow-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.hi-fi-workflow-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.hi-fi-workflow-illu {
+  padding: 24px 20px 12px;
+  min-height: 138px;
+  display: flex; justify-content: center; align-items: center;
+  border-bottom: 1px solid;
+}
+.hi-fi-workflow-body { padding: 16px 18px 20px; }
+.hi-fi-workflow-num {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  opacity: 0.85;
+}
+.hi-fi-workflow-title {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 16px;
+  font-weight: 400;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.005em;
+}
+.hi-fi-workflow-desc {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ─── Responsive (mobile / tablet) ─────────────────────────── */
+@media (max-width: 1024px) {
+  .hi-fi-hero { padding: 56px 32px 48px; }
+  .hi-fi-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+  .hi-fi-hero-preview { max-width: 480px; justify-self: center; width: 100%; }
+  .hi-fi-features-grid { grid-template-columns: repeat(2, 1fr); }
+  .hi-fi-workflow-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .hi-fi-hero { padding: 40px 20px 36px; }
+  .hi-fi-features { padding: 56px 20px; }
+  .hi-fi-workflow { padding: 56px 20px; }
+  .hi-fi-features-grid { grid-template-columns: 1fr; }
+  .hi-fi-workflow-grid { grid-template-columns: 1fr; }
+  .hi-fi-hero-stats { gap: 24px; }
+  .hi-fi-hero-stats strong { font-size: 22px; }
+}
