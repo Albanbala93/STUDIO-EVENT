@@ -4,23 +4,23 @@ import { BriefForm } from "../../../components/studio/brief-form";
 export default function NewProjectPage() {
     return (
         <main>
-            {/* ── Hero header ─────────────────────────────── */}
+            {/* ── Hero header — Hi-Fi : navy gradient + halo teal (Campaign accent) ─ */}
             <div style={{
-                background: "var(--navy)",
+                background: "linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%)",
                 position: "relative",
                 overflow: "hidden",
             }}>
-                {/* Ambient light */}
+                {/* Ambient light — halo teal au lieu de l'indigo précédent */}
                 <div style={{
                     position: "absolute",
                     inset: 0,
-                    backgroundImage: "radial-gradient(ellipse at 75% 50%, rgba(99, 102, 241, 0.18) 0%, transparent 60%)",
+                    backgroundImage: "radial-gradient(ellipse at 85% 50%, rgba(0, 180, 200, 0.18) 0%, transparent 55%)",
                     pointerEvents: "none",
                 }} />
 
                 <div className="container" style={{ paddingTop: 40, paddingBottom: 44, position: "relative" }}>
-                    {/* Back link */}
-                    <Link href="/studio" className="hero-back-link">
+                    {/* Back chip Hi-Fi (glass-on-navy) */}
+                    <Link href="/studio" className="hi-fi-brief-back-chip">
                         ← Projets
                     </Link>
 
@@ -29,32 +29,32 @@ export default function NewProjectPage() {
                         <div style={{ maxWidth: 600 }}>
                             <p style={{
                                 margin: "0 0 16px 0",
-                                fontSize: 9.5,
+                                fontSize: 10,
                                 fontWeight: 700,
-                                letterSpacing: "0.16em",
+                                letterSpacing: "0.14em",
                                 textTransform: "uppercase",
-                                color: "rgba(255,255,255,0.28)",
+                                color: "rgba(255,255,255,0.38)",
                             }}>
-                                Nouveau dispositif de communication
+                                Nouveau projet
                             </p>
                             <h1 style={{
                                 margin: "0 0 16px 0",
                                 fontFamily: "var(--font-display)",
-                                fontSize: "clamp(26px, 3vw, 38px)",
+                                fontSize: "clamp(26px, 3vw, 36px)",
                                 fontWeight: 400,
                                 color: "var(--white)",
                                 letterSpacing: "-0.01em",
                                 lineHeight: 1.2,
                             }}>
-                                Décrivez votre contexte.{" "}
-                                <em style={{ color: "rgba(255,255,255,0.42)", fontStyle: "italic" }}>
-                                    Nous construisons le dispositif.
-                                </em>
+                                Déposer un brief{" "}
+                                <em style={{ color: "var(--accent-teal)", fontStyle: "italic" }}>
+                                    stratégique
+                                </em>.
                             </h1>
                             <p style={{
                                 margin: 0,
                                 fontSize: 13.5,
-                                color: "rgba(255,255,255,0.4)",
+                                color: "rgba(255,255,255,0.5)",
                                 lineHeight: 1.7,
                                 maxWidth: 500,
                             }}>
@@ -133,8 +133,38 @@ export default function NewProjectPage() {
                 </div>
             </div>
 
+            {/* ── Hi-Fi : Ce que génère Stratly — bandeau livrables 6 colonnes ─ */}
+            <div className="container" style={{ paddingTop: 32, paddingBottom: 0 }}>
+                <div className="hi-fi-brief-deliverables">
+                    <p className="hi-fi-brief-deliverables-overline">
+                        Ce que génère Stratly
+                    </p>
+                    <div className="hi-fi-brief-deliverables-grid">
+                        {[
+                            { label: "Dossier stratégique 28 sections", color: "var(--accent-teal)" },
+                            { label: "Messages par audience", color: "var(--accent-violet)" },
+                            { label: "Plan de déploiement", color: "var(--accent-orange)" },
+                            { label: "KPIs et indicateurs", color: "var(--accent-green)" },
+                            { label: "Contenus rédigés (email, FAQ…)", color: "var(--accent-blue)" },
+                            { label: "Export PDF & DOCX premium", color: "var(--accent-amber)" },
+                        ].map((d) => (
+                            <div key={d.label} className="hi-fi-brief-deliverable">
+                                <span
+                                    className="hi-fi-brief-deliverable-dot"
+                                    style={{ background: d.color }}
+                                    aria-hidden="true"
+                                />
+                                <span className="hi-fi-brief-deliverable-label">
+                                    {d.label}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
             {/* ── Form area ───────────────────────────────── */}
-            <div className="container" style={{ paddingTop: 40, paddingBottom: 88 }}>
+            <div className="container" style={{ paddingTop: 24, paddingBottom: 88 }}>
                 <BriefForm />
             </div>
         </main>
