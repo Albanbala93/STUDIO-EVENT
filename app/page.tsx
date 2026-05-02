@@ -15,6 +15,15 @@ import type { ReactNode } from "react";
 
 import { LandingHeaderNav } from "./_components/landing-header-nav";
 import { Logo } from "../components/brand/logo";
+import {
+  HI_FI_ACCENTS,
+  IlluBrief,
+  IlluCollab,
+  IlluDashboard,
+  IlluNetwork,
+  IlluPresentation,
+  IlluStrategy,
+} from "./_components/landing-illustrations";
 
 const FAQ: { q: string; a: string }[] = [
   {
@@ -105,161 +114,278 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* ── Hero ───────────────────────────────────────── */}
-      <section className="landing-hero">
-        <div className="landing-hero-grid" aria-hidden="true" />
-        <div className="landing-hero-inner">
-          <span className="landing-hero-overline">
-            <span className="landing-hero-overline-dot" aria-hidden="true" />
-            Stratly · Plateforme communication
-          </span>
-          <h1>
-            Du brief à la{" "}
-            <span className="landing-hero-accent">preuve d&apos;impact.</span>
-          </h1>
-          <p className="landing-hero-sub">
-            Concevez vos dispositifs, mesurez leur performance et démontrez
-            leur impact stratégique et RSE — avec la rigueur d&apos;un cabinet
-            de conseil.
-          </p>
-          <div className="landing-hero-ctas">
-            <Link href="/studio/new" className="landing-cta-primary">
-              Essayer gratuitement
-              <ArrowRight size={16} strokeWidth={2} />
-            </Link>
-            <Link href="/momentum" className="landing-cta-secondary">
-              Voir un exemple de diagnostic
-            </Link>
+      {/* ── Hero (Hi-Fi Direction A) ──────────────────── */}
+      <section className="hi-fi-hero">
+        {/* Halos colorés en arrière-plan */}
+        <div className="hi-fi-hero-halo hi-fi-hero-halo-teal" aria-hidden="true" />
+        <div className="hi-fi-hero-halo hi-fi-hero-halo-violet" aria-hidden="true" />
+
+        <div className="hi-fi-hero-inner">
+          <div className="hi-fi-hero-text">
+            <div className="hi-fi-fade-up hi-fi-hero-badge">
+              <span className="hi-fi-hero-badge-dot hi-fi-pulse" aria-hidden="true" />
+              Nouveau — Campaign + Pilot unifiés
+            </div>
+
+            <h1 className="hi-fi-fade-up-2 hi-fi-hero-title">
+              L&apos;IA qui transforme
+              <br />
+              un brief en stratégie{" "}
+              <em className="hi-fi-hero-accent">défendable</em>
+              <br />
+              et en livrable.
+            </h1>
+
+            <p className="hi-fi-fade-up-3 hi-fi-hero-sub">
+              Une seule plateforme pour concevoir vos campagnes de communication,
+              piloter vos KPIs et défendre vos projets en CODIR.
+            </p>
+
+            <div className="hi-fi-fade-up-3 hi-fi-hero-ctas">
+              <Link href="/studio/new" className="hi-fi-cta-primary">
+                Démarrer gratuitement
+                <ArrowRight size={16} strokeWidth={2} />
+              </Link>
+              <Link href="/momentum" className="hi-fi-cta-ghost">
+                Voir un exemple de dossier
+              </Link>
+            </div>
+
+            <ul className="hi-fi-hero-stats" aria-label="Indicateurs clés">
+              <li>
+                <strong style={{ color: HI_FI_ACCENTS.teal.color }}>~25s</strong>
+                <span>Génération complète</span>
+              </li>
+              <li>
+                <strong>14+</strong>
+                <span>Sections produites</span>
+              </li>
+              <li>
+                <strong>3</strong>
+                <span>Modules intégrés</span>
+              </li>
+            </ul>
           </div>
 
-          <ul className="landing-hero-trust" aria-label="Points de réassurance">
-            <li className="landing-hero-trust-item">
-              <span className="landing-hero-trust-icon" aria-hidden="true">
-                <Check size={12} strokeWidth={2.5} />
-              </span>
-              Sans carte bancaire
-            </li>
-            <li className="landing-hero-trust-divider" aria-hidden="true" />
-            <li className="landing-hero-trust-item">
-              <span className="landing-hero-trust-icon" aria-hidden="true">
-                <Check size={12} strokeWidth={2.5} />
-              </span>
-              Diagnostic en moins de 5 minutes
-            </li>
-            <li className="landing-hero-trust-divider" aria-hidden="true" />
-            <li className="landing-hero-trust-item">
-              <span className="landing-hero-trust-icon" aria-hidden="true">
-                <Check size={12} strokeWidth={2.5} />
-              </span>
-              Rapports prêts COMEX
-            </li>
-          </ul>
+          {/* Aperçu produit flottant */}
+          <aside
+            className="hi-fi-hero-preview hi-fi-float"
+            aria-label="Aperçu de l'interface Stratly"
+          >
+            <div className="hi-fi-hero-preview-bar">
+              <Logo variant="full" size={18} />
+              <div className="hi-fi-hero-preview-bar-dots" aria-hidden="true">
+                <span style={{ background: HI_FI_ACCENTS.orange.color }} />
+                <span style={{ background: HI_FI_ACCENTS.amber.color }} />
+                <span style={{ background: HI_FI_ACCENTS.green.color }} />
+              </div>
+            </div>
+
+            {[
+              {
+                accent: HI_FI_ACCENTS.teal,
+                label: "Déploiement ERP Région Sud",
+                badge: "Généré",
+                ago: "il y a 12 min",
+              },
+              {
+                accent: HI_FI_ACCENTS.green,
+                label: "Lancement politique RSE 2025",
+                badge: "Validé",
+                ago: "il y a 2j",
+              },
+              {
+                accent: HI_FI_ACCENTS.violet,
+                label: "Séminaire direction commerciale",
+                badge: "En revue",
+                ago: "il y a 5j",
+              },
+            ].map((p) => (
+              <div key={p.label} className="hi-fi-hero-preview-row">
+                <span
+                  className="hi-fi-hero-preview-row-accent"
+                  style={{ background: p.accent.color }}
+                  aria-hidden="true"
+                />
+                <div className="hi-fi-hero-preview-row-body">
+                  <div className="hi-fi-hero-preview-row-title">{p.label}</div>
+                  <div className="hi-fi-hero-preview-row-meta">
+                    Campaign · {p.ago}
+                  </div>
+                </div>
+                <span
+                  className="hi-fi-hero-preview-row-badge"
+                  style={{ background: p.accent.bg, color: p.accent.color }}
+                >
+                  {p.badge}
+                </span>
+              </div>
+            ))}
+
+            <div className="hi-fi-hero-preview-nba">
+              <span
+                className="hi-fi-hero-preview-nba-icon"
+                aria-hidden="true"
+                style={{ background: HI_FI_ACCENTS.amber.ring }}
+              />
+              <div>
+                <span className="hi-fi-hero-preview-nba-overline">
+                  Prochaine action recommandée
+                </span>
+                <span className="hi-fi-hero-preview-nba-title">
+                  Enrichir le projet RSE avec le module Impact
+                </span>
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
 
-      {/* ── Modules — pipeline ─────────────────────────── */}
-      <section className="landing-modules" id="modules">
-        <div className="landing-modules-inner">
-          <div className="landing-modules-head">
-            <p className="landing-modules-overline">Le système Stratly</p>
-            <h2 className="landing-modules-title">
-              Concevoir, mesurer, démontrer{" "}
-              <span className="landing-modules-title-soft">— sans rupture.</span>
+      {/* ── Modules (Hi-Fi) — 6 cartes colorées ──────── */}
+      <section className="hi-fi-features" id="modules">
+        <div className="hi-fi-features-inner">
+          <div className="hi-fi-section-head">
+            <p className="hi-fi-overline">Modules Stratly</p>
+            <h2 className="hi-fi-section-title">
+              Tout ce qu&apos;une direction stratégique
+              <br />
+              attend d&apos;une plateforme IA
             </h2>
-            <p className="landing-modules-lead">
-              Trois modules pensés pour s&apos;enchaîner. La sortie de chaque
-              étape devient la matière de la suivante.
+            <p className="hi-fi-section-lead">
+              Assez générique pour démarrer vite. Assez spécifique pour livrer
+              des recommandations qui tiennent en CODIR.
             </p>
           </div>
 
-          <ol
-            className="landing-pipeline"
-            aria-label="Les trois étapes du système Stratly"
-          >
-            {PIPELINE.map((p, i) => (
-              <li key={p.step} className="landing-pipeline-item">
-                <Link href={p.href} className="landing-pipeline-card">
-                  <div className="landing-pipeline-card-head">
-                    <span className="landing-pipeline-step" aria-hidden="true">
-                      {p.step}
-                    </span>
-                    <span
-                      className="landing-pipeline-icon"
-                      aria-hidden="true"
-                    >
-                      {p.icon}
-                    </span>
-                  </div>
-
-                  <div className="landing-pipeline-card-body">
-                    <p className="landing-pipeline-verb">{p.verb}</p>
-                    <h3 className="landing-pipeline-module">{p.module}</h3>
-                    <p className="landing-pipeline-tagline">{p.tagline}</p>
-                  </div>
-
-                  <ul className="landing-pipeline-deliverables">
-                    {p.deliverables.map((d) => (
-                      <li key={d}>
-                        <span
-                          className="landing-pipeline-check"
-                          aria-hidden="true"
-                        >
-                          <Check size={11} strokeWidth={2.5} />
-                        </span>
-                        {d}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <span className="landing-pipeline-cta">
-                    Accéder à {p.module}
-                    <ArrowRight
-                      className="landing-module-cta-arrow"
-                      size={14}
-                      strokeWidth={2}
-                    />
-                  </span>
-                </Link>
-
-                {i < PIPELINE.length - 1 && (
-                  <span
-                    className="landing-pipeline-connector"
-                    aria-hidden="true"
-                  >
-                    <svg
-                      viewBox="0 0 36 14"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M0 7h30M24 1l6 6-6 6"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                )}
-              </li>
+          <div className="hi-fi-features-grid">
+            {[
+              {
+                accent: HI_FI_ACCENTS.teal,
+                title: "Campaign",
+                desc: "Brief en 6 champs → dossier stratégique structuré : diagnostic, angle, feuille de route, KPIs, contenus prêts à diffuser.",
+                illu: <IlluBrief />,
+              },
+              {
+                accent: HI_FI_ACCENTS.violet,
+                title: "Orchestrateur multi-agents",
+                desc: "Conception créative, design d'événement, ROI, budget, carbone, risques — un orchestrateur route automatiquement vers l'agent expert.",
+                illu: <IlluNetwork />,
+              },
+              {
+                accent: HI_FI_ACCENTS.green,
+                title: "Collaboration DirCom-ready",
+                desc: "Statuts par section (brouillon / revue / validé), commentaires ciblés, vue dédiée CODIR, partage via lien sécurisé.",
+                illu: <IlluCollab />,
+              },
+              {
+                accent: HI_FI_ACCENTS.orange,
+                title: "Exports prêts à présenter",
+                desc: "PDF premium paginé et DOCX éditable — couverture, sommaire, blocs décision, timeline, KPIs. Téléchargement en un clic.",
+                illu: <IlluPresentation />,
+              },
+              {
+                accent: HI_FI_ACCENTS.blue,
+                title: "Pilot",
+                desc: "Diagnostic continu, suivi des KPIs, mesure d'impact et recommandations proactives pour chaque étape de votre projet.",
+                illu: <IlluDashboard />,
+              },
+              {
+                accent: HI_FI_ACCENTS.amber,
+                title: "Impact",
+                desc: "Empreinte carbone, scénarios RSE, recommandations d'arbitrages — conforme aux exigences ESG des grands groupes.",
+                illu: <IlluStrategy />,
+              },
+            ].map((f) => (
+              <article key={f.title} className="hi-fi-feature-card">
+                <div
+                  className="hi-fi-feature-illu"
+                  style={{
+                    background: `${f.accent.color}0d`,
+                    borderBottomColor: `${f.accent.color}28`,
+                  }}
+                >
+                  {f.illu}
+                </div>
+                <div className="hi-fi-feature-body">
+                  <h3 className="hi-fi-feature-title">{f.title}</h3>
+                  <p className="hi-fi-feature-desc">{f.desc}</p>
+                </div>
+              </article>
             ))}
-          </ol>
+          </div>
+        </div>
+      </section>
 
-          <div
-            className="landing-pipeline-converge"
-            role="note"
-            aria-label="Sortie unifiée"
-          >
-            <span
-              className="landing-pipeline-converge-icon"
-              aria-hidden="true"
-            >
-              <FileCheck2 size={16} strokeWidth={1.8} />
-            </span>
-            <p>
-              <strong>Sortie unifiée :</strong> un seul dossier consolidant
-              design, performance et impact RSE — exportable au format COMEX.
+      {/* ── Workflow (Hi-Fi dark navy) — 4 étapes ──────── */}
+      <section className="hi-fi-workflow">
+        <div className="hi-fi-workflow-bg" aria-hidden="true" />
+        <div className="hi-fi-workflow-inner">
+          <div className="hi-fi-section-head">
+            <span className="hi-fi-workflow-pill">Flux de travail</span>
+            <h2 className="hi-fi-section-title hi-fi-section-title-light">
+              Du brief informel au dossier validé —
+              <br />
+              en un seul flux
+            </h2>
+            <p className="hi-fi-section-lead hi-fi-section-lead-light">
+              Pas de context-switching. Chaque étape nourrit la suivante,
+              sans re-saisie.
             </p>
+          </div>
+
+          <div className="hi-fi-workflow-grid">
+            {[
+              {
+                num: "01",
+                title: "Déposer le brief",
+                desc: "6 champs structurés ou upload d'un document. Extraction automatique des constantes.",
+                illu: <IlluBrief />,
+                accent: HI_FI_ACCENTS.teal,
+              },
+              {
+                num: "02",
+                title: "Génération orchestrée",
+                desc: "L'orchestrateur appelle les agents en chaîne — diagnostic, angle, plan, KPIs, contenus.",
+                illu: <IlluNetwork />,
+                accent: HI_FI_ACCENTS.violet,
+              },
+              {
+                num: "03",
+                title: "Revue & collaboration",
+                desc: "Itérez sur chaque section avec commentaires ciblés et statuts de validation.",
+                illu: <IlluCollab />,
+                accent: HI_FI_ACCENTS.green,
+              },
+              {
+                num: "04",
+                title: "Présentation CODIR",
+                desc: "Export PDF/DOCX premium ou partage par lien — prêt pour direction et prestataires.",
+                illu: <IlluPresentation />,
+                accent: HI_FI_ACCENTS.orange,
+              },
+            ].map((s) => (
+              <article key={s.num} className="hi-fi-workflow-card">
+                <div
+                  className="hi-fi-workflow-illu"
+                  style={{
+                    background: `${s.accent.color}1a`,
+                    borderBottomColor: `${s.accent.color}30`,
+                  }}
+                >
+                  {s.illu}
+                </div>
+                <div className="hi-fi-workflow-body">
+                  <div
+                    className="hi-fi-workflow-num"
+                    style={{ color: s.accent.color }}
+                  >
+                    {s.num}
+                  </div>
+                  <h3 className="hi-fi-workflow-title">{s.title}</h3>
+                  <p className="hi-fi-workflow-desc">{s.desc}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
