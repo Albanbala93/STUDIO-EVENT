@@ -388,20 +388,18 @@ function DiagnosticPageInner() {
   /* ─── WIZARD ─── */
   return (
     <div>
-      <header className="sticky top-0 z-30 bg-canvas/85 backdrop-blur-sm border-b border-border">
-        <div className="mx-auto max-w-5xl px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/momentum"
-              className="inline-flex items-center gap-1 text-[13px] text-ink-muted hover:text-ink transition-colors"
-            >
+      {/* Header Hi-Fi : navy gradient + halo violet (Pilot accent) +
+          back chip + StepBadge sur fond glass */}
+      <header className="hi-fi-wizard-header">
+        <span className="hi-fi-wizard-header-halo" aria-hidden="true" />
+        <div className="hi-fi-wizard-header-inner">
+          <div className="hi-fi-wizard-header-breadcrumb">
+            <Link href="/momentum" className="hi-fi-wizard-back-chip">
               <ArrowLeft className="h-3.5 w-3.5" />
-              Momentum
+              Pilot
             </Link>
-            <span className="text-ink-muted">/</span>
-            <span className="text-[13px] font-medium text-ink">
-              Nouveau diagnostic
-            </span>
+            <span className="hi-fi-wizard-header-sep" aria-hidden="true">/</span>
+            <span className="hi-fi-wizard-header-current">Nouveau diagnostic</span>
           </div>
           <StepBadge step={state.step} />
         </div>
@@ -409,7 +407,7 @@ function DiagnosticPageInner() {
 
       <div className="mx-auto max-w-5xl px-8 py-8 space-y-6">
         <div>
-          <h1 className="text-[28px] font-bold text-ink leading-tight">
+          <h1 className="hi-fi-wizard-title">
             Mesurez la performance de votre initiative
           </h1>
           <p className="text-[14px] text-ink-muted mt-2 max-w-2xl">
@@ -482,56 +480,57 @@ function DiagnosticPageInner() {
 function StepBadge({ step }: { step: Step }) {
   const idx = step === "identification" ? 1 : step === "kpis" ? 2 : 3;
   return (
-    <div className="inline-flex items-center gap-2 rounded-sm bg-accent-50 px-3 py-1.5 text-[12px] font-semibold text-accent-700">
+    <div className="hi-fi-wizard-step-badge">
       <Sparkles className="h-3.5 w-3.5" />
       Étape {idx}/3
     </div>
   );
 }
 
+/**
+ * StepNav — 3 cards Hi-Fi colorées (teal / violet / green).
+ * États :
+ *   - done    : background plein de la couleur d'accent + check blanc
+ *   - active  : outline coloré + numéro coloré + ring subtil
+ *   - pending : outline neutre + numéro grisé
+ */
 function StepNav({ step }: { step: Step }) {
-  const steps: { id: Step; label: string }[] = [
-    { id: "identification", label: "Identification" },
-    { id: "kpis", label: "Indicateurs" },
-    { id: "result", label: "Diagnostic" },
+  const steps: Array<{
+    id: Step;
+    num: string;
+    label: string;
+    accentVar: string;
+  }> = [
+    { id: "identification", num: "01", label: "Identification", accentVar: "var(--accent-teal)" },
+    { id: "kpis", num: "02", label: "Indicateurs", accentVar: "var(--accent-violet)" },
+    { id: "result", num: "03", label: "Diagnostic", accentVar: "var(--accent-green)" },
   ];
   const activeIdx = steps.findIndex((s) => s.id === step);
   return (
-    <div className="flex items-center gap-3">
+    <div className="hi-fi-wizard-stepnav">
       {steps.map((s, i) => {
         const done = i < activeIdx;
         const active = i === activeIdx;
+        const stateClass = done
+          ? "hi-fi-wizard-step-card-done"
+          : active
+            ? "hi-fi-wizard-step-card-active"
+            : "hi-fi-wizard-step-card-pending";
         return (
-          <React.Fragment key={s.id}>
-            <div className="flex items-center gap-2">
-              <div
-                className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-full border text-[12px] font-bold transition-colors",
-                  active && "bg-accent text-white border-accent",
-                  done && "bg-accent/10 text-accent border-accent/30",
-                  !active && !done && "bg-white text-ink-muted border-border",
-                )}
-              >
-                {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
-              </div>
-              <span
-                className={cn(
-                  "text-[13px] font-medium transition-colors",
-                  active ? "text-ink" : "text-ink-muted",
-                )}
-              >
-                {s.label}
-              </span>
-            </div>
-            {i < steps.length - 1 && (
-              <div
-                className={cn(
-                  "h-px flex-1 min-w-[32px] transition-colors",
-                  i < activeIdx ? "bg-accent/30" : "bg-border",
-                )}
-              />
-            )}
-          </React.Fragment>
+          <div
+            key={s.id}
+            className={cn("hi-fi-wizard-step-card", stateClass)}
+            style={{ ["--step-accent" as string]: s.accentVar }}
+          >
+            <span className="hi-fi-wizard-step-card-bullet" aria-hidden="true">
+              {done ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <span className="hi-fi-wizard-step-card-num">{s.num}</span>
+              )}
+            </span>
+            <span className="hi-fi-wizard-step-card-label">{s.label}</span>
+          </div>
         );
       })}
     </div>
