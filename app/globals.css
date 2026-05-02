@@ -7044,3 +7044,230 @@ body:has([data-landing-page]) {
   .hi-fi-project-stat-value { font-size: 22px; }
   .hi-fi-project-overline { gap: 8px; }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Hi-Fi Wizard (/momentum/diagnostic) — header navy + halo violet
+   + step cards colorées (teal / violet / green) avec done/active/pending
+   ════════════════════════════════════════════════════════════════ */
+
+/* Header sticky navy */
+.hi-fi-wizard-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.hi-fi-wizard-header-halo {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    ellipse at 80% 50%,
+    rgba(124, 92, 191, 0.18) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.hi-fi-wizard-header-inner {
+  position: relative;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.hi-fi-wizard-header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hi-fi-wizard-back-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.hi-fi-wizard-back-chip:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  text-decoration: none;
+}
+
+.hi-fi-wizard-header-sep {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.hi-fi-wizard-header-current {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Step Badge — chip glass violet */
+.hi-fi-wizard-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  background: rgba(124, 92, 191, 0.18);
+  border: 1px solid rgba(124, 92, 191, 0.32);
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  color: #c5b3eb;
+  white-space: nowrap;
+}
+
+/* Wizard title */
+.hi-fi-wizard-title {
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Step Nav — 3 cards colorées */
+.hi-fi-wizard-stepnav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.hi-fi-wizard-step-card {
+  --step-accent: var(--accent-teal);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  font-family: var(--font-body, "Inter", sans-serif);
+  transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+  min-width: 0;
+}
+
+.hi-fi-wizard-step-card-bullet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.hi-fi-wizard-step-card-num {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.hi-fi-wizard-step-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* État DONE — fond plein avec accent + check blanc */
+.hi-fi-wizard-step-card-done {
+  background: var(--step-accent);
+  border-color: var(--step-accent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--step-accent) 22%, transparent);
+}
+.hi-fi-wizard-step-card-done .hi-fi-wizard-step-card-bullet {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+.hi-fi-wizard-step-card-done .hi-fi-wizard-step-card-label {
+  color: #fff;
+}
+
+/* État ACTIVE — outline accent + numéro coloré + ring subtil */
+.hi-fi-wizard-step-card-active {
+  background: var(--white);
+  border-color: var(--step-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--step-accent) 14%, transparent),
+              0 2px 8px rgba(15, 23, 42, 0.05);
+}
+.hi-fi-wizard-step-card-active .hi-fi-wizard-step-card-bullet {
+  background: color-mix(in srgb, var(--step-accent) 14%, transparent);
+  color: var(--step-accent);
+}
+.hi-fi-wizard-step-card-active .hi-fi-wizard-step-card-label {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+/* État PENDING — outline neutre, numéro grisé */
+.hi-fi-wizard-step-card-pending {
+  background: var(--white);
+  border-color: var(--border);
+}
+.hi-fi-wizard-step-card-pending .hi-fi-wizard-step-card-bullet {
+  background: var(--surface-mid, #f0ede6);
+  color: var(--slate-light);
+}
+.hi-fi-wizard-step-card-pending .hi-fi-wizard-step-card-label {
+  color: var(--text-muted);
+}
+
+/* Fallback color-mix pour navigateurs anciens */
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  .hi-fi-wizard-step-card-done {
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.10);
+  }
+  .hi-fi-wizard-step-card-active {
+    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06),
+                0 2px 8px rgba(15, 23, 42, 0.05);
+  }
+  .hi-fi-wizard-step-card-active .hi-fi-wizard-step-card-bullet {
+    background: rgba(15, 23, 42, 0.06);
+  }
+}
+
+@media (max-width: 700px) {
+  .hi-fi-wizard-stepnav {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .hi-fi-wizard-step-card {
+    padding: 10px 14px;
+  }
+  .hi-fi-wizard-header-inner {
+    padding: 0 20px;
+  }
+  .hi-fi-wizard-title {
+    font-size: 24px;
+  }
+}
