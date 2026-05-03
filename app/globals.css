@@ -7479,3 +7479,242 @@ body:has([data-landing-page]) {
     height: 320px;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   Hi-Fi Result header (ResultDashboard) — partagé entre la fin du
+   wizard et la vue projet sauvegardé /momentum/projects/[id].
+   Navy gradient + halo violet (Pilot accent) + back chip + status pill
+   white-on-glass. + Fallbacks (loading / not-found) repensés Hi-Fi.
+   ════════════════════════════════════════════════════════════════ */
+
+.hi-fi-result-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.hi-fi-result-header-halo {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    ellipse at 80% 50%,
+    rgba(124, 92, 191, 0.18) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.hi-fi-result-header-inner {
+  position: relative;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.hi-fi-result-header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.hi-fi-result-back-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 11px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.hi-fi-result-back-chip:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  text-decoration: none;
+}
+
+.hi-fi-result-header-sep {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.28);
+  flex-shrink: 0;
+}
+
+.hi-fi-result-header-context {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hi-fi-result-header-overline {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.hi-fi-result-header-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status pill — variante white-on-glass + accents semantiques */
+.hi-fi-result-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hi-fi-result-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.hi-fi-result-status-high {
+  background: rgba(0, 180, 200, 0.16);
+  border-color: rgba(0, 180, 200, 0.32);
+  color: #5fd8e6;
+}
+
+.hi-fi-result-status-mid {
+  background: rgba(240, 180, 41, 0.16);
+  border-color: rgba(240, 180, 41, 0.32);
+  color: #fcd96b;
+}
+
+.hi-fi-result-status-low {
+  background: rgba(244, 63, 94, 0.16);
+  border-color: rgba(244, 63, 94, 0.32);
+  color: #fda4af;
+}
+
+@media (max-width: 700px) {
+  .hi-fi-result-header-inner {
+    padding: 0 18px;
+    height: 56px;
+  }
+  .hi-fi-result-header-overline {
+    font-size: 9.5px;
+    letter-spacing: 0.10em;
+  }
+  .hi-fi-result-header-title {
+    font-size: 12.5px;
+  }
+}
+
+/* ─── Fallback states (loading / not-found) — Hi-Fi ────────── */
+
+.hi-fi-result-fallback {
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 80px 32px;
+}
+
+.hi-fi-result-fallback-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 48px 36px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.hi-fi-result-fallback-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 36px;
+}
+
+.hi-fi-result-fallback-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent-violet);
+  border-radius: 50%;
+  animation: hiFiSpin 0.85s linear infinite;
+}
+
+@keyframes hiFiSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hi-fi-result-fallback-text {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.hi-fi-result-fallback-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 22px;
+  background: rgba(244, 63, 94, 0.10);
+  border: 1px solid rgba(244, 63, 94, 0.20);
+  border-radius: 16px;
+  color: #e11d48;
+}
+
+.hi-fi-result-fallback-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display, "DM Serif Display", Georgia, serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+}
+
+.hi-fi-result-fallback-desc {
+  margin: 0 auto 24px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 360px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hi-fi-result-fallback-spinner {
+    animation: none;
+    border-top-color: var(--border);
+  }
+}

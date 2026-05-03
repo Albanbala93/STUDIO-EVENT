@@ -18,7 +18,6 @@ import { CONFIDENCE_MAP, type MomentumProject } from "../../../../lib/momentum/t
 import { interpretRse } from "../../../../lib/momentum/rse";
 import type { DimensionSignal } from "../../../../lib/momentum/scoring";
 import { buttonVariants } from "../../../../components/ui/button";
-import { Card, CardContent } from "../../../../components/ui/card";
 import { ResultDashboard } from "../../diagnostic/dashboard";
 
 export default function ProjectPage() {
@@ -45,39 +44,38 @@ export default function ProjectPage() {
 
   if (project === "loading") {
     return (
-      <div className="mx-auto max-w-3xl px-8 py-16">
-        <Card className="border-dashed">
-          <CardContent className="py-12 text-center text-[13px] text-ink-muted">
-            Chargement…
-          </CardContent>
-        </Card>
+      <div className="hi-fi-result-fallback">
+        <div className="hi-fi-result-fallback-card hi-fi-result-fallback-loading">
+          <span className="hi-fi-result-fallback-spinner" aria-hidden="true" />
+          <p className="hi-fi-result-fallback-text">
+            Chargement du diagnostic…
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="mx-auto max-w-3xl px-8 py-16">
-        <Card>
-          <CardContent className="flex flex-col items-center py-12 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-sm bg-rose-50">
-              <FileX className="h-5 w-5 text-rose-500" />
-            </div>
-            <h1 className="mb-2 text-[18px] font-semibold text-ink">
-              Projet introuvable
-            </h1>
-            <p className="mb-5 max-w-md text-[13px] text-ink-muted">
-              Ce projet n&apos;existe pas ou a été supprimé de ce navigateur.
-            </p>
-            <Link
-              href="/momentum"
-              className={buttonVariants({ variant: "primary", size: "md" })}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Retour à Pilot
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="hi-fi-result-fallback">
+        <div className="hi-fi-result-fallback-card">
+          <div className="hi-fi-result-fallback-icon">
+            <FileX className="h-5 w-5" />
+          </div>
+          <h1 className="hi-fi-result-fallback-title">
+            Projet introuvable
+          </h1>
+          <p className="hi-fi-result-fallback-desc">
+            Ce projet n&apos;existe pas ou a été supprimé de ce navigateur.
+          </p>
+          <Link
+            href="/momentum"
+            className={buttonVariants({ variant: "primary", size: "md" })}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour à Pilot
+          </Link>
+        </div>
       </div>
     );
   }

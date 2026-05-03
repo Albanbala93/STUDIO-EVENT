@@ -10,9 +10,11 @@
  */
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
+  ArrowLeft,
   ArrowRight,
   CheckCircle2,
   ChevronDown,
@@ -277,25 +279,39 @@ export function ResultDashboard(props: {
         }
       `}</style>
 
-      {/* Sticky breadcrumb header */}
-      <header className="sticky top-0 z-30 border-b border-border bg-canvas/85 backdrop-blur-sm no-print">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-8">
-          <div className="flex flex-col leading-tight">
-            <span className="text-[11px] uppercase tracking-[0.14em] text-ink-muted">
-              Momentum · Restitution
-            </span>
-            <h1 className="text-[15px] font-semibold text-ink truncate max-w-[60vw]">
-              {props.id.name || "Initiative sans nom"}
-            </h1>
+      {/* Hi-Fi sticky header — navy gradient + halo violet (Pilot accent).
+          Adaptatif selon le contexte (vue sauvegardée vs fin de wizard). */}
+      <header className="hi-fi-result-header no-print">
+        <span className="hi-fi-result-header-halo" aria-hidden="true" />
+        <div className="hi-fi-result-header-inner">
+          <div className="hi-fi-result-header-breadcrumb">
+            <Link href="/momentum" className="hi-fi-result-back-chip">
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Pilot
+            </Link>
+            <span className="hi-fi-result-header-sep" aria-hidden="true">/</span>
+            <div className="hi-fi-result-header-context">
+              <span className="hi-fi-result-header-overline">
+                {props.readOnly && props.savedAt
+                  ? "Diagnostic sauvegardé"
+                  : "Restitution du diagnostic"}
+              </span>
+              <span className="hi-fi-result-header-title">
+                {props.id.name || "Initiative sans nom"}
+              </span>
+            </div>
           </div>
+
+          {/* Status pill — variante white-on-glass pour fond navy */}
           <div
             className={cn(
-              "inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 text-[12px] font-semibold",
-              status.pill,
-              status.text,
+              "hi-fi-result-status",
+              status.text === "text-rose-700" && "hi-fi-result-status-low",
+              status.text === "text-amber-700" && "hi-fi-result-status-mid",
+              status.text === "text-accent-700" && "hi-fi-result-status-high",
             )}
           >
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current" />
+            <span className="hi-fi-result-status-dot" aria-hidden="true" />
             {status.label}
           </div>
         </div>
