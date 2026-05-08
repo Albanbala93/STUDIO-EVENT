@@ -425,7 +425,7 @@ export default function HomePage() {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   <rect
                     x="32"
@@ -475,7 +475,7 @@ export default function HomePage() {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   <rect
                     x="22"
@@ -532,7 +532,7 @@ export default function HomePage() {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   {/* Radar grid */}
                   <g transform="translate(86 80)">
@@ -623,7 +623,7 @@ export default function HomePage() {
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   <rect
                     x="32"
