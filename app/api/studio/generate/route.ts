@@ -1,10 +1,29 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { consumeServerRateLimit } from "../../../../lib/rate-limit/server";
 import { GENERATE_OUTPUT_SCHEMA } from "../../../../lib/studio/generate-schema";
 
-export async function POST(req: Request) {
-  try {
-    console.log("🔥 ROUTE GENERATE APPELÉE");
+export async function POST(req: NextRequest) {
+  // Rate limiting : quota quotidien partagé (voir lib/rate-limit/server.ts).
+  const rl = consumeServerRateLimit(req);
+  if (rl.allowed === false) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: rl.message,
+        rateLimit: { limit: rl.limit, resetsAt: rl.resetsAt },
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": rl.resetsAt,
+        },
+      }
+    );
+  }
 
+  try {
     const body = await req.json();
 
     const {
@@ -29,8 +48,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    console.log("🧾 BRIEF REÇU:", body);
 
     const apiKey = process.env.OPENAI_API_KEY;
 
@@ -174,8 +191,6 @@ Retourne un JSON valide avec cette structure exacte :
 }
 `.trim();
 
-    console.log("🚀 APPEL OPENAI");
-
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -229,7 +244,6 @@ Retourne un JSON valide avec cette structure exacte :
           error: userMessage,
           status: response.status,
           model: modelUsed,
-          details: errorText.slice(0, 500),
         },
         { status: 500 }
       );
@@ -262,12 +276,10 @@ Retourne un JSON valide avec cette structure exacte :
 
     if (!rawText) {
       return NextResponse.json(
-        { success: false, error: "Réponse OpenAI vide", debug: payload },
+        { success: false, error: "Réponse OpenAI vide" },
         { status: 500 }
       );
     }
-
-    console.log("🧠 RAW OUTPUT:", rawText);
 
     // Défense : certains modèles enveloppent le JSON dans ```json … ``` malgré le format json_object.
     const cleaned = rawText
@@ -289,9 +301,6 @@ Retourne un JSON valide avec cette structure exacte :
         {
           success: false,
           error: "JSON invalide",
-          parseError: parseMessage,
-          rawLength: cleaned.length,
-          rawTail: cleaned.slice(-200),
         },
         { status: 500 }
       );

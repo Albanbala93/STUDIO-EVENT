@@ -3,6 +3,9 @@ import Link from "next/link";
 import { Logo } from "../components/brand/logo";
 
 export const metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://project-uu50s.vercel.app",
+  ),
   title: "Stratly",
   description: "Plateforme de recommandation stratégique en communication interne",
   applicationName: "Stratly",

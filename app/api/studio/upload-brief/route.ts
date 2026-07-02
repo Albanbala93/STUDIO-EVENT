@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { consumeServerRateLimit } from "../../../../lib/rate-limit/server";
 
 // Cap interne sur la taille du fichier accepté (Vercel limite déjà à 4.5MB par défaut).
 const MAX_FILE_BYTES = 4 * 1024 * 1024; // 4 MB
@@ -85,7 +86,27 @@ async function extractBriefText(file: File): Promise<{ text: string; error?: str
   };
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // Rate limiting : quota quotidien partagé (voir lib/rate-limit/server.ts).
+  const rl = consumeServerRateLimit(req);
+  if (rl.allowed === false) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: rl.message,
+        rateLimit: { limit: rl.limit, resetsAt: rl.resetsAt },
+      },
+      {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": String(rl.limit),
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": rl.resetsAt,
+        },
+      }
+    );
+  }
+
   try {
     const formData = await req.formData();
     const file = formData.get("file");
@@ -218,7 +239,6 @@ Retourne exactement cette structure JSON :
           error: userMessage,
           status: response.status,
           model: modelUsed,
-          details: errorText.slice(0, 500),
         },
         { status: 500 }
       );
@@ -249,12 +269,10 @@ Retourne exactement cette structure JSON :
 
     if (!rawOutput) {
       return NextResponse.json(
-        { success: false, error: "Réponse OpenAI vide", debug: payload },
+        { success: false, error: "Réponse OpenAI vide" },
         { status: 500 }
       );
     }
-
-    console.log("🧠 UPLOAD BRIEF RAW OUTPUT:", rawOutput);
 
     const cleaned = String(rawOutput)
       .trim()
@@ -272,8 +290,6 @@ Retourne exactement cette structure JSON :
         {
           success: false,
           error: "JSON invalide",
-          parseError: parseMessage,
-          rawTail: cleaned.slice(-200),
         },
         { status: 500 }
       );
