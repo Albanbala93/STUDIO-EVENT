@@ -36,7 +36,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Mes briefs et données sont-ils protégés ?",
-    a: "Vos contenus restent votre propriété. Stockage chiffré, hébergement Europe, et aucune donnée client n'alimente l'entraînement de modèles tiers.",
+    a: "Vos contenus restent votre propriété. Pendant la bêta, vos projets sont stockés localement dans votre navigateur — rien n'est conservé sur nos serveurs. Vos briefs transitent uniquement le temps de la génération et ne servent jamais à entraîner de modèles IA.",
   },
   {
     q: "À partir de quel volume Stratly devient rentable ?",
@@ -267,14 +267,14 @@ export default function HomePage() {
               },
               {
                 accent: HI_FI_ACCENTS.violet,
-                title: "Orchestrateur multi-agents",
-                desc: "Conception créative, design d'événement, ROI, budget, carbone, risques — un orchestrateur route automatiquement vers l'agent expert.",
+                title: "Moteur de génération structurée",
+                desc: "Diagnostic, angle, dispositif, budget, risques — chaque section du dossier est générée selon un schéma strict, pour une structure toujours complète et exploitable.",
                 illu: <IlluNetwork />,
               },
               {
                 accent: HI_FI_ACCENTS.green,
                 title: "Collaboration DirCom-ready",
-                desc: "Statuts par section (brouillon / revue / validé), commentaires ciblés, vue dédiée CODIR, partage via lien sécurisé.",
+                desc: "Statuts par section (brouillon / revue / validé), commentaires ciblés et vue dédiée CODIR pour préparer vos arbitrages.",
                 illu: <IlluCollab />,
               },
               {
@@ -692,8 +692,8 @@ export default function HomePage() {
           </div>
 
           <p className="hi-fi-deliverables-foot">
-            Tous les livrables sont versionnés, exportables et signés — vous
-            restez propriétaire des contenus produits.
+            Tous les livrables sont exportables en PDF et DOCX — vous restez
+            propriétaire des contenus produits.
           </p>
         </div>
       </section>
@@ -877,7 +877,7 @@ export default function HomePage() {
               <span className="hi-fi-cta-trust-icon" aria-hidden="true">
                 <Lock size={12} strokeWidth={2} />
               </span>
-              Données chiffrées · Hébergement Europe
+              Stockage local · Rien n&apos;est conservé sur nos serveurs
             </li>
             <li className="hi-fi-cta-trust-divider" aria-hidden="true" />
             <li>
@@ -891,7 +891,7 @@ export default function HomePage() {
               <span className="hi-fi-cta-trust-icon" aria-hidden="true">
                 <FileCheck2 size={12} strokeWidth={2} />
               </span>
-              Conforme RGPD · Vos contenus restent votre propriété
+              Vos contenus restent votre propriété · Jamais utilisés pour entraîner l&apos;IA
             </li>
           </ul>
         </div>
@@ -903,12 +903,4 @@ export default function HomePage() {
           <Logo variant="full" size={28} href="/" />
           <div className="landing-footer-links">
             <Link href="/studio">Campaign</Link>
-            <Link href="/momentum">Pilot</Link>
-            <Link href="/momentum">Impact</Link>
-          </div>
-          <span>© {new Date().getFullYear()} Stratly</span>
-        </div>
-      </footer>
-    </div>
-  );
-}
+            <Link hre
