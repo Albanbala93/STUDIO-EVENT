@@ -343,4 +343,5 @@ function renderCell(value: string | boolean) {
       </span>
     );
   }
-  return <span style={{ fontWeight:
+  return <span style={{ fontWeight: 600, color: "#0F172A" }}>{value}</span>;
+}

@@ -903,4 +903,12 @@ export default function HomePage() {
           <Logo variant="full" size={28} href="/" />
           <div className="landing-footer-links">
             <Link href="/studio">Campaign</Link>
-            <Link hre
+            <Link href="/momentum">Pilot</Link>
+            <Link href="/momentum">Impact</Link>
+          </div>
+          <span>© {new Date().getFullYear()} Stratly</span>
+        </div>
+      </footer>
+    </div>
+  );
+}
