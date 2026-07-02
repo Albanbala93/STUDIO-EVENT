@@ -1,4 +1,25 @@
+# dependencies
 node_modules
+
+# next.js
 .next
+out
+
+# environnement — ne JAMAIS committer de clés
+.env
 .env.local
+.env*.local
+
+# builds & artefacts
 dist
+*.tsbuildinfo
+
+# outillage local
+.claude/
+.vercel
+.DS_Store
+
+# bases de données & artefacts python
+*.db
+*.egg-info/
+__pycache__/

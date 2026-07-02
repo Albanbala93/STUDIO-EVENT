@@ -97,9 +97,9 @@ const PIPELINE: PipelineStep[] = [
 ];
 
 const PROOF_POINTS = [
-  { value: "< 5 minutes", label: "Pour obtenir un diagnostic complet" },
-  { value: "3 modules", label: "Communication, Performance, RSE" },
-  { value: "COMEX-ready", label: "Rapports exportables en un clic" },
+  { value: "< 5 min", label: "Premier livrable activable" },
+  { value: "3 modules", label: "Conception · Mesure · Impact" },
+  { value: "COMEX-ready", label: "Exports PDF & DOCX premium" },
 ];
 
 export default function HomePage() {
@@ -390,39 +390,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Livrables / preuves concrètes ──────────────── */}
+      {/* ── Livrables / preuves concrètes — Hi-Fi ───────── */}
       <section
-        className="landing-deliverables"
+        className="hi-fi-deliverables"
         id="livrables"
         aria-label="Ce que vous obtenez"
       >
-        <div className="landing-deliverables-inner">
-          <div className="landing-deliverables-head">
-            <p className="landing-deliverables-overline">
-              Concrètement, vous repartez avec
+        <div className="hi-fi-deliverables-inner">
+          <div className="hi-fi-deliverables-head">
+            <p className="hi-fi-deliverables-overline">
+              Ce que vous obtenez
             </p>
-            <h2 className="landing-deliverables-title">
+            <h2 className="hi-fi-deliverables-title">
               Des livrables exploitables{" "}
-              <span className="landing-deliverables-title-soft">
+              <em className="hi-fi-deliverables-title-soft">
                 — pas des slides théoriques.
-              </span>
+              </em>
             </h2>
-            <p className="landing-deliverables-lead">
+            <p className="hi-fi-deliverables-lead">
               Chaque module produit des sorties tangibles, exportables et
               défendables face à un COMEX.
             </p>
           </div>
 
-          <div className="landing-deliverables-grid">
+          <div className="hi-fi-deliverables-grid">
             {/* 01 — Plan stratégique */}
-            <article className="landing-deliverable">
-              <div className="landing-deliverable-preview">
+            <article
+              className="hi-fi-deliverable"
+              style={{ ["--card-accent" as string]: "var(--accent-teal)" }}
+            >
+              <div className="hi-fi-deliverable-preview">
                 <svg
                   viewBox="0 0 240 160"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   <rect
                     x="32"
@@ -446,32 +449,33 @@ export default function HomePage() {
                   <rect x="46" y="138" width="60" height="10" rx="3" fill="#6366F1" />
                 </svg>
               </div>
-              <div className="landing-deliverable-body">
-                <span className="landing-deliverable-tag">
+              <div className="hi-fi-deliverable-body">
+                <span className="hi-fi-deliverable-tag">
                   Document · Multi-section
                 </span>
-                <h3 className="landing-deliverable-title">
+                <h3 className="hi-fi-deliverable-title">
                   Plan stratégique complet
                 </h3>
-                <p className="landing-deliverable-desc">
+                <p className="hi-fi-deliverable-desc">
                   Angle éditorial, messages, dispositif, planning — un dossier
                   structuré, prêt à défendre en interne.
                 </p>
-                <span className="landing-deliverable-source">
-                  via Campaign
-                </span>
+                <span className="hi-fi-deliverable-source">via Campaign</span>
               </div>
             </article>
 
             {/* 02 — Contenus calibrés */}
-            <article className="landing-deliverable">
-              <div className="landing-deliverable-preview">
+            <article
+              className="hi-fi-deliverable"
+              style={{ ["--card-accent" as string]: "var(--accent-violet)" }}
+            >
+              <div className="hi-fi-deliverable-preview">
                 <svg
                   viewBox="0 0 240 160"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   <rect
                     x="22"
@@ -502,32 +506,33 @@ export default function HomePage() {
                   <rect x="90" y="130" width="80" height="3" rx="1.5" fill="#E2EAF4" />
                 </svg>
               </div>
-              <div className="landing-deliverable-body">
-                <span className="landing-deliverable-tag">
+              <div className="hi-fi-deliverable-body">
+                <span className="hi-fi-deliverable-tag">
                   Activable · Par audience
                 </span>
-                <h3 className="landing-deliverable-title">
+                <h3 className="hi-fi-deliverable-title">
                   Contenus rédigés, calibrés
                 </h3>
-                <p className="landing-deliverable-desc">
+                <p className="hi-fi-deliverable-desc">
                   Messages clés et formats prêts à pousser sur vos canaux —
                   ajustés à chaque audience cible.
                 </p>
-                <span className="landing-deliverable-source">
-                  via Campaign
-                </span>
+                <span className="hi-fi-deliverable-source">via Campaign</span>
               </div>
             </article>
 
             {/* 03 — Diagnostic radar */}
-            <article className="landing-deliverable">
-              <div className="landing-deliverable-preview">
+            <article
+              className="hi-fi-deliverable"
+              style={{ ["--card-accent" as string]: "var(--accent-orange)" }}
+            >
+              <div className="hi-fi-deliverable-preview">
                 <svg
                   viewBox="0 0 240 160"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   {/* Radar grid */}
                   <g transform="translate(86 80)">
@@ -592,30 +597,33 @@ export default function HomePage() {
                   <rect x="176" y="106" width="26" height="3" rx="1.5" fill="#EEF2FF" />
                 </svg>
               </div>
-              <div className="landing-deliverable-body">
-                <span className="landing-deliverable-tag">
+              <div className="hi-fi-deliverable-body">
+                <span className="hi-fi-deliverable-tag">
                   Mesure · 4 dimensions
                 </span>
-                <h3 className="landing-deliverable-title">
+                <h3 className="hi-fi-deliverable-title">
                   Diagnostic + score consolidé
                 </h3>
-                <p className="landing-deliverable-desc">
+                <p className="hi-fi-deliverable-desc">
                   Une lecture objective de la performance, avec indicateurs de
                   fiabilité par mesure et actions correctives priorisées.
                 </p>
-                <span className="landing-deliverable-source">via Pilot</span>
+                <span className="hi-fi-deliverable-source">via Pilot</span>
               </div>
             </article>
 
             {/* 04 — Rapport COMEX */}
-            <article className="landing-deliverable">
-              <div className="landing-deliverable-preview">
+            <article
+              className="hi-fi-deliverable"
+              style={{ ["--card-accent" as string]: "var(--accent-green)" }}
+            >
+              <div className="hi-fi-deliverable-preview">
                 <svg
                   viewBox="0 0 240 160"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
-                  className="landing-deliverable-mockup"
+                  className="hi-fi-deliverable-mockup"
                 >
                   <rect
                     x="32"
@@ -665,164 +673,178 @@ export default function HomePage() {
                   <rect x="170" y="118" width="10" height="26" rx="2" fill="#4F46E5" />
                 </svg>
               </div>
-              <div className="landing-deliverable-body">
-                <span className="landing-deliverable-tag">
+              <div className="hi-fi-deliverable-body">
+                <span className="hi-fi-deliverable-tag">
                   Export · PDF prêt COMEX
                 </span>
-                <h3 className="landing-deliverable-title">
+                <h3 className="hi-fi-deliverable-title">
                   Rapport consolidé exportable
                 </h3>
-                <p className="landing-deliverable-desc">
+                <p className="hi-fi-deliverable-desc">
                   Un dossier final qui agrège design, performance et impact
                   RSE — projetable en réunion sans retraitement.
                 </p>
-                <span className="landing-deliverable-source">
+                <span className="hi-fi-deliverable-source">
                   via Pilot + Impact
                 </span>
               </div>
             </article>
           </div>
 
-          <p className="landing-deliverables-foot">
+          <p className="hi-fi-deliverables-foot">
             Tous les livrables sont versionnés, exportables et signés — vous
             restez propriétaire des contenus produits.
           </p>
         </div>
       </section>
 
-      {/* ── Social proof ───────────────────────────────── */}
-      <section className="landing-proof" aria-label="Chiffres clés">
-        <div className="landing-proof-inner">
-          {PROOF_POINTS.map(({ value, label }) => (
-            <div key={value} className="landing-proof-item">
-              <p className="landing-proof-value">{value}</p>
-              <p className="landing-proof-label">{label}</p>
+      {/* ── Social proof — Hi-Fi ────────────────────────── */}
+      <section className="hi-fi-proof" aria-label="Chiffres clés">
+        <div className="hi-fi-proof-inner">
+          {PROOF_POINTS.map(({ value, label }, i) => (
+            <div key={value} className="hi-fi-proof-item">
+              <p
+                className="hi-fi-proof-value"
+                style={{
+                  color:
+                    i === 0
+                      ? "var(--accent-teal)"
+                      : i === 1
+                        ? "var(--accent-violet)"
+                        : "var(--accent-green)",
+                }}
+              >
+                {value}
+              </p>
+              <p className="hi-fi-proof-label">{label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── FAQ courte ─────────────────────────────────── */}
-      <section className="landing-faq" aria-label="Questions fréquentes">
-        <div className="landing-faq-inner">
-          <div className="landing-faq-head">
-            <p className="landing-faq-overline">Questions fréquentes</p>
-            <h2 className="landing-faq-title">
+      {/* ── FAQ courte — Hi-Fi ──────────────────────────── */}
+      <section className="hi-fi-faq" aria-label="Questions fréquentes">
+        <div className="hi-fi-faq-inner">
+          <div className="hi-fi-faq-head">
+            <p className="hi-fi-faq-overline">Questions fréquentes</p>
+            <h2 className="hi-fi-faq-title">
               Les réponses{" "}
-              <span className="landing-faq-title-soft">avant de commencer.</span>
+              <em className="hi-fi-faq-title-soft">avant de commencer.</em>
             </h2>
           </div>
-          <div className="landing-faq-grid">
+          <div className="hi-fi-faq-grid">
             {FAQ.map((item) => (
-              <div key={item.q} className="landing-faq-item">
-                <h3 className="landing-faq-q">{item.q}</h3>
-                <p className="landing-faq-a">{item.a}</p>
+              <div key={item.q} className="hi-fi-faq-item">
+                <h3 className="hi-fi-faq-q">{item.q}</h3>
+                <p className="hi-fi-faq-a">{item.a}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Final CTA — 2 parcours selon maturité ──────── */}
+      {/* ── Final CTA — 2 parcours selon maturité — Hi-Fi ─ */}
       <section
         id="cta-final"
-        className="landing-final-paths"
+        className="hi-fi-cta"
         aria-label="Comment démarrer"
       >
-        <div className="landing-final-paths-inner">
-          <div className="landing-final-paths-head">
-            <p className="landing-final-paths-overline">Comment démarrer</p>
-            <h2 className="landing-final-paths-title">
+        <span className="hi-fi-cta-halo" aria-hidden="true" />
+        <div className="hi-fi-cta-inner">
+          <div className="hi-fi-cta-head">
+            <p className="hi-fi-cta-overline">Comment démarrer</p>
+            <h2 className="hi-fi-cta-title">
               Deux parcours,{" "}
-              <span className="landing-final-paths-title-soft">
+              <em className="hi-fi-cta-title-soft">
                 selon votre maturité.
-              </span>
+              </em>
             </h2>
-            <p className="landing-final-paths-lead">
+            <p className="hi-fi-cta-lead">
               Tester par vous-même, ou cadrer votre cas avec un consultant
               Stratly. Vous restez maître du tempo.
             </p>
           </div>
 
-          <div className="landing-final-paths-grid">
-            {/* Parcours 1 — Self-serve */}
-            <article className="landing-final-path landing-final-path-primary">
-              <div className="landing-final-path-head">
-                <span className="landing-final-path-tag">
+          <div className="hi-fi-cta-grid">
+            {/* Parcours 1 — Self-serve (primaire, navy gradient) */}
+            <article className="hi-fi-cta-card hi-fi-cta-card-primary">
+              <span className="hi-fi-cta-card-halo" aria-hidden="true" />
+              <div className="hi-fi-cta-card-head">
+                <span className="hi-fi-cta-card-tag">
                   <PlayCircle size={13} strokeWidth={1.8} />
                   Self-serve · Sans engagement
                 </span>
-                <h3 className="landing-final-path-title">
+                <h3 className="hi-fi-cta-card-title">
                   Testez par vous-même
                 </h3>
-                <p className="landing-final-path-desc">
-                  Vous explorez la plateforme à votre rythme. Lancez un brief
-                  test ou un diagnostic réel, gardez la main sur vos contenus.
+                <p className="hi-fi-cta-card-desc">
+                  Lancez un brief réel, gardez la main sur vos contenus,
+                  basculez vers Pilot dès que vous voulez objectiver l'impact.
                 </p>
               </div>
 
-              <ul className="landing-final-path-bullets">
+              <ul className="hi-fi-cta-card-bullets">
                 <li>
-                  <span className="landing-final-path-check" aria-hidden="true">
+                  <span className="hi-fi-cta-card-check" aria-hidden="true">
                     <Check size={11} strokeWidth={2.5} />
                   </span>
                   Accès complet aux 3 modules
                 </li>
                 <li>
-                  <span className="landing-final-path-check" aria-hidden="true">
+                  <span className="hi-fi-cta-card-check" aria-hidden="true">
                     <Check size={11} strokeWidth={2.5} />
                   </span>
                   Premier livrable en moins de 5 minutes
                 </li>
                 <li>
-                  <span className="landing-final-path-check" aria-hidden="true">
+                  <span className="hi-fi-cta-card-check" aria-hidden="true">
                     <Check size={11} strokeWidth={2.5} />
                   </span>
                   Aucune carte bancaire requise
                 </li>
               </ul>
 
-              <Link
-                href="/studio/new"
-                className="landing-cta-primary landing-final-path-cta"
-              >
+              <Link href="/studio/new" className="hi-fi-cta-card-btn">
                 Démarrer gratuitement
                 <ArrowRight size={16} strokeWidth={2} />
               </Link>
-              <p className="landing-final-path-foot">Mise en route immédiate.</p>
+              <p className="hi-fi-cta-card-foot">Mise en route immédiate.</p>
             </article>
 
-            {/* Parcours 2 — Avec un expert */}
-            <article className="landing-final-path landing-final-path-secondary">
-              <div className="landing-final-path-head">
-                <span className="landing-final-path-tag landing-final-path-tag-alt">
+            {/* Parcours 2 — Avec un expert (secondaire, accent teal) */}
+            <article
+              className="hi-fi-cta-card hi-fi-cta-card-secondary"
+              style={{ ["--card-accent" as string]: "var(--accent-teal)" }}
+            >
+              <div className="hi-fi-cta-card-head">
+                <span className="hi-fi-cta-card-tag hi-fi-cta-card-tag-secondary">
                   <CalendarCheck size={13} strokeWidth={1.8} />
                   Avec un expert · 20 min
                 </span>
-                <h3 className="landing-final-path-title">
+                <h3 className="hi-fi-cta-card-title">
                   Cadrons votre cas avec un consultant
                 </h3>
-                <p className="landing-final-path-desc">
+                <p className="hi-fi-cta-card-desc">
                   20 minutes pour comprendre votre contexte, démontrer la
                   valeur sur un de vos cas, et proposer un cadrage adapté.
                 </p>
               </div>
 
-              <ul className="landing-final-path-bullets">
+              <ul className="hi-fi-cta-card-bullets">
                 <li>
-                  <span className="landing-final-path-check" aria-hidden="true">
+                  <span className="hi-fi-cta-card-check" aria-hidden="true">
                     <Check size={11} strokeWidth={2.5} />
                   </span>
                   Démo personnalisée sur votre périmètre
                 </li>
                 <li>
-                  <span className="landing-final-path-check" aria-hidden="true">
+                  <span className="hi-fi-cta-card-check" aria-hidden="true">
                     <Check size={11} strokeWidth={2.5} />
                   </span>
                   Réponses aux questions COMEX, RSE, sécurité
                 </li>
                 <li>
-                  <span className="landing-final-path-check" aria-hidden="true">
+                  <span className="hi-fi-cta-card-check" aria-hidden="true">
                     <Check size={11} strokeWidth={2.5} />
                   </span>
                   Cadrage et devis sur mesure
@@ -831,18 +853,18 @@ export default function HomePage() {
 
               <Link
                 href="mailto:contact@stratly.io?subject=Demande%20de%20d%C3%A9mo%20Stratly"
-                className="landing-cta-secondary-dark landing-final-path-cta"
+                className="hi-fi-cta-card-btn hi-fi-cta-card-btn-secondary"
               >
                 Réserver une démo
                 <ArrowRight size={16} strokeWidth={2} />
               </Link>
-              <p className="landing-final-path-foot">
+              <p className="hi-fi-cta-card-foot">
                 Réponse sous 24 h ouvrées.
               </p>
             </article>
           </div>
 
-          <p className="landing-final-paths-tertiary">
+          <p className="hi-fi-cta-tertiary">
             Vous cherchez un cadre tarifaire entreprise ?{" "}
             <Link href="mailto:contact@stratly.io?subject=Tarifs%20entreprise%20Stratly">
               Demander une grille de tarifs
@@ -850,23 +872,23 @@ export default function HomePage() {
             </Link>
           </p>
 
-          <ul className="landing-final-trust" aria-label="Engagements Stratly">
+          <ul className="hi-fi-cta-trust" aria-label="Engagements Stratly">
             <li>
-              <span className="landing-final-trust-icon" aria-hidden="true">
+              <span className="hi-fi-cta-trust-icon" aria-hidden="true">
                 <Lock size={12} strokeWidth={2} />
               </span>
               Données chiffrées · Hébergement Europe
             </li>
-            <li className="landing-final-trust-divider" aria-hidden="true" />
+            <li className="hi-fi-cta-trust-divider" aria-hidden="true" />
             <li>
-              <span className="landing-final-trust-icon" aria-hidden="true">
+              <span className="hi-fi-cta-trust-icon" aria-hidden="true">
                 <Timer size={12} strokeWidth={2} />
               </span>
               Mise en route en moins de 5 minutes
             </li>
-            <li className="landing-final-trust-divider" aria-hidden="true" />
+            <li className="hi-fi-cta-trust-divider" aria-hidden="true" />
             <li>
-              <span className="landing-final-trust-icon" aria-hidden="true">
+              <span className="hi-fi-cta-trust-icon" aria-hidden="true">
                 <FileCheck2 size={12} strokeWidth={2} />
               </span>
               Conforme RGPD · Vos contenus restent votre propriété
