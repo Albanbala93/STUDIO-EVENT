@@ -83,7 +83,7 @@ const FAQ = [
   },
   {
     q: "Vos données sont-elles sécurisées ?",
-    a: "Oui. Stratly est conforme RGPD. Vos données ne sont jamais partagées ni utilisées pour entraîner des modèles IA.",
+    a: "Pendant la bêta, vos données restent stockées localement dans votre navigateur. Elles ne sont jamais partagées ni utilisées pour entraîner des modèles IA.",
   },
 ];
 
