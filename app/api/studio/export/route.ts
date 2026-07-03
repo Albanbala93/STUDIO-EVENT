@@ -34,10 +34,20 @@ type ExportRequest = {
   project: StudioProject;
 };
 
+const STATUS_LABELS_FR: Record<string, string> = {
+  generated: "Généré",
+  approved: "Validé",
+  draft: "Brouillon",
+};
+
+function statusLabelFr(status: string | undefined): string {
+  return (status && STATUS_LABELS_FR[status]) || status || "—";
+}
+
 function sanitizePdfText(text: string): string {
   return (text || "")
-    .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
+    .replace(/[\u201C\u201D\u201E]/g, '"')
+    .replace(/[\u2018\u2019\u02BC]/g, "'")
     .replace(/[–—]/g, "-")
     .replace(/\u00A0/g, " ")
     .replace(/•/g, "-")
@@ -229,7 +239,9 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
     }
   }
 
-  function drawSectionTitle(index: string, title: string) {
+  let pdfSectionIndex = 0;
+  function drawSectionTitle(_index: string, title: string) {
+    const index = String(++pdfSectionIndex).padStart(2, "0");
     ensureSpace(36);
     page.drawRectangle({
       x: marginX,
@@ -631,7 +643,7 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
   // Metadata block — position from top, not relative to y cursor
   const metaBlockY = height - 230;
   page.drawRectangle({ x: marginX, y: metaBlockY - 56, width: width - marginX * 2, height: 60, color: colors.blueLight, borderColor: colors.border, borderWidth: 0.5 });
-  page.drawText(`Statut : ${valueOrFallback(project.status)}`, { x: marginX + 16, y: metaBlockY - 20, size: 10, font: fontRegular, color: colors.muted });
+  page.drawText(`Statut : ${statusLabelFr(project.status)}`, { x: marginX + 16, y: metaBlockY - 20, size: 10, font: fontRegular, color: colors.muted });
   page.drawText(`Date d'export : ${projectDate()}`, { x: marginX + 16, y: metaBlockY - 36, size: 10, font: fontRegular, color: colors.muted });
 
   // Set y cursor to below the metadata block
@@ -924,7 +936,10 @@ function sp(text = "", opts?: {
   });
 }
 
-function sectionHeading(num: string, title: string) {
+let docxSectionCounter = 0;
+
+function sectionHeading(_num: string, title: string) {
+  const num = String(++docxSectionCounter).padStart(2, "0");
   return new Paragraph({
     spacing: { before: 320, after: 200 },
     shading: { fill: "0F1629", type: ShadingType.CLEAR, color: "auto" },
@@ -990,6 +1005,7 @@ function eventFormatDocx(fmt: EventFormatRecommendation): Paragraph[] {
 }
 
 function buildPremiumDocx(project: StudioProject) {
+  docxSectionCounter = 0;
   const title = valueOrFallback(project.title);
   const out = project.output;
 
@@ -999,7 +1015,7 @@ function buildPremiumDocx(project: StudioProject) {
     sp("CAMPAIGN STUDIO", { bold: true, size: 36, color: "0F1629", spacingAfter: 160 }),
     sp("Dossier de communication interne", { size: 24, color: "4B5563", spacingAfter: 400 }),
     sp(title, { bold: true, size: 34, color: "0F1629", spacingAfter: 200 }),
-    sp(`Statut : ${valueOrFallback(project.status)}`, { size: 20, color: "64748B", spacingAfter: 80 }),
+    sp(`Statut : ${statusLabelFr(project.status)}`, { size: 20, color: "64748B", spacingAfter: 80 }),
     sp(`Date d'export : ${projectDate()}`, { size: 20, color: "64748B", spacingAfter: 300 }),
 
     // Executive summary box on cover
