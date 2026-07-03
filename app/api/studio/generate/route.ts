@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { consumeServerRateLimit } from "../../../../lib/rate-limit/server";
+import { getSupabaseServerClient } from "../../../../lib/supabase/server";
 import { GENERATE_OUTPUT_SCHEMA } from "../../../../lib/studio/generate-schema";
 
 export async function POST(req: NextRequest) {
@@ -21,6 +22,43 @@ export async function POST(req: NextRequest) {
         },
       }
     );
+  }
+
+  // Quota mensuel par utilisateur, décompté côté serveur (infalsifiable).
+  // Sans Supabase configuré : comportement inchangé (bêta locale).
+  const supabase = await getSupabaseServerClient();
+  if (supabase) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Connexion requise pour générer un dossier." },
+        { status: 401 },
+      );
+    }
+
+    const { data: quota, error: quotaError } = await supabase.rpc(
+      "consume_studio_generation",
+    );
+    if (!quotaError && quota && quota.allowed === false) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            quota.reason === "quota"
+              ? `Quota mensuel atteint (${quota.max} générations). Il se renouvelle le 1er du mois.`
+              : "Connexion requise pour générer un dossier.",
+          quota,
+        },
+        { status: quota.reason === "quota" ? 429 : 401 },
+      );
+    }
+    if (quotaError) {
+      // Fonction SQL absente ou indisponible : on n'interrompt pas le
+      // service (fail-open bêta), mais on trace pour correction.
+      console.error("consume_studio_generation:", quotaError.message);
+    }
   }
 
   try {
