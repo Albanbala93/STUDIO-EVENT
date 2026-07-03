@@ -39,7 +39,9 @@ function LoginForm() {
 
     if (error) {
       setStatus("error");
-      setMessage("Impossible d'envoyer le lien. Vérifiez l'adresse et réessayez.");
+      // Affiche l'erreur réelle pour faciliter le diagnostic (bêta).
+      setMessage(`Impossible d'envoyer le lien — ${error.message}`);
+      console.error("signInWithOtp:", error);
     } else {
       setStatus("sent");
     }
