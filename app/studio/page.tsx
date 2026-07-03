@@ -50,7 +50,7 @@ export default function StudioDashboardPage() {
         setMemory(fetchMomentumMemory());
     }, []);
 
-    const recent = projects.slice(0, 6);
+    const recent = projects;
 
     return (
         <main>
@@ -235,13 +235,7 @@ export default function StudioDashboardPage() {
                     </div>
                 )}
 
-                {projects.length > 0 && (
-                    <div style={{ marginTop: 24, paddingTop: 20, borderTop: "1px solid var(--border-light)", textAlign: "center" }}>
-                        <Link href="/studio/history" style={{ fontSize: 12, color: "var(--slate-light)", textDecoration: "none", letterSpacing: "0.01em" }}>
-                            Voir l&apos;historique complet — {projects.length} dispositif{projects.length > 1 ? "s" : ""}
-                        </Link>
-                    </div>
-                )}
+                
             </div>
         </main>
     );

@@ -1,5 +1,5 @@
 import "./momentum.css";
-import { Sidebar } from "./_components/sidebar";
+import { AppSidebar } from "../../components/app-sidebar";
 
 export const metadata = {
   title: "Pilot · Stratly",
@@ -13,7 +13,7 @@ export default function MomentumLayout({
 }) {
   return (
     <div className="momentum-root min-h-screen bg-canvas text-ink">
-      <Sidebar />
+      <AppSidebar />
       <main
         data-momentum-main
         className="ml-[240px] min-h-screen"
