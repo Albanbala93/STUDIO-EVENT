@@ -8,6 +8,7 @@ import type {
   UserContext,
 } from "./types";
 import { recordAnalysis } from "./memory";
+import { pushProjectToCloud } from "./remote";
 import { detectAndApplyStaleness } from "../modules/staleness";
 
 const STORAGE_KEY = "campaign_studio_projects";
@@ -49,6 +50,18 @@ export function saveProject(project: StudioProject): void {
     projects.push(project);
   }
 
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+
+  // Réplication cloud best-effort (no-op sans Supabase / hors connexion).
+  void pushProjectToCloud(project);
+}
+
+/**
+ * Remplace intégralement le cache local — réservé à la synchronisation
+ * cloud (CloudSync). N'émet PAS de réplication.
+ */
+export function replaceAllProjectsLocal(projects: StudioProject[]): void {
+  if (typeof window === "undefined") return;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
 }
 
