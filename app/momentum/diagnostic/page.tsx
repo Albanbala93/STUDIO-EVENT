@@ -412,8 +412,9 @@ function DiagnosticPageInner() {
           </h1>
           <p className="text-[14px] text-ink-muted mt-2 max-w-2xl">
             Diagnostic en deux étapes : identification de l&apos;initiative, puis
-            saisie des indicateurs communication et RSE. Moins de 10 minutes
-            pour une restitution exécutive complète.
+            saisie de vos indicateurs de performance. L&apos;évaluation RSE est
+            un volet optionnel et indépendant. Moins de 10 minutes pour une
+            restitution exécutive complète.
           </p>
         </div>
 
@@ -687,7 +688,7 @@ function KPIStep(props: {
             active={tab === "communication"}
             onClick={() => setTab("communication")}
             icon={<BarChart3 className="h-4 w-4" />}
-            label="Mesure communication"
+            label="Performance de communication"
             count={commAnswered}
             total={kpis.length}
           />
@@ -695,7 +696,7 @@ function KPIStep(props: {
             active={tab === "rse"}
             onClick={() => setTab("rse")}
             icon={<Leaf className="h-4 w-4" />}
-            label="Mesure RSE"
+            label="Impact RSE (optionnel)"
             count={rseAnswered}
             total={rseKpis.length}
           />
@@ -738,9 +739,11 @@ function KPIStep(props: {
           {tab === "rse" && (
             <>
               <p className="text-[13px] text-ink-muted mb-6 max-w-2xl">
-                13 indicateurs ESG (Environnement, Social, Gouvernance) pour
-                compléter le diagnostic avec un volet RSE dédié —
-                recommandations et outils prêts à l&apos;emploi.
+                Volet optionnel et indépendant : ces 13 indicateurs ESG
+                (Environnement, Social, Gouvernance) répondent à une autre
+                question que la performance — « votre dispositif était-il
+                responsable ? ». Ils n&apos;entrent pas dans le score de
+                performance. Laissez vide pour passer ce volet.
               </p>
               <div className="space-y-6">
                 {PILLAR_ORDER.map((pillar) => {
