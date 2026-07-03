@@ -160,7 +160,13 @@ export function CollabSectionHeader({
     const unresolvedCount = commentCount;
 
     return (
-        <div className="collab-section-header">
+        <div
+            className="collab-section-header"
+            id={"section-" + (label.split(" — ")[0] ?? label).toLowerCase().replace(/[^a-z0-9]+/g, "-")}
+            data-section-anchor={title}
+            data-section-num={label.includes(" — ") ? label.split(" — ")[0] : undefined}
+            style={{ scrollMarginTop: 64 }}
+        >
             <div style={{ flex: 1 }}>
                 <p className="section-label">{label}</p>
                 <h2 className="section-title">{title}</h2>

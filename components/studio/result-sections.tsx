@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { addComment, getCollab, resolveComment, updateSectionOwner, updateSectionStatus, saveProject } from "../../lib/studio/storage";
 import type { BriefSpecificity, DircomView, MaturityScores, PipelineDebugInfo, RiskItem, ScenarioItem, SectionStatus, StudioProject } from "../../lib/studio/types";
@@ -15,9 +15,15 @@ function SectionHeader({ label, title }: { label: string; title: string }) {
     const parts = label.split(" — ");
     const stepNum = parts.length > 1 ? parts[0] : null;
     const stepDesc = parts.length > 1 ? parts[1] : label;
+    const anchorId = "section-" + (stepNum ?? label).toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
     return (
-        <div style={{ marginBottom: 18 }}>
+        <div
+            id={anchorId}
+            data-section-anchor={title}
+            data-section-num={stepNum ?? undefined}
+            style={{ marginBottom: 18, scrollMarginTop: 64 }}
+        >
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                 {stepNum && (
                     <span style={{
@@ -47,6 +53,69 @@ function SectionHeader({ label, title }: { label: string; title: string }) {
             </div>
             <h2 className="section-title">{title}</h2>
         </div>
+    );
+}
+
+function ResultsToc() {
+    const [items, setItems] = useState<
+        Array<{ id: string; title: string; num: string | null }>
+    >([]);
+
+    useEffect(() => {
+        const els = Array.from(
+            document.querySelectorAll("[data-section-anchor]"),
+        );
+        setItems(
+            els
+                .filter((el) => el.id)
+                .map((el) => ({
+                    id: el.id,
+                    title: el.getAttribute("data-section-anchor") ?? "",
+                    num: el.getAttribute("data-section-num"),
+                })),
+        );
+    }, []);
+
+    if (items.length < 4) return null;
+
+    return (
+        <nav
+            aria-label="Sommaire du dossier"
+            style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 20,
+                background: "var(--surface)",
+                borderBottom: "1px solid var(--border-light)",
+                display: "flex",
+                gap: 6,
+                overflowX: "auto",
+                padding: "8px 2px 10px",
+                marginBottom: 4,
+            }}
+        >
+            {items.map((it) => (
+                <a
+                    key={it.id}
+                    href={"#" + it.id}
+                    style={{
+                        flexShrink: 0,
+                        whiteSpace: "nowrap",
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        color: "var(--slate)",
+                        textDecoration: "none",
+                        border: "1px solid var(--border)",
+                        borderRadius: 999,
+                        padding: "3px 10px",
+                        background: "var(--surface-mid)",
+                    }}
+                >
+                    {it.num ? it.num + " · " : ""}
+                    {it.title}
+                </a>
+            ))}
+        </nav>
     );
 }
 
@@ -518,6 +587,9 @@ export function ResultSections({
 
             {/* ====== MAIN COLUMN ====== */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+                {/* Sommaire ancré du dossier */}
+                <ResultsToc />
 
                 {/* Pipeline Debug Panel */}
                 {out.pipelineDebug && (

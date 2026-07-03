@@ -352,6 +352,20 @@ export function ResultDashboard(props: {
           </CardContent>
         </Card>
 
+        {/* Navigation ancrée de la restitution */}
+        <nav
+          aria-label="Sections de la restitution"
+          className="sticky top-0 z-20 -mx-2 flex gap-2 overflow-x-auto border-b border-border bg-canvas/95 px-2 py-2 backdrop-blur"
+        >
+          <a href="#bloc-score" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Score</a>
+          <a href="#bloc-dimensions" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Dimensions</a>
+          <a href="#bloc-analyse" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Analyse</a>
+          {rse && (
+            <a href="#bloc-rse" className="whitespace-nowrap rounded-sm border border-emerald-200 px-2.5 py-1 text-[12px] font-semibold text-emerald-700 hover:text-emerald-800">Impact RSE</a>
+          )}
+        </nav>
+
+        <div id="bloc-score" className="scroll-mt-16" aria-hidden="true" />
         {/* BLOC 2 — Communication Score */}
         <Card>
           <CardContent className="p-6">
@@ -391,6 +405,7 @@ export function ResultDashboard(props: {
           </CardContent>
         </Card>
 
+        <div id="bloc-dimensions" className="scroll-mt-16" aria-hidden="true" />
         {/* BLOC 3 — 4 dimensions */}
         <Card>
           <CardContent className="p-6">
@@ -465,6 +480,7 @@ export function ResultDashboard(props: {
           </CardContent>
         </Card>
 
+        <div id="bloc-analyse" className="scroll-mt-16" aria-hidden="true" />
         {/* BLOC 4 — Diagnostic métier (2 colonnes) */}
         <div className="grid gap-4 md:grid-cols-2">
           <DiagnosticCard
