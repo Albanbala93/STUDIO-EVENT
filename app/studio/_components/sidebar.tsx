@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "../../../components/brand/logo";
+import { AccountFooter } from "../../../components/account-footer";
 
 type NavItem = {
   label: string;
@@ -52,8 +53,9 @@ const ICON_SETTINGS = (
 );
 
 const NAV: NavItem[] = [
-  { label: "Projets", href: "/studio", icon: ICON_DASHBOARD },
-  { label: "Nouveau brief", href: "/studio/new", icon: ICON_PLUS },
+  { label: "Mes projets", href: "/studio", icon: ICON_DASHBOARD },
+  { label: "Nouvelle campagne", href: "/studio/new", icon: ICON_PLUS },
+  { label: "Mes clients", href: "/studio/clients", icon: ICON_HISTORY },
   { label: "Historique", href: "/studio/history", icon: ICON_HISTORY },
   { label: "Diagnostics", href: "/momentum", icon: ICON_DIAGNOSTIC },
 ];
@@ -97,13 +99,7 @@ export function StudioSidebar() {
       </nav>
 
       <div className="studio-sidebar-footer">
-        <div className="studio-sidebar-settings">
-          <span className="studio-sidebar-icon">{ICON_SETTINGS}</span>
-          <div className="studio-sidebar-settings-text">
-            <div className="studio-sidebar-settings-title">Paramètres</div>
-            <div className="studio-sidebar-settings-sub">Bientôt disponible</div>
-          </div>
-        </div>
+        <AccountFooter />
       </div>
     </aside>
   );

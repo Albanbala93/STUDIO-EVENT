@@ -86,7 +86,7 @@ const PIPELINE: PipelineStep[] = [
     verb: "Démontrez",
     module: "Impact",
     icon: <Leaf size={20} strokeWidth={1.6} />,
-    tagline: "L'impact extra-financier de votre communication.",
+    tagline: "L'impact extra-financier — intégré à Pilot.",
     deliverables: [
       "Piliers Environnement · Social · Gouvernance",
       "Indicateurs alignés CSRD",

@@ -6,10 +6,10 @@ import {
   LayoutDashboard,
   PlusCircle,
   Rocket,
-  Settings,
 } from "lucide-react";
 
 import { Logo } from "../../../components/brand/logo";
+import { AccountFooter } from "../../../components/account-footer";
 
 type NavItem = {
   label: string;
@@ -20,7 +20,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { label: "Diagnostics", href: "/momentum", icon: LayoutDashboard },
   { label: "Nouveau diagnostic", href: "/momentum/diagnostic", icon: PlusCircle },
-  { label: "Campaign", href: "/studio", icon: Rocket },
+  { label: "Mes projets", href: "/studio", icon: Rocket },
 ];
 
 /**
@@ -71,15 +71,7 @@ export function Sidebar() {
       </nav>
 
       <div className="pilot-sidebar-footer">
-        <div className="pilot-sidebar-settings">
-          <span className="pilot-sidebar-settings-icon">
-            <Settings className="h-4 w-4" />
-          </span>
-          <div className="pilot-sidebar-settings-text">
-            <div className="pilot-sidebar-settings-title">Paramètres</div>
-            <div className="pilot-sidebar-settings-sub">Bientôt disponible</div>
-          </div>
-        </div>
+        <AccountFooter />
       </div>
     </aside>
   );
