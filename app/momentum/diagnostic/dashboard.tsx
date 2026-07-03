@@ -558,8 +558,24 @@ export function ResultDashboard(props: {
           </div>
         </div>
 
-        {/* BLOC 4bis — Volet RSE (ESG) */}
-        {rse && <RseSection rse={rse} />}
+        {/* BLOC 4bis — Impact RSE : volet séparé et indépendant */}
+        {rse && (
+          <>
+            <div className="mt-12 mb-2 flex items-center gap-3">
+              <div className="h-px flex-1 bg-emerald-200" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-700">
+                Impact RSE — évaluation indépendante
+              </span>
+              <div className="h-px flex-1 bg-emerald-200" />
+            </div>
+            <p className="mb-4 text-center text-[12px] text-ink-muted">
+              Ce volet répond à une autre question que la performance —
+              « votre dispositif était-il responsable ? » — et
+              n&apos;entre pas dans le score de performance ci-dessus.
+            </p>
+            <RseSection rse={rse} />
+          </>
+        )}
 
         {/* Bloc 7 — Ponts intelligents : recommandations contextuelles
             après la lecture du diagnostic. Liens vers le projet Campaign
@@ -1286,10 +1302,10 @@ const RSE_PILLAR_TONE: Record<
   { accent: string; bar: string; iconWrap: string; iconColor: string }
 > = {
   environment: {
-    accent: "#6366F1",
-    bar: "bg-[linear-gradient(135deg,#6366F1,#8B5CF6)]",
-    iconWrap: "bg-accent-50",
-    iconColor: "text-accent",
+    accent: "#10B981",
+    bar: "bg-emerald-500",
+    iconWrap: "bg-emerald-50",
+    iconColor: "text-emerald-600",
   },
   social: {
     accent: "#0EA5E9",
@@ -1311,9 +1327,9 @@ function rseReliabilityTone(
   if (reliability === "high")
     return {
       label: "Fiabilité RSE élevée",
-      pill: "bg-accent-50 border-accent-200",
-      text: "text-accent-700",
-      dot: "bg-accent",
+      pill: "bg-emerald-50 border-emerald-200",
+      text: "text-emerald-700",
+      dot: "bg-emerald-500",
     };
   if (reliability === "partial")
     return {
@@ -1345,16 +1361,16 @@ function RseSection({ rse }: { rse: RSEInterpretation }) {
     <div className="space-y-4">
       {/* En-tête RSE + piliers */}
       <Card className="relative overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-0.5 bg-accent" />
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-emerald-500" />
         <CardContent className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-[260px] flex-1">
               <div className="mb-2 flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-accent-50">
-                  <Leaf className="h-4 w-4 text-accent" />
+                <div className="flex h-7 w-7 items-center justify-center rounded-sm bg-emerald-50">
+                  <Leaf className="h-4 w-4 text-emerald-600" />
                 </div>
-                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-accent-600">
-                  Volet RSE · ESG
+                <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-700">
+                  Impact RSE · ESG
                 </div>
               </div>
               <h3 className="mb-2 text-[18px] font-bold leading-snug text-ink">
