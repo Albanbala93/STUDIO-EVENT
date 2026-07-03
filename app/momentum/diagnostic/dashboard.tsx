@@ -115,7 +115,7 @@ function reliabilityTone(conf: number): {
 } {
   if (conf >= 75)
     return {
-      label: "Données fiables",
+      label: "Confiance élevée",
       pill: "bg-accent-50 border-accent-200",
       text: "text-accent-700",
       dot: "bg-accent",
@@ -287,7 +287,7 @@ export function ResultDashboard(props: {
           <div className="hi-fi-result-header-breadcrumb">
             <Link href="/momentum" className="hi-fi-result-back-chip">
               <ArrowLeft className="h-3.5 w-3.5" />
-              Pilot
+              Diagnostics
             </Link>
             <span className="hi-fi-result-header-sep" aria-hidden="true">/</span>
             <div className="hi-fi-result-header-context">
@@ -375,7 +375,7 @@ export function ResultDashboard(props: {
               </div>
               <div className="min-w-[260px] flex-1">
                 <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.14em] text-accent-600">
-                  Communication Score
+                  Score de communication
                 </div>
                 <p className="mb-4 text-[14px] leading-relaxed text-ink">
                   {interpretation.executive_summary.key_insight}
@@ -397,7 +397,9 @@ export function ResultDashboard(props: {
                 </div>
                 <div className="text-[12px] text-ink-muted">
                   {totalSignals > 0
-                    ? `${notMeasuredPct}% des données sont déclarées ou estimées. Interpréter avec prudence.`
+                    ? notMeasuredPct >= 30
+                      ? `${notMeasuredPct}% des données sont déclarées ou estimées — croiser avec des mesures objectives pour fiabiliser.`
+                      : `${100 - notMeasuredPct}% des données proviennent de mesures directes.`
                     : "Aucune donnée exploitable — compléter les saisies pour obtenir un score."}
                 </div>
               </div>
@@ -906,7 +908,7 @@ function RecommendationCard({ reco }: { reco: RecommendationItem }) {
               ) : (
                 <>
                   <ChevronDown className="h-3.5 w-3.5" />
-                  Utiliser ce template
+                  Utiliser ce modèle
                 </>
               )}
             </button>
@@ -1133,7 +1135,7 @@ function RadarChart({
 
   return (
     <svg
-      viewBox={`0 0 ${size} ${size}`}
+      viewBox={`-45 0 ${size + 90} ${size}`}
       preserveAspectRatio="xMidYMid meet"
       style={{
         width: "100%",
@@ -1600,7 +1602,7 @@ function RseRecommendationCard({ reco }: { reco: RSERecommendation }) {
             ) : (
               <>
                 <ChevronDown className="h-3.5 w-3.5" />
-                Utiliser ce template
+                Utiliser ce modèle
               </>
             )}
           </button>
