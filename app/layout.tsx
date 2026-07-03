@@ -1,6 +1,4 @@
 import "./globals.css";
-import Link from "next/link";
-import { Logo } from "../components/brand/logo";
 
 export const metadata = {
   metadataBase: new URL(
@@ -41,33 +39,6 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <nav className="topnav">
-          <div className="topnav-inner">
-            {/* Logo */}
-            <Logo variant="full" size={26} href="/" priority />
-            <span className="topnav-wordmark-studio" style={{ marginLeft: 8, fontSize: 12.5 }}>
-              · Campaign
-            </span>
-
-            {/* Visual separator */}
-            <span className="topnav-divider" />
-
-            {/* Navigation links */}
-            <div className="topnav-links">
-              <Link href="/studio" className="topnav-link">
-                Projets
-              </Link>
-            </div>
-
-            {/* Right-side actions */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginLeft: "auto" }}>
-              <span className="topnav-beta">Bêta</span>
-              <Link href="/studio/new" className="topnav-cta">
-                + Nouveau brief
-              </Link>
-            </div>
-          </div>
-        </nav>
         {children}
       </body>
     </html>

@@ -23,9 +23,7 @@
    l'écran et que la sidebar Stratly soit visible sans collision avec
    l'ancien chrome. On neutralise aussi le background et les typos
    globales héritées de globals.css. */
-body:has(.momentum-root) > .topnav {
-  display: none !important;
-}
+
 
 body:has(.momentum-root) {
   background: #F8F9FC !important;
