@@ -55,7 +55,6 @@ const ICON_SETTINGS = (
 const NAV: NavItem[] = [
   { label: "Mes projets", href: "/studio", icon: ICON_DASHBOARD },
   { label: "Nouvelle campagne", href: "/studio/new", icon: ICON_PLUS },
-  { label: "Mes clients", href: "/studio/clients", icon: ICON_HISTORY },
   { label: "Historique", href: "/studio/history", icon: ICON_HISTORY },
   { label: "Diagnostics", href: "/momentum", icon: ICON_DIAGNOSTIC },
 ];
