@@ -83,7 +83,7 @@ const FAQ = [
   },
   {
     q: "Vos données sont-elles sécurisées ?",
-    a: "Pendant la bêta, vos données restent stockées localement dans votre navigateur. Elles ne sont jamais partagées ni utilisées pour entraîner des modèles IA.",
+    a: "Vos données sont hébergées en Europe dans une base chiffrée au repos, accessible uniquement depuis votre compte. Elles ne sont jamais partagées ni utilisées pour entraîner des modèles IA.",
   },
 ];
 
