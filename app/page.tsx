@@ -36,7 +36,7 @@ const FAQ: { q: string; a: string }[] = [
   },
   {
     q: "Mes briefs et données sont-ils protégés ?",
-    a: "Vos contenus restent votre propriété. Pendant la bêta, vos projets sont stockés localement dans votre navigateur — rien n'est conservé sur nos serveurs. Vos briefs transitent uniquement le temps de la génération et ne servent jamais à entraîner de modèles IA.",
+    a: "Vos contenus restent votre propriété. Vos projets sont stockés dans une base de données hébergée en Europe, chiffrée au repos, accessible uniquement depuis votre compte. Vos briefs ne servent jamais à entraîner de modèles IA.",
   },
   {
     q: "À partir de quel volume Stratly devient rentable ?",
@@ -877,7 +877,7 @@ export default function HomePage() {
               <span className="hi-fi-cta-trust-icon" aria-hidden="true">
                 <Lock size={12} strokeWidth={2} />
               </span>
-              Stockage local · Rien n&apos;est conservé sur nos serveurs
+              Hébergement Europe · Données chiffrées au repos
             </li>
             <li className="hi-fi-cta-trust-divider" aria-hidden="true" />
             <li>
