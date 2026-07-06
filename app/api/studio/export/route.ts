@@ -193,13 +193,7 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
       font: fontRegular,
       color: colors.muted,
     });
-    page.drawText(String(pageNumber), {
-      x: width - marginX - 6,
-      y: footerY,
-      size: 8,
-      font: fontRegular,
-      color: colors.muted,
-    });
+    // Numéro de page posé en passe finale (après insertion du sommaire).
   }
 
   function ensureSpace(requiredHeight: number) {
@@ -240,9 +234,11 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
   }
 
   let pdfSectionIndex = 0;
+  const tocEntries: Array<{ num: string; title: string; page: number }> = [];
   function drawSectionTitle(_index: string, title: string) {
     const index = String(++pdfSectionIndex).padStart(2, "0");
     ensureSpace(36);
+    tocEntries.push({ num: index, title, page: pageNumber });
     page.drawRectangle({
       x: marginX,
       y: y - 10,
@@ -599,19 +595,16 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
     y -= blockHeight + 16;
   }
 
-  /* ---- COVER PAGE ---- */
+  /* ---- COVER PAGE (pleine page, sans pied de page) ---- */
 
-  // Navy header band
-  page.drawRectangle({ x: 0, y: height - 200, width, height: 200, color: colors.navy });
-  // Blue accent line
-  page.drawRectangle({ x: 0, y: height - 202, width, height: 3, color: colors.indigo });
+  page.drawRectangle({ x: 0, y: height - 560, width, height: 560, color: colors.navy });
+  page.drawRectangle({ x: 0, y: height - 563, width, height: 3, color: colors.indigo });
 
-  // Marque Stratly en haut à droite (sur fond navy → la marque a son propre fond foncé, fonctionne).
   if (markImage) {
-    const coverMarkSize = 44;
+    const coverMarkSize = 56;
     page.drawImage(markImage, {
-      x: width - marginX - coverMarkSize,
-      y: height - 80 - coverMarkSize / 2 + 6,
+      x: marginX,
+      y: height - 118,
       width: coverMarkSize,
       height: coverMarkSize,
     });
@@ -619,44 +612,43 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
 
   page.drawText("STRATLY · CAMPAIGN", {
     x: marginX,
-    y: height - 80,
-    size: 11,
+    y: height - 150,
+    size: 12,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
   page.drawText("Dossier de communication interne", {
     x: marginX,
-    y: height - 100,
-    size: 10,
+    y: height - 168,
+    size: 10.5,
     font: fontRegular,
     color: rgb(0.7, 0.75, 0.85),
   });
-  page.drawText(sanitizePdfText(valueOrFallback(project.title)), {
-    x: marginX,
-    y: height - 138,
-    size: 20,
-    font: fontBold,
-    color: colors.white,
-    maxWidth: width - marginX * 2,
-  });
 
-  // Metadata block — position from top, not relative to y cursor
-  const metaBlockY = height - 230;
-  page.drawRectangle({ x: marginX, y: metaBlockY - 56, width: width - marginX * 2, height: 60, color: colors.blueLight, borderColor: colors.border, borderWidth: 0.5 });
-  page.drawText(`Statut : ${statusLabelFr(project.status)}`, { x: marginX + 16, y: metaBlockY - 20, size: 10, font: fontRegular, color: colors.muted });
-  page.drawText(`Date d'export : ${projectDate()}`, { x: marginX + 16, y: metaBlockY - 36, size: 10, font: fontRegular, color: colors.muted });
+  {
+    const titleLines = wrapText(sanitizePdfText(valueOrFallback(project.title)), 30);
+    let ty = height - 260;
+    for (const line of titleLines.slice(0, 4)) {
+      page.drawText(line, { x: marginX, y: ty, size: 28, font: fontBold, color: colors.white });
+      ty -= 36;
+    }
+    page.drawRectangle({ x: marginX, y: ty - 4, width: 64, height: 3, color: colors.indigo });
+  }
 
-  // Set y cursor to below the metadata block
-  y = metaBlockY - 72;
+  const coverMetaY = 150;
+  page.drawText(`Statut : ${statusLabelFr(project.status)}`, { x: marginX, y: coverMetaY + 20, size: 10, font: fontRegular, color: colors.muted });
+  page.drawText(`Date d'export : ${projectDate()}`, { x: marginX, y: coverMetaY, size: 10, font: fontRegular, color: colors.muted });
+  page.drawText("Document confidentiel — usage interne", { x: marginX, y: coverMetaY - 20, size: 10, font: fontRegular, color: colors.muted });
 
-  // Executive summary on cover
+  /* ---- INTERIOR PAGES ---- */
+  addPage();
+
+  // Ouverture : synthèse exécutive + rappel du brief, puis les sections
+  // s'enchaînent en flux continu (pas de saut de page forcé).
   if (project.output.executiveSummary) {
-    drawSpacer(12);
     drawSubtitle("Synthèse exécutive");
     drawHighlightBlock(project.output.executiveSummary, colors.indigo);
   }
-
-  // Brief summary on cover
   drawSpacer(10);
   const briefFields: [string, string][] = [
     ["Contexte", project.brief?.companyContext ?? ""],
@@ -667,11 +659,7 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
   for (const [label, val] of briefFields) {
     drawParagraph(`${label} : ${valueOrFallback(val)}`, { size: 9.5, color: colors.muted });
   }
-
-  drawFooter();
-
-  /* ---- INTERIOR PAGES ---- */
-  addPage();
+  drawSpacer(8);
 
   // 1. Diagnostic & Problématique
   drawSectionTitle("01", "Diagnostic de communication");
@@ -895,6 +883,52 @@ async function buildPremiumPdf(project: StudioProject): Promise<Uint8Array> {
   }
 
   drawFooter();
+
+  /* ---- SOMMAIRE (inséré en page 2, après la couverture) ---- */
+  const tocPage = pdfDoc.insertPage(1, [595.28, 841.89]);
+  let tocY = 841.89 - marginTop - 24;
+  tocPage.drawText("Sommaire", { x: marginX, y: tocY, size: 18, font: fontBold, color: colors.navy });
+  tocY -= 12;
+  tocPage.drawRectangle({ x: marginX, y: tocY, width: 42, height: 2.5, color: colors.indigo });
+  tocY -= 30;
+
+  for (const entry of tocEntries) {
+    const label = `${entry.num}   ${sanitizePdfText(entry.title)}`;
+    // +1 : l'insertion du sommaire décale toutes les pages de contenu.
+    const pageStr = String(entry.page + 1);
+    tocPage.drawText(label, { x: marginX, y: tocY, size: 10.5, font: fontRegular, color: colors.text });
+    const labelWidth = fontRegular.widthOfTextAtSize(label, 10.5);
+    const dotsStart = marginX + labelWidth + 8;
+    const dotsEnd = 595.28 - marginX - 26;
+    if (dotsEnd > dotsStart) {
+      tocPage.drawLine({
+        start: { x: dotsStart, y: tocY + 3 },
+        end: { x: dotsEnd, y: tocY + 3 },
+        thickness: 0.5,
+        color: colors.border,
+        dashArray: [1, 3],
+      });
+    }
+    tocPage.drawText(pageStr, { x: 595.28 - marginX - 16, y: tocY, size: 10.5, font: fontBold, color: colors.navy });
+    tocY -= 22;
+  }
+
+  // Pied de page du sommaire (ligne + marque, cohérent avec le reste)
+  tocPage.drawLine({ start: { x: marginX, y: 36 }, end: { x: 595.28 - marginX, y: 36 }, thickness: 0.5, color: colors.border });
+  tocPage.drawText("Stratly · Campaign — Confidentiel", { x: marginX, y: 24, size: 8, font: fontRegular, color: colors.muted });
+
+  /* ---- NUMÉROTATION FINALE (couverture non numérotée) ---- */
+  const allPages = pdfDoc.getPages();
+  for (let i = 1; i < allPages.length; i++) {
+    allPages[i].drawText(String(i + 1), {
+      x: 595.28 - marginX - 6,
+      y: 24,
+      size: 8,
+      font: fontRegular,
+      color: colors.muted,
+    });
+  }
+
   return await pdfDoc.save();
 }
 
