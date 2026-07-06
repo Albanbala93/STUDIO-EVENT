@@ -1,5 +1,6 @@
 import "./momentum.css";
 import { AppSidebar } from "../../components/app-sidebar";
+import { MomentumCloudSync } from "../../components/momentum-cloud-sync";
 
 export const metadata = {
   title: "Pilot · Stratly",
@@ -18,7 +19,7 @@ export default function MomentumLayout({
         data-momentum-main
         className="ml-[240px] min-h-screen"
       >
-        {children}
+        <MomentumCloudSync>{children}</MomentumCloudSync>
       </main>
     </div>
   );

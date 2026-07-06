@@ -6,6 +6,10 @@
  */
 
 import type { MomentumProject } from "./types";
+import {
+  deleteDiagnosticFromCloud,
+  pushDiagnosticToCloud,
+} from "./remote";
 
 const STORAGE_KEY = "momentum_projects_v1";
 
@@ -48,6 +52,9 @@ export function saveProject(
   } catch {
     // localStorage plein ou désactivé — on laisse l'objet en mémoire.
   }
+
+  // Réplication cloud best-effort (no-op sans Supabase / hors connexion).
+  void pushDiagnosticToCloud(full);
   return full;
 }
 
@@ -56,6 +63,20 @@ export function deleteProject(id: string): void {
   try {
     const next = listProjects().filter((p) => p.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    // noop
+  }
+  void deleteDiagnosticFromCloud(id);
+}
+
+/**
+ * Remplace intégralement le cache local — réservé à la synchronisation
+ * cloud (MomentumCloudSync). N'émet PAS de réplication.
+ */
+export function replaceAllProjectsLocal(projects: MomentumProject[]): void {
+  if (!isBrowser()) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
   } catch {
     // noop
   }
