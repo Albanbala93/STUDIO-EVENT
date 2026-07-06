@@ -155,8 +155,9 @@ async function enrichWithAnthropic(
   body: EnrichBody,
 ): Promise<InterpretationPayload> {
   const { score, baseline, context } = body;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return baseline;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!anthropicKey && !openaiKey) return baseline;
 
   const system = `Tu es un consultant senior en communication interne et performance d'initiatives.
 Tu reçois une INTERPRÉTATION de base (produite par un moteur de règles) et tu dois la REFORMULER pour qu'elle soit spécifique au contexte de l'initiative analysée (nom, type, audience, intention).
@@ -192,29 +193,56 @@ Retourne uniquement l'objet JSON correspondant à \`baseline\` (executive_summar
   const timer = setTimeout(() => controller.abort(), 12_000);
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        // Cap absolu : 2000 tokens pour les enrichissements longs (diagnostic complet).
-        model: "claude-sonnet-4-5",
-        max_tokens: 2000,
-        system,
-        messages: [{ role: "user", content: user }],
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (!res.ok) return baseline;
+    let text = "";
 
-    const data = (await res.json()) as {
-      content?: Array<{ type: string; text?: string }>;
-    };
-    const text = data.content?.find((c) => c.type === "text")?.text ?? "";
+    if (anthropicKey) {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": anthropicKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5",
+          max_tokens: 2000,
+          system,
+          messages: [{ role: "user", content: user }],
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) return baseline;
+      const data = (await res.json()) as {
+        content?: Array<{ type: string; text?: string }>;
+      };
+      text = data.content?.find((c) => c.type === "text")?.text ?? "";
+    } else {
+      // Repli : même reformulation via OpenAI (clé déjà en production).
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+          max_tokens: 2000,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ],
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) return baseline;
+      const data = (await res.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+      text = data.choices?.[0]?.message?.content ?? "";
+    }
+
     if (!text) return baseline;
 
     const jsonMatch = text.match(/\{[\s\S]*\}$/m) ?? text.match(/\{[\s\S]*\}/);
