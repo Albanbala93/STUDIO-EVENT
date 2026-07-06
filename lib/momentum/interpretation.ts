@@ -459,14 +459,28 @@ function buildConsolidationReco(dim: RawDim): RecommendationItem {
       "Passer d'un impact observé à un impact répliqué : les comportements adoptés deviennent la norme, pas l'exception.",
   };
 
+  const TITLES: Record<Dimension, string> = {
+    reach: "Sécuriser la couverture acquise",
+    engagement: "Ancrer l'implication dans la durée",
+    appropriation: "Pérenniser la compréhension des messages",
+    impact: "Industrialiser les effets obtenus",
+  };
+
+  const WHEN: Record<Dimension, string> = {
+    reach: "Dès la prochaine initiative, pour capitaliser sans délai.",
+    engagement: "Dans les 30 jours, tant que la dynamique est vivante.",
+    appropriation: "Sous 2 mois, avant que le message ne se dilue.",
+    impact: "Sur le prochain trimestre, au rythme d'adoption des équipes.",
+  };
+
   return {
-    title: `Consolider ${frArticle(label)}${label}`,
+    title: TITLES[dim.dimension] ?? `Consolider ${frArticle(label)}${label}`,
     action: ACTIONS[dim.dimension],
     priority: "low",
     dimension: dim.dimension,
     reco_type: "consolidation",
     why: WHY[dim.dimension],
-    when: "Dans les 30 à 60 jours, en prolongement de l'action actuelle.",
+    when: WHEN[dim.dimension] ?? "Dans les 30 à 60 jours.",
     impact: IMPACT_STATEMENT[dim.dimension],
     tool,
   };
@@ -555,21 +569,55 @@ export function interpretScore(result: ScoreResult): InterpretationPayload {
   const strengths: InsightItem[] = [];
   const weaknesses: InsightItem[] = [];
 
+  const STRENGTH_TITLES: Record<Dimension, string> = {
+    reach: "Mobilisation au rendez-vous",
+    engagement: "Implication réelle des participants",
+    appropriation: "Messages bien assimilés",
+    impact: "Effets concrets observés",
+  };
+  const STRENGTH_DESCS: Record<Dimension, (s: number) => string> = {
+    reach: (s) => `Les bons publics ont été touchés au bon moment (${s}/100).`,
+    engagement: (s) =>
+      `L'audience a participé activement plutôt que subi (${s}/100).`,
+    appropriation: (s) =>
+      `Les messages clés sont compris et retenus (${s}/100).`,
+    impact: (s) => `Des changements concrets sont déjà visibles (${s}/100).`,
+  };
+  const WEAKNESS_TITLES: Record<Dimension, string> = {
+    reach: "Couverture incomplète",
+    engagement: "Implication en retrait",
+    appropriation: "Messages mal ancrés",
+    impact: "Effets encore invisibles",
+  };
+  const WEAKNESS_DESCS: Record<Dimension, (s: number) => string> = {
+    reach: (s) =>
+      `Une partie de l'audience visée n'a pas été atteinte (${s}/100).`,
+    engagement: (s) =>
+      `L'audience a reçu sans réagir (${s}/100) — le format n'a pas déclenché d'interaction.`,
+    appropriation: (s) =>
+      `Les messages passent mais ne s'impriment pas (${s}/100).`,
+    impact: (s) =>
+      `Aucun changement observable à ce stade (${s}/100) — l'initiative reste au stade de la diffusion.`,
+  };
+
   for (const d of [...present].sort((a, b) => b.score - a.score)) {
     const label = BUSINESS_LABELS[d.dimension];
     const capped = cap(label);
+    const rounded = Math.round(d.score);
 
     if (d.score >= 70) {
       strengths.push({
-        title: `${capped} solide`,
-        description: `Le niveau de ${label} est élevé (${Math.round(d.score)}/100).`,
+        title: STRENGTH_TITLES[d.dimension] ?? `${capped} solide`,
+        description:
+          STRENGTH_DESCS[d.dimension]?.(rounded) ??
+          `Le niveau de ${label} est élevé (${rounded}/100).`,
       });
     } else if (d.score < 55) {
       weaknesses.push({
-        title: `${capped} à renforcer`,
-        description: `Le niveau de ${label} reste insuffisant (${Math.round(
-          d.score
-        )}/100) pour garantir des résultats durables.`,
+        title: WEAKNESS_TITLES[d.dimension] ?? `${capped} à renforcer`,
+        description:
+          WEAKNESS_DESCS[d.dimension]?.(rounded) ??
+          `Le niveau de ${label} reste insuffisant (${rounded}/100).`,
       });
     }
   }
