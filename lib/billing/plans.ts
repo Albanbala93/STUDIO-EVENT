@@ -161,7 +161,7 @@ export const PLANS: Record<PlanId, Plan> = {
     cta: {
       label: "Nous contacter",
       variant: "outline",
-      href: "mailto:contact@stratly.io?subject=Devis%20Stratly%20sur%20mesure",
+      href: "mailto:contact@stratly.pro?subject=Devis%20Stratly%20sur%20mesure",
     },
     entitlements: {
       modules: ["studio", "momentum", "rse"],

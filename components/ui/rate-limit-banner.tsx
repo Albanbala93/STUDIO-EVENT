@@ -35,7 +35,7 @@ export function RateLimitBanner({ message, resetsAt }: RateLimitBannerProps) {
         ) : null}
       </div>
       <a
-        href="mailto:contact@stratly.io?subject=Quota%20quotidien%20Stratly"
+        href="mailto:contact@stratly.pro?subject=Quota%20quotidien%20Stratly"
         className="self-center rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:border-amber-400 hover:bg-amber-50"
       >
         Contacter l&rsquo;équipe
