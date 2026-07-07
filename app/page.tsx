@@ -586,6 +586,19 @@ export default function HomePage() {
             Tous les livrables sont exportables en PDF et DOCX — vous restez
             propriétaire des contenus produits.
           </p>
+
+          <p style={{ textAlign: "center", marginTop: 20 }}>
+            <a
+              href="/exemples/dossier-exemple.pdf"
+              target="_blank"
+              rel="noopener"
+              className="hi-fi-cta-primary"
+              style={{ display: "inline-flex" }}
+            >
+              Voir un dossier exemple (PDF)
+              <ArrowRight size={16} strokeWidth={2} />
+            </a>
+          </p>
         </div>
       </section>
 
