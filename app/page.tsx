@@ -419,33 +419,22 @@ export default function HomePage() {
               style={{ ["--card-accent" as string]: "var(--accent-teal)" }}
             >
               <div className="hi-fi-deliverable-preview">
-                <svg
-                  viewBox="0 0 240 160"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  className="hi-fi-deliverable-mockup"
-                >
-                  <rect
-                    x="32"
-                    y="14"
-                    width="176"
-                    height="146"
-                    rx="10"
-                    fill="#fff"
-                    stroke="#E2EAF4"
-                  />
-                  <rect x="46" y="28" width="60" height="6" rx="3" fill="#6366F1" />
-                  <rect x="46" y="40" width="40" height="4" rx="2" fill="#CBD5E1" />
-                  <rect x="46" y="56" width="148" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="46" y="63" width="124" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="46" y="70" width="138" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="46" y="84" width="44" height="14" rx="3" fill="#EEF2FF" />
-                  <rect x="94" y="84" width="44" height="14" rx="3" fill="#EEF2FF" />
-                  <rect x="46" y="106" width="148" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="46" y="113" width="116" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="46" y="120" width="138" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="46" y="138" width="60" height="10" rx="3" fill="#6366F1" />
+                <svg viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="hi-fi-deliverable-mockup">
+                  <rect x="20" y="20" width="180" height="130" rx="12" fill="#00b4c8" opacity="0.12" />
+                  <rect x="38" y="10" width="180" height="142" rx="10" fill="#fff" stroke="#D6E2EE" />
+                  <path d="M38 20a10 10 0 0 1 10-10h160a10 10 0 0 1 10 10v26H38V20Z" fill="#0F172A" />
+                  <rect x="52" y="22" width="76" height="7" rx="3.5" fill="#fff" opacity="0.92" />
+                  <circle cx="202" cy="26" r="4" fill="#00b4c8" />
+                  <rect x="52" y="56" width="40" height="13" rx="6.5" fill="#00b4c8" opacity="0.16" />
+                  <rect x="98" y="56" width="40" height="13" rx="6.5" fill="#00b4c8" opacity="0.16" />
+                  <rect x="144" y="56" width="40" height="13" rx="6.5" fill="#00b4c8" opacity="0.16" />
+                  <rect x="52" y="80" width="152" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="52" y="90" width="126" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="52" y="100" width="140" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="52" y="114" width="152" height="20" rx="6" fill="#00b4c8" opacity="0.1" />
+                  <rect x="52" y="114" width="4" height="20" rx="2" fill="#00b4c8" />
+                  <rect x="64" y="121" width="96" height="5" rx="2.5" fill="#4E6E8C" />
+                  <rect x="52" y="140" width="62" height="9" rx="4.5" fill="#00b4c8" />
                 </svg>
               </div>
               <div className="hi-fi-deliverable-body">
@@ -469,40 +458,21 @@ export default function HomePage() {
               style={{ ["--card-accent" as string]: "var(--accent-violet)" }}
             >
               <div className="hi-fi-deliverable-preview">
-                <svg
-                  viewBox="0 0 240 160"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  className="hi-fi-deliverable-mockup"
-                >
-                  <rect
-                    x="22"
-                    y="22"
-                    width="140"
-                    height="58"
-                    rx="10"
-                    fill="#fff"
-                    stroke="#E2EAF4"
-                  />
-                  <rect x="34" y="34" width="44" height="10" rx="3" fill="#EEF2FF" />
-                  <rect x="34" y="52" width="116" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="34" y="59" width="92" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="34" y="66" width="104" height="3" rx="1.5" fill="#E2EAF4" />
-
-                  <rect
-                    x="78"
-                    y="86"
-                    width="140"
-                    height="58"
-                    rx="10"
-                    fill="#fff"
-                    stroke="#E2EAF4"
-                  />
-                  <rect x="90" y="98" width="52" height="10" rx="3" fill="#E0E7FF" />
-                  <rect x="90" y="116" width="116" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="90" y="123" width="92" height="3" rx="1.5" fill="#E2EAF4" />
-                  <rect x="90" y="130" width="80" height="3" rx="1.5" fill="#E2EAF4" />
+                <svg viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="hi-fi-deliverable-mockup">
+                  <circle cx="204" cy="34" r="26" fill="#7c5cbf" opacity="0.12" />
+                  <rect x="16" y="18" width="152" height="66" rx="10" fill="#fff" stroke="#D6E2EE" />
+                  <rect x="28" y="28" width="44" height="13" rx="6.5" fill="#7c5cbf" opacity="0.18" />
+                  <circle cx="37" cy="62" r="8" fill="#7c5cbf" opacity="0.4" />
+                  <rect x="52" y="52" width="100" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="52" y="62" width="78" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="70" y="66" width="154" height="76" rx="10" fill="#fff" stroke="#C9B8E8" strokeWidth="1.3" />
+                  <rect x="84" y="78" width="48" height="14" rx="7" fill="#7c5cbf" />
+                  <rect x="91" y="82.5" width="32" height="5" rx="2.5" fill="#fff" opacity="0.9" />
+                  <circle cx="93" cy="114" r="8" fill="#f0b429" opacity="0.85" />
+                  <rect x="108" y="104" width="102" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="108" y="114" width="84" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="108" y="124" width="94" height="5" rx="2.5" fill="#B9C9DA" />
+                  <rect x="84" y="98" width="126" height="1.5" fill="#EDE7F8" />
                 </svg>
               </div>
               <div className="hi-fi-deliverable-body">
@@ -526,74 +496,27 @@ export default function HomePage() {
               style={{ ["--card-accent" as string]: "var(--accent-orange)" }}
             >
               <div className="hi-fi-deliverable-preview">
-                <svg
-                  viewBox="0 0 240 160"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  className="hi-fi-deliverable-mockup"
-                >
-                  {/* Radar grid */}
-                  <g transform="translate(86 80)">
-                    <polygon
-                      points="0,-58 50,-29 50,29 0,58 -50,29 -50,-29"
-                      fill="none"
-                      stroke="#E2EAF4"
-                      strokeWidth="1"
-                    />
-                    <polygon
-                      points="0,-39 33,-19 33,19 0,39 -33,19 -33,-19"
-                      fill="none"
-                      stroke="#E2EAF4"
-                      strokeWidth="1"
-                    />
-                    <polygon
-                      points="0,-20 17,-10 17,10 0,20 -17,10 -17,-10"
-                      fill="none"
-                      stroke="#E2EAF4"
-                      strokeWidth="1"
-                    />
-                    <line x1="0" y1="-58" x2="0" y2="58" stroke="#E2EAF4" />
-                    <line x1="-50" y1="-29" x2="50" y2="29" stroke="#E2EAF4" />
-                    <line x1="-50" y1="29" x2="50" y2="-29" stroke="#E2EAF4" />
-                    {/* Filled radar */}
-                    <polygon
-                      points="0,-46 42,-22 38,18 0,40 -34,16 -40,-22"
-                      fill="rgba(99,102,241,0.18)"
-                      stroke="#6366F1"
-                      strokeWidth="1.5"
-                    />
-                    <circle cx="0" cy="-46" r="3" fill="#6366F1" />
-                    <circle cx="42" cy="-22" r="3" fill="#6366F1" />
-                    <circle cx="38" cy="18" r="3" fill="#6366F1" />
-                    <circle cx="0" cy="40" r="3" fill="#6366F1" />
-                    <circle cx="-34" cy="16" r="3" fill="#6366F1" />
-                    <circle cx="-40" cy="-22" r="3" fill="#6366F1" />
+                <svg viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="hi-fi-deliverable-mockup">
+                  <g transform="translate(84 80)">
+                    <polygon points="0,-58 54,0 0,58 -54,0" fill="none" stroke="#C6D5E4" strokeWidth="1" />
+                    <polygon points="0,-39 36,0 0,39 -36,0" fill="none" stroke="#C6D5E4" strokeWidth="1" />
+                    <polygon points="0,-20 18,0 0,20 -18,0" fill="none" stroke="#C6D5E4" strokeWidth="1" />
+                    <line x1="0" y1="-58" x2="0" y2="58" stroke="#C6D5E4" />
+                    <line x1="-54" y1="0" x2="54" y2="0" stroke="#C6D5E4" />
+                    <polygon points="0,-50 46,0 0,40 -36,0" fill="#7c5cbf" opacity="0.22" />
+                    <polygon points="0,-50 46,0 0,40 -36,0" fill="none" stroke="#7c5cbf" strokeWidth="2" strokeLinejoin="round" />
+                    <circle cx="0" cy="-50" r="3.5" fill="#7c5cbf" />
+                    <circle cx="46" cy="0" r="3.5" fill="#f05a28" />
+                    <circle cx="0" cy="40" r="3.5" fill="#7c5cbf" />
+                    <circle cx="-36" cy="0" r="3.5" fill="#7c5cbf" />
                   </g>
-                  {/* Score panel */}
-                  <rect
-                    x="166"
-                    y="42"
-                    width="58"
-                    height="76"
-                    rx="10"
-                    fill="#fff"
-                    stroke="#E2EAF4"
-                  />
-                  <rect x="176" y="54" width="30" height="4" rx="2" fill="#CBD5E1" />
-                  <text
-                    x="195"
-                    y="86"
-                    textAnchor="middle"
-                    fontSize="22"
-                    fontWeight="700"
-                    fill="#4F46E5"
-                    fontFamily="DM Sans, sans-serif"
-                  >
-                    78
-                  </text>
-                  <rect x="176" y="100" width="38" height="3" rx="1.5" fill="#EEF2FF" />
-                  <rect x="176" y="106" width="26" height="3" rx="1.5" fill="#EEF2FF" />
+                  <rect x="158" y="36" width="66" height="88" rx="10" fill="#0F172A" />
+                  <rect x="170" y="48" width="34" height="4.5" rx="2.25" fill="#fff" opacity="0.5" />
+                  <text x="191" y="90" textAnchor="middle" fontSize="26" fontWeight="700" fill="#fff" fontFamily="DM Sans, sans-serif">81</text>
+                  <rect x="170" y="100" width="42" height="4" rx="2" fill="#f0b429" />
+                  <circle cx="174" cy="113" r="3" fill="#2db87a" />
+                  <rect x="181" y="110.5" width="31" height="5" rx="2.5" fill="#fff" opacity="0.35" />
+                  <rect x="158" y="130" width="66" height="4" rx="2" fill="#f05a28" opacity="0.85" />
                 </svg>
               </div>
               <div className="hi-fi-deliverable-body">
@@ -617,59 +540,28 @@ export default function HomePage() {
               style={{ ["--card-accent" as string]: "var(--accent-green)" }}
             >
               <div className="hi-fi-deliverable-preview">
-                <svg
-                  viewBox="0 0 240 160"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                  className="hi-fi-deliverable-mockup"
-                >
-                  <rect
-                    x="32"
-                    y="14"
-                    width="176"
-                    height="146"
-                    rx="10"
-                    fill="#fff"
-                    stroke="#E2EAF4"
-                  />
-                  <rect x="46" y="28" width="80" height="6" rx="3" fill="#0F172A" />
-                  <rect x="46" y="40" width="44" height="4" rx="2" fill="#CBD5E1" />
-                  {/* KPI tiles */}
-                  <rect x="46" y="56" width="68" height="40" rx="6" fill="#F6F7FB" />
-                  <rect x="56" y="64" width="28" height="3" rx="1.5" fill="#CBD5E1" />
-                  <text
-                    x="56"
-                    y="86"
-                    fontSize="14"
-                    fontWeight="700"
-                    fill="#4F46E5"
-                    fontFamily="DM Sans, sans-serif"
-                  >
-                    +24%
-                  </text>
-                  <rect x="122" y="56" width="72" height="40" rx="6" fill="#F6F7FB" />
-                  <rect x="132" y="64" width="32" height="3" rx="1.5" fill="#CBD5E1" />
-                  <text
-                    x="132"
-                    y="86"
-                    fontSize="14"
-                    fontWeight="700"
-                    fill="#0F172A"
-                    fontFamily="DM Sans, sans-serif"
-                  >
-                    78/100
-                  </text>
-                  {/* Mini bar chart */}
-                  <rect x="46" y="106" width="148" height="44" rx="6" fill="#F6F7FB" />
-                  <rect x="58" y="138" width="10" height="6" rx="2" fill="#C7D2FE" />
-                  <rect x="74" y="130" width="10" height="14" rx="2" fill="#C7D2FE" />
-                  <rect x="90" y="120" width="10" height="24" rx="2" fill="#A5B4FC" />
-                  <rect x="106" y="124" width="10" height="20" rx="2" fill="#A5B4FC" />
-                  <rect x="122" y="116" width="10" height="28" rx="2" fill="#818CF8" />
-                  <rect x="138" y="112" width="10" height="32" rx="2" fill="#6366F1" />
-                  <rect x="154" y="120" width="10" height="24" rx="2" fill="#6366F1" />
-                  <rect x="170" y="118" width="10" height="26" rx="2" fill="#4F46E5" />
+                <svg viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" className="hi-fi-deliverable-mockup">
+                  <rect x="28" y="8" width="184" height="144" rx="10" fill="#fff" stroke="#D6E2EE" />
+                  <path d="M28 18a10 10 0 0 1 10-10h164a10 10 0 0 1 10 10v22H28V18Z" fill="#0F172A" />
+                  <rect x="42" y="19" width="68" height="7" rx="3.5" fill="#fff" opacity="0.92" />
+                  <circle cx="197" cy="24" r="7" fill="#2db87a" />
+                  <path d="M193.5 24l2.4 2.4 4.6-5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <rect x="42" y="50" width="76" height="34" rx="6" fill="#F0F5FA" stroke="#E1EAF3" />
+                  <rect x="50" y="58" width="30" height="4" rx="2" fill="#9FB4C8" />
+                  <text x="50" y="78" fontSize="14" fontWeight="700" fill="#2db87a" fontFamily="DM Sans, sans-serif">+24%</text>
+                  <rect x="126" y="50" width="72" height="34" rx="6" fill="#F0F5FA" stroke="#E1EAF3" />
+                  <rect x="134" y="58" width="34" height="4" rx="2" fill="#9FB4C8" />
+                  <text x="134" y="78" fontSize="14" fontWeight="700" fill="#0F172A" fontFamily="DM Sans, sans-serif">81/100</text>
+                  <rect x="42" y="94" width="156" height="48" rx="6" fill="#F0F5FA" />
+                  <rect x="54" y="124" width="10" height="10" rx="2" fill="#7ccfdc" />
+                  <rect x="70" y="118" width="10" height="16" rx="2" fill="#4cc3d4" />
+                  <rect x="86" y="112" width="10" height="22" rx="2" fill="#00b4c8" />
+                  <rect x="102" y="116" width="10" height="18" rx="2" fill="#00b4c8" />
+                  <rect x="118" y="108" width="10" height="26" rx="2" fill="#63cfa4" />
+                  <rect x="134" y="102" width="10" height="32" rx="2" fill="#2db87a" />
+                  <rect x="150" y="110" width="10" height="24" rx="2" fill="#2db87a" />
+                  <rect x="166" y="100" width="10" height="34" rx="2" fill="#1e9c66" />
+                  <rect x="54" y="134" width="132" height="2" fill="#D6E2EE" />
                 </svg>
               </div>
               <div className="hi-fi-deliverable-body">
