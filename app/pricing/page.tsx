@@ -245,7 +245,7 @@ export default function PricingPage() {
               ))}
             </ul>
             <Link
-              href="mailto:contact@stratly.io?subject=Stratly%20Entreprise%20—%20Demande%20d'information"
+              href="mailto:contact@stratly.pro?subject=Stratly%20Entreprise%20—%20Demande%20d'information"
               className="pricing-card-cta pricing-card-cta-outline"
             >
               Nous contacter
@@ -315,7 +315,7 @@ export default function PricingPage() {
         <div className="pricing-final">
           <p>Une question avant de vous lancer ?</p>
           <Link
-            href="mailto:contact@stratly.io?subject=Stratly%20—%20Question%20avant%20essai"
+            href="mailto:contact@stratly.pro?subject=Stratly%20—%20Question%20avant%20essai"
             className="pricing-card-cta pricing-card-cta-outline"
             style={{ width: "auto", display: "inline-flex" }}
           >

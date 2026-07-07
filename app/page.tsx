@@ -852,7 +852,7 @@ export default function HomePage() {
               </ul>
 
               <Link
-                href="mailto:contact@stratly.io?subject=Demande%20de%20d%C3%A9mo%20Stratly"
+                href="mailto:contact@stratly.pro?subject=Demande%20de%20d%C3%A9mo%20Stratly"
                 className="hi-fi-cta-card-btn hi-fi-cta-card-btn-secondary"
               >
                 Réserver une démo
@@ -866,7 +866,7 @@ export default function HomePage() {
 
           <p className="hi-fi-cta-tertiary">
             Vous cherchez un cadre tarifaire entreprise ?{" "}
-            <Link href="mailto:contact@stratly.io?subject=Tarifs%20entreprise%20Stratly">
+            <Link href="mailto:contact@stratly.pro?subject=Tarifs%20entreprise%20Stratly">
               Demander une grille de tarifs
               <ArrowRight size={12} strokeWidth={2} />
             </Link>
