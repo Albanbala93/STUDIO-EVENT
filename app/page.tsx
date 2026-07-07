@@ -124,45 +124,44 @@ export default function HomePage() {
           <div className="hi-fi-hero-text">
             <div className="hi-fi-fade-up hi-fi-hero-badge">
               <span className="hi-fi-hero-badge-dot hi-fi-pulse" aria-hidden="true" />
-              Nouveau — Campaign + Pilot unifiés
+              Pensé pour les directions communication
             </div>
 
             <h1 className="hi-fi-fade-up-2 hi-fi-hero-title">
-              L&apos;IA qui transforme
+              Un COMEX ne croit pas
               <br />
-              un brief en stratégie{" "}
-              <em className="hi-fi-hero-accent">défendable</em>
-              <br />
-              et en livrable.
+              les slides. Il croit les{" "}
+              <em className="hi-fi-hero-accent">preuves</em>.
             </h1>
 
             <p className="hi-fi-fade-up-3 hi-fi-hero-sub">
-              Une seule plateforme pour concevoir vos campagnes de communication,
-              piloter vos KPIs et défendre vos projets en CODIR.
+              Stratly transforme vos briefs en stratégies argumentées et vos
+              dispositifs en résultats mesurés. Concevez, pilotez, prouvez —
+              sans cabinet, sans tableur, sans y passer vos nuits.
             </p>
 
             <div className="hi-fi-fade-up-3 hi-fi-hero-ctas">
               <Link href="/studio/new" className="hi-fi-cta-primary">
-                Démarrer gratuitement
+                Générer mon premier dossier
                 <ArrowRight size={16} strokeWidth={2} />
               </Link>
-              <Link href="/momentum" className="hi-fi-cta-ghost">
-                Voir un exemple de dossier
+              <Link href="#livrables" className="hi-fi-cta-ghost">
+                Voir ce que vous obtenez
               </Link>
             </div>
 
             <ul className="hi-fi-hero-stats" aria-label="Indicateurs clés">
               <li>
-                <strong style={{ color: HI_FI_ACCENTS.teal.color }}>~25s</strong>
-                <span>Génération complète</span>
+                <strong style={{ color: HI_FI_ACCENTS.teal.color }}>5 min</strong>
+                <span>du brief au dossier COMEX</span>
               </li>
               <li>
-                <strong>14+</strong>
-                <span>Sections produites</span>
+                <strong>10 000 €</strong>
+                <span>le tarif cabinet de l&apos;équivalent</span>
               </li>
               <li>
-                <strong>3</strong>
-                <span>Modules intégrés</span>
+                <strong>0 €</strong>
+                <span>pendant la bêta</span>
               </li>
             </ul>
           </div>
@@ -247,9 +246,9 @@ export default function HomePage() {
           <div className="hi-fi-section-head">
             <p className="hi-fi-overline">Modules Stratly</p>
             <h2 className="hi-fi-section-title">
-              Tout ce qu&apos;une direction stratégique
+              Concevoir. Mesurer.
               <br />
-              attend d&apos;une plateforme IA
+              Prouver.
             </h2>
             <p className="hi-fi-section-lead">
               Assez générique pour démarrer vite. Assez spécifique pour livrer
@@ -754,9 +753,9 @@ export default function HomePage() {
           <div className="hi-fi-cta-head">
             <p className="hi-fi-cta-overline">Comment démarrer</p>
             <h2 className="hi-fi-cta-title">
-              Deux parcours,{" "}
+              Deux façons{" "}
               <em className="hi-fi-cta-title-soft">
-                selon votre maturité.
+                de vous convaincre.
               </em>
             </h2>
             <p className="hi-fi-cta-lead">
