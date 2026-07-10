@@ -128,10 +128,10 @@ export default function HomePage() {
             </div>
 
             <h1 className="hi-fi-fade-up-2 hi-fi-hero-title">
-              Un COMEX ne croit pas
+              La première plateforme qui conçoit,
               <br />
-              les slides. Il croit les{" "}
-              <em className="hi-fi-hero-accent">preuves</em>.
+              mesure et <em className="hi-fi-hero-accent">prouve</em> votre
+              communication interne.
             </h1>
 
             <p className="hi-fi-fade-up-3 hi-fi-hero-sub">
