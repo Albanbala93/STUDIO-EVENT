@@ -490,7 +490,7 @@ export function ResultDashboard(props: {
             icon={<CheckCircle2 className="h-4 w-4" />}
             title="Points forts"
             empty={interpretation.executive_summary.top_strengths.length === 0}
-            emptyHint="Aucun point fort clairement consolidé pour l'instant."
+            emptyHint="Aucun point fort ne se détache clairement pour l'instant."
           >
             <ul className="space-y-2">
               {interpretation.executive_summary.top_strengths
@@ -530,11 +530,11 @@ export function ResultDashboard(props: {
             <DiagnosticCard
               accent="accent"
               icon={<ArrowRight className="h-4 w-4" />}
-              title="Recommandations actionnables"
+              title="Ce que vous pouvez faire maintenant"
               empty={
                 interpretation.detailed_analysis.recommendations.length === 0
               }
-              emptyHint="Les données actuelles ne permettent pas de formuler des recommandations précises — commencez par instrumenter les angles morts identifiés."
+              emptyHint="Les données actuelles ne suffisent pas pour des recommandations précises — commencez par mesurer les zones encore aveugles."
             >
               <div className="flex flex-col gap-3">
                 {interpretation.detailed_analysis.recommendations
@@ -550,9 +550,9 @@ export function ResultDashboard(props: {
             <DiagnosticCard
               accent="slate"
               icon={<Circle className="h-4 w-4" />}
-              title="Angles morts de mesure"
+              title="Ce que vous ne mesurez pas encore"
               empty={interpretation.detailed_analysis.data_gaps.length === 0}
-              emptyHint="Aucun angle mort détecté à ce stade."
+              emptyHint="Vous mesurez déjà l'essentiel — rien ne manque à ce stade."
             >
               <div className="flex flex-col gap-3">
                 {interpretation.detailed_analysis.data_gaps
@@ -887,7 +887,7 @@ function RecommendationCard({ reco }: { reco: RecommendationItem }) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-700">
-                Outil livré · {reco.tool.type}
+                Modèle prêt à l'emploi · {reco.tool.type}
               </div>
               <div className="text-[13px] font-semibold text-ink">
                 {reco.tool.name}
@@ -1518,7 +1518,7 @@ function RseSection({ rse }: { rse: RSEInterpretation }) {
                 <Compass className="h-4 w-4" />
               </div>
               <h3 className="text-[14px] font-semibold text-ink">
-                Angles morts RSE
+                Ce que vous ne mesurez pas encore (RSE)
               </h3>
             </div>
             <div className="flex flex-col gap-3">
@@ -1581,7 +1581,7 @@ function RseRecommendationCard({ reco }: { reco: RSERecommendation }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-accent-700">
-              Outil livré
+              Modèle prêt à l'emploi
             </div>
             <div className="text-[13px] font-semibold text-ink">
               {reco.tool.name}
