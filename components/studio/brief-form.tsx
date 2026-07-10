@@ -187,15 +187,15 @@ export function BriefForm() {
     }
 
     const dropzoneBorder = dragOver
-        ? "var(--navy)"
+        ? "var(--accent-teal, #00b4c8)"
         : uploadStatus === "success"
         ? "var(--blue-conseil, #6366F1)"
-        : "var(--border)";
+        : "color-mix(in srgb, var(--accent-teal, #00b4c8) 45%, var(--border))";
     const dropzoneBg = dragOver
-        ? "rgba(99,102,241,0.06)"
+        ? "color-mix(in srgb, var(--accent-teal, #00b4c8) 10%, transparent)"
         : uploadStatus === "success"
         ? "rgba(99,102,241,0.03)"
-        : "var(--white)";
+        : "color-mix(in srgb, var(--accent-teal, #00b4c8) 4%, var(--white))";
 
     return (
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
@@ -240,8 +240,8 @@ export function BriefForm() {
                         justifyContent: "center",
                         background: uploadStatus === "success"
                             ? "rgba(99,102,241,0.12)"
-                            : "var(--surface)",
-                        color: uploadStatus === "success" ? "#4F46E5" : "var(--navy)",
+                            : "color-mix(in srgb, var(--accent-teal, #00b4c8) 12%, transparent)",
+                        color: uploadStatus === "success" ? "#4F46E5" : "var(--accent-teal, #00b4c8)",
                         transition: "background 0.18s, color 0.18s",
                     }}
                 >
@@ -286,11 +286,11 @@ export function BriefForm() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <p
                         style={{
-                            margin: "0 0 3px",
-                            fontSize: 15,
-                            fontWeight: 600,
-                            color: "var(--text)",
-                            letterSpacing: "-0.005em",
+                            margin: "0 0 4px",
+                            fontSize: 16.5,
+                            fontWeight: 700,
+                            color: "var(--navy)",
+                            letterSpacing: "-0.01em",
                         }}
                     >
                         {uploadStatus === "uploading"
@@ -300,6 +300,24 @@ export function BriefForm() {
                             : dragOver
                             ? "Déposez ici pour importer"
                             : "Importer un brief existant"}
+                        {uploadStatus === "idle" && !dragOver && (
+                            <span
+                                style={{
+                                    fontSize: 10.5,
+                                    fontWeight: 700,
+                                    letterSpacing: "0.04em",
+                                    textTransform: "uppercase",
+                                    color: "var(--accent-teal, #00b4c8)",
+                                    background: "color-mix(in srgb, var(--accent-teal, #00b4c8) 12%, transparent)",
+                                    padding: "2px 8px",
+                                    borderRadius: 999,
+                                    marginLeft: 10,
+                                    verticalAlign: "middle",
+                                }}
+                            >
+                                Le plus rapide
+                            </span>
+                        )}
                     </p>
                     <p
                         style={{
