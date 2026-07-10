@@ -1,4 +1,12 @@
 import Link from "next/link";
+import {
+    FileText,
+    Users,
+    CalendarClock,
+    BarChart3,
+    PenLine,
+    FileDown,
+} from "lucide-react";
 import { BriefForm } from "../../../components/studio/brief-form";
 
 export default function NewProjectPage() {
@@ -137,28 +145,37 @@ export default function NewProjectPage() {
             <div className="container" style={{ paddingTop: 32, paddingBottom: 0 }}>
                 <div className="hi-fi-brief-deliverables">
                     <p className="hi-fi-brief-deliverables-overline">
-                        Ce que génère Stratly
+                        À partir de vos 6 champs, Stratly produit
                     </p>
                     <div className="hi-fi-brief-deliverables-grid">
                         {[
-                            { label: "Dossier stratégique 28 sections", color: "var(--accent-teal)" },
-                            { label: "Messages par audience", color: "var(--accent-violet)" },
-                            { label: "Plan de déploiement", color: "var(--accent-orange)" },
-                            { label: "KPIs et indicateurs", color: "var(--accent-green)" },
-                            { label: "Contenus rédigés (email, FAQ…)", color: "var(--accent-blue)" },
-                            { label: "Export PDF & DOCX premium", color: "var(--accent-amber)" },
-                        ].map((d) => (
-                            <div key={d.label} className="hi-fi-brief-deliverable">
-                                <span
-                                    className="hi-fi-brief-deliverable-dot"
-                                    style={{ background: d.color }}
-                                    aria-hidden="true"
-                                />
-                                <span className="hi-fi-brief-deliverable-label">
-                                    {d.label}
-                                </span>
-                            </div>
-                        ))}
+                            { icon: FileText, title: "Dossier stratégique", sub: "Diagnostic, angle, dispositif — 14+ sections", color: "var(--accent-teal)" },
+                            { icon: Users, title: "Messages par audience", sub: "Calibrés pour chaque cible interne", color: "var(--accent-violet)" },
+                            { icon: CalendarClock, title: "Plan de déploiement", sub: "Feuille de route datée, prête à piloter", color: "var(--accent-orange)" },
+                            { icon: BarChart3, title: "KPIs et indicateurs", sub: "De quoi mesurer l'impact réel", color: "var(--accent-green)" },
+                            { icon: PenLine, title: "Contenus rédigés", sub: "Email direction, post intranet, FAQ", color: "var(--accent-blue)" },
+                            { icon: FileDown, title: "Export prêt COMEX", sub: "PDF paginé & DOCX éditable", color: "var(--accent-amber)" },
+                        ].map((d) => {
+                            const Icon = d.icon;
+                            return (
+                                <div key={d.title} className="hi-fi-brief-deliverable">
+                                    <span
+                                        className="hi-fi-brief-deliverable-icon"
+                                        style={{
+                                            color: d.color,
+                                            background: `color-mix(in srgb, ${d.color} 10%, transparent)`,
+                                        }}
+                                        aria-hidden="true"
+                                    >
+                                        <Icon size={16} strokeWidth={2} />
+                                    </span>
+                                    <span className="hi-fi-brief-deliverable-text">
+                                        <span className="hi-fi-brief-deliverable-title">{d.title}</span>
+                                        <span className="hi-fi-brief-deliverable-sub">{d.sub}</span>
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
