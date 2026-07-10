@@ -96,36 +96,42 @@ export function StrategicMemoryPanel() {
   return (
     <div className="strategic-memory-panel">
       <div className="strategic-memory-head">
-        <span className="strategic-memory-eyebrow">Mémoire stratégique</span>
+        <div>
+          <span className="strategic-memory-eyebrow">Mémoire stratégique</span>
+          <p className="strategic-memory-subtitle">
+            Ce que Stratly retient de votre activité récente.
+          </p>
+        </div>
         <span className="strategic-memory-window">
-          {trends.totalAnalyses} projet{trends.totalAnalyses > 1 ? "s" : ""} ·{" "}
+          {trends.totalAnalyses} projet{trends.totalAnalyses > 1 ? "s" : ""}
+          {" · "}
           {trends.windowDays} derniers jours
         </span>
       </div>
 
       <div className="strategic-memory-metrics">
         <Metric
-          label="Type dominant"
+          label="Type de projet dominant"
           value={
             trends.dominantProjectType
               ? `${trends.dominantProjectType.value}`
-              : "—"
+              : "Profils variés"
           }
           hint={
             trends.dominantProjectType
-              ? `${Math.round(trends.dominantProjectType.share * 100)}% des projets`
-              : "Pas encore détecté"
+              ? `${Math.round(trends.dominantProjectType.share * 100)}% de vos dispositifs`
+              : "Aucun type ne se détache encore"
           }
         />
         <Metric
-          label="Vélocité"
-          value={`${trends.velocity.lastWeek} cette semaine`}
+          label="Rythme cette semaine"
+          value={`${trends.velocity.lastWeek} projet${trends.velocity.lastWeek > 1 ? "s" : ""}`}
           hint={
             trends.velocity.deltaPct === 0
-              ? "Stable"
+              ? "Stable vs semaine précédente"
               : trends.velocity.deltaPct > 0
-                ? `↗ +${trends.velocity.deltaPct}% vs semaine précédente`
-                : `↘ ${trends.velocity.deltaPct}% vs semaine précédente`
+                ? `En hausse · +${trends.velocity.deltaPct}% vs semaine précédente`
+                : `En baisse · ${trends.velocity.deltaPct}% vs semaine précédente`
           }
           hintColor={
             trends.velocity.deltaPct > 0
@@ -136,9 +142,9 @@ export function StrategicMemoryPanel() {
           }
         />
         <Metric
-          label="Copilote événement"
-          value={`${Math.round(trends.eventCopilotAdoption.share * 100)}%`}
-          hint={`${trends.eventCopilotAdoption.count} / ${trends.totalAnalyses} projets`}
+          label="Volet événementiel"
+          value={`${trends.eventCopilotAdoption.count} sur ${trends.totalAnalyses}`}
+          hint={`${Math.round(trends.eventCopilotAdoption.share * 100)}% de vos projets l'incluent`}
         />
       </div>
 
