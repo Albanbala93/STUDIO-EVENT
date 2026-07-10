@@ -156,8 +156,8 @@ export default function HomePage() {
                 <span>du brief au dossier COMEX</span>
               </li>
               <li>
-                <strong>10 000 €</strong>
-                <span>le tarif cabinet de l&apos;équivalent</span>
+                <strong>5 000 €</strong>
+                <span>ce que facture un cabinet pour l&apos;équivalent</span>
               </li>
               <li>
                 <strong>0 €</strong>
@@ -244,15 +244,17 @@ export default function HomePage() {
       <section className="hi-fi-features" id="modules">
         <div className="hi-fi-features-inner">
           <div className="hi-fi-section-head">
-            <p className="hi-fi-overline">Modules Stratly</p>
+            <p className="hi-fi-overline">La méthode Stratly</p>
             <h2 className="hi-fi-section-title">
               Concevoir. Mesurer.
               <br />
               Prouver.
             </h2>
             <p className="hi-fi-section-lead">
-              Assez générique pour démarrer vite. Assez spécifique pour livrer
-              des recommandations qui tiennent en CODIR.
+              Chaque recommandation est construite sur votre brief — vos
+              enjeux, votre vocabulaire, vos contraintes. La différence entre
+              un dossier qu&apos;on présente et un document qu&apos;on
+              retravaille.
             </p>
           </div>
 
