@@ -344,10 +344,16 @@ function gapFragile(dimension: RSEDimension, count: number, avgConf: number): RS
   } else {
     issue = `la mesure reste partielle (${count} indicateurs seulement)`;
   }
+  const FRAGILE_IMPACT: Record<RSEDimension, string> = {
+    environment: "Le chiffre environnemental existe, mais il est trop fragile pour engager un plan de réduction ou le défendre en reporting extra-financier.",
+    social: "La lecture sociale est amorcée, mais trop étroite pour objectiver l'inclusion réelle ou prévenir un angle mort réputationnel.",
+    governance: "Le pilotage RSE est esquissé, mais sa base est trop mince pour tenir en audit CSRD ou en communication externe.",
+  };
+
   return {
     dimension,
     message: `Mesure ${label} encore fragile — ${issue}.`,
-    impact: `Le score ${label} existe mais repose sur une base trop étroite pour servir de socle de décision ou de communication externe.`,
+    impact: FRAGILE_IMPACT[dimension],
   };
 }
 
