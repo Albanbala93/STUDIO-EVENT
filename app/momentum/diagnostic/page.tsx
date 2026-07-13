@@ -682,24 +682,34 @@ function KPIStep(props: {
   return (
     <Card>
       <CardContent className="p-0">
-        {/* Tabs */}
-        <div className="flex border-b border-border">
-          <TabButton
-            active={tab === "communication"}
-            onClick={() => setTab("communication")}
-            icon={<BarChart3 className="h-4 w-4" />}
-            label="Performance de communication"
-            count={commAnswered}
-            total={kpis.length}
-          />
-          <TabButton
-            active={tab === "rse"}
-            onClick={() => setTab("rse")}
-            icon={<Leaf className="h-4 w-4" />}
-            label="Impact RSE (optionnel)"
-            count={rseAnswered}
-            total={rseKpis.length}
-          />
+        {/* Deux diagnostics distincts */}
+        <div className="border-b border-border p-5">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-muted">
+            Ce dossier couvre deux diagnostics
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <TabButton
+              active={tab === "communication"}
+              onClick={() => setTab("communication")}
+              icon={<BarChart3 className="h-4 w-4" />}
+              label="Performance de communication"
+              subtitle="La campagne a-t-elle fonctionné ?"
+              count={commAnswered}
+              total={kpis.length}
+              tone="accent"
+            />
+            <TabButton
+              active={tab === "rse"}
+              onClick={() => setTab("rse")}
+              icon={<Leaf className="h-4 w-4" />}
+              label="Impact RSE"
+              subtitle="Le dispositif était-il responsable ?"
+              count={rseAnswered}
+              total={rseKpis.length}
+              tone="emerald"
+              optional
+            />
+          </div>
         </div>
 
         <div className="p-8">
@@ -825,35 +835,68 @@ function TabButton({
   onClick,
   icon,
   label,
+  subtitle,
   count,
   total,
+  tone,
+  optional = false,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  subtitle: string;
   count: number;
   total: number;
+  tone: "accent" | "emerald";
+  optional?: boolean;
 }) {
+  const styles =
+    tone === "emerald"
+      ? {
+          activeBorder: "border-emerald-400",
+          activeBg: "bg-emerald-50",
+          idleBorder: "border-emerald-200",
+          iconWrap: "bg-emerald-100 text-emerald-700",
+          badge: "bg-emerald-600 text-white",
+        }
+      : {
+          activeBorder: "border-accent",
+          activeBg: "bg-accent-50",
+          idleBorder: "border-accent-200",
+          iconWrap: "bg-accent-100 text-accent-700",
+          badge: "bg-accent text-white",
+        };
   return (
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "flex-1 flex items-center justify-center gap-3 px-6 py-4 text-[14px] font-semibold border-b-2 transition-colors",
+        "group flex flex-1 min-w-[240px] items-center gap-3 rounded-lg border px-4 py-3 text-left transition",
         active
-          ? "border-accent text-ink bg-accent-50/40"
-          : "border-transparent text-ink-muted hover:text-ink hover:bg-canvas",
+          ? cn(styles.activeBorder, styles.activeBg, "shadow-sm")
+          : cn(styles.idleBorder, "bg-white hover:shadow-sm opacity-80 hover:opacity-100"),
       )}
     >
-      <span className={active ? "text-accent" : "text-ink-muted"}>{icon}</span>
-      <span>{label}</span>
+      <span className={cn("flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md", styles.iconWrap)}>
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          <span className="text-[14px] font-bold leading-tight text-ink">{label}</span>
+          {optional && (
+            <span className="rounded-full bg-canvas px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-ink-muted border border-border">
+              Optionnel
+            </span>
+          )}
+        </span>
+        <span className="block text-[11.5px] text-ink-muted">{subtitle}</span>
+      </span>
       <span
         className={cn(
-          "inline-flex items-center justify-center min-w-[36px] h-5 px-2 rounded-full text-[11px] font-bold",
-          active
-            ? "bg-accent text-white"
-            : "bg-canvas text-ink-muted border border-border",
+          "inline-flex items-center justify-center min-w-[38px] h-5 px-2 rounded-full text-[11px] font-bold",
+          active ? styles.badge : "bg-canvas text-ink-muted border border-border",
         )}
       >
         {count}/{total}
