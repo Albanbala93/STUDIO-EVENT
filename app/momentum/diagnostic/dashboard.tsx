@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
   ArrowLeft,
+  BarChart3,
   ArrowRight,
   CheckCircle2,
   ChevronDown,
@@ -352,16 +353,57 @@ export function ResultDashboard(props: {
           </CardContent>
         </Card>
 
-        {/* Navigation ancrée de la restitution */}
+        {/* Navigation ancrée — deux diagnostics distincts */}
         <nav
-          aria-label="Sections de la restitution"
-          className="sticky top-0 z-20 -mx-2 flex gap-2 overflow-x-auto border-b border-border bg-canvas/95 px-2 py-2 backdrop-blur"
+          aria-label="Les deux diagnostics"
+          className="sticky top-0 z-20 -mx-2 bg-canvas/95 px-2 py-2.5 backdrop-blur"
         >
-          <a href="#bloc-score" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Score</a>
-          <a href="#bloc-dimensions" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Dimensions</a>
-          <a href="#bloc-analyse" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Analyse</a>
-          {rse && (
-            <a href="#bloc-rse" className="whitespace-nowrap rounded-sm border border-emerald-200 px-2.5 py-1 text-[12px] font-semibold text-emerald-700 hover:text-emerald-800">Impact RSE</a>
+          {rse ? (
+            <>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-muted">
+                Deux diagnostics dans ce dossier
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                <a
+                  href="#bloc-score"
+                  className="group flex flex-1 min-w-[220px] items-center gap-3 rounded-md border border-accent-200 bg-accent-50/60 px-4 py-2.5 transition hover:border-accent hover:bg-accent-50"
+                >
+                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm bg-accent-100 text-accent-700">
+                    <BarChart3 className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13.5px] font-bold leading-tight text-ink">
+                      Performance de communication
+                    </span>
+                    <span className="block text-[11.5px] text-ink-muted">
+                      La campagne a-t-elle fonctionné ?
+                    </span>
+                  </span>
+                </a>
+                <a
+                  href="#bloc-rse"
+                  className="group flex flex-1 min-w-[220px] items-center gap-3 rounded-md border border-emerald-200 bg-emerald-50/60 px-4 py-2.5 transition hover:border-emerald-400 hover:bg-emerald-50"
+                >
+                  <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm bg-emerald-100 text-emerald-700">
+                    <Leaf className="h-4 w-4" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13.5px] font-bold leading-tight text-ink">
+                      Impact RSE
+                    </span>
+                    <span className="block text-[11.5px] text-ink-muted">
+                      Le dispositif était-il responsable ?
+                    </span>
+                  </span>
+                </a>
+              </div>
+            </>
+          ) : (
+            <div className="flex gap-2 overflow-x-auto border-b border-border pb-2">
+              <a href="#bloc-score" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Score</a>
+              <a href="#bloc-dimensions" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Dimensions</a>
+              <a href="#bloc-analyse" className="whitespace-nowrap rounded-sm border border-border px-2.5 py-1 text-[12px] font-semibold text-ink-muted hover:text-ink">Analyse</a>
+            </div>
           )}
         </nav>
 
