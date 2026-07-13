@@ -400,18 +400,38 @@ function buildMethodologyReco(dim: RawDim): RecommendationItem {
   const tool = buildTool(dim.dimension, "methodology");
   const priority = computePriority("methodology", dim.score, dim.confidence);
 
+  const TITLES: Record<Dimension, string> = {
+    reach: "Fiabiliser la mesure de la couverture",
+    engagement: "Objectiver le niveau d'implication",
+    appropriation: "Vérifier ce qui a vraiment été compris",
+    impact: "Mesurer les effets réels, pas les intentions",
+  };
+
+  const ACTIONS: Record<Dimension, string> = {
+    reach: "Recouper vos chiffres de diffusion avec des données réelles d'ouverture et de présence, plutôt que des estimations — pour savoir qui a été touché, et non qui aurait dû l'être.",
+    engagement: "Compléter les ressentis déclarés par des signaux observés (participation aux sessions, interactions, contributions) pour distinguer l'implication réelle de l'implication supposée.",
+    appropriation: "Tester la compréhension par un court quiz ou une reformulation à chaud, au lieu de vous fier au sentiment d'avoir été clair — l'écart est souvent important.",
+    impact: "Suivre quelques indicateurs comportementaux concrets (actions engagées, changements observés) à distance de l'initiative, pour mesurer l'effet et non l'enthousiasme du moment.",
+  };
+
+  const IMPACTS: Record<Dimension, string> = {
+    reach: "Savoir précisément quelle part de votre audience a réellement reçu le message.",
+    engagement: "Distinguer une adhésion de façade d'un engagement qui se traduit en actes.",
+    appropriation: "Confirmer que le message est compris et retenu, pas seulement diffusé.",
+    impact: "Passer d'un impact supposé à un impact démontré, chiffres à l'appui.",
+  };
+
   return {
-    title: `Fiabiliser la mesure de ${frArticle(label)}${label}`,
-    action: `Renforcer la qualité des données collectées sur ${frArticle(label)}${label} (taille d'échantillon, croisement déclaratif / observation, automatisation de la collecte) afin que les décisions prises à partir de cette dimension soient robustes.`,
+    title: TITLES[dim.dimension] ?? `Fiabiliser la mesure de ${frArticle(label)}${label}`,
+    action: ACTIONS[dim.dimension] ?? `Renforcer la qualité des données collectées sur ${frArticle(label)}${label}.`,
     priority,
     dimension: dim.dimension,
     reco_type: "methodology",
-    why: `Le score de ${label} repose sur une base de données peu fiable (confiance ${Math.round(
+    why: `La lecture de ${label} s'appuie sur des données à fiabilité limitée (confiance ${Math.round(
       dim.confidence
-    )}/100) : la lecture est indicative mais ne permet pas d'arbitrer.`,
-    when: "Dans les 30 jours, en préparation de la prochaine mesure.",
-    impact:
-      "Passer d'une mesure indicative à une mesure décisionnelle, avec un niveau de confiance supérieur à 70/100.",
+    )}/100) : le chiffre oriente, mais ne suffit pas encore pour décider.`,
+    when: "Avant votre prochaine mesure, pour bâtir sur une base solide.",
+    impact: IMPACTS[dim.dimension] ?? "Passer d'une mesure indicative à une mesure sur laquelle on peut décider.",
     tool,
   };
 }
